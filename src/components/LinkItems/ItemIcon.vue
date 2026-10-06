@@ -1,7 +1,8 @@
 <template>
-  <div v-if="icon" :class="[`item-icon wrapper-${size}`, {'brand-icon': isBrand}]">
+  <div v-if="effectiveIcon" :class="[`item-icon wrapper-${size}`, {'brand-icon': isBrand}]">
+    <span v-if="isGlyph" :class="`glyph-icon ${size}`" :style="{maskImage: `url(${resolvedIcon})`, WebkitMaskImage: `url(${resolvedIcon})`}" aria-hidden="true"></span>
     <!-- Font-Awesome Icon -->
-    <i v-if="iconType === 'font-awesome'" :class="`${icon} ${size}`" ></i>
+    <i v-else-if="iconType === 'font-awesome'" :class="`${effectiveIcon} ${size}`" ></i>
     <!-- Emoji Icon -->
     <i v-else-if="iconType === 'emoji' && !broken" :class="`emoji-icon ${size}`" >{{getEmoji(iconPath)}}</i>
     <!-- Material Design Icon -->
@@ -21,7 +22,8 @@
 </template>
 
 <script>
-import { matchPortalIcon, portalIconPath, websiteFavicon } from '@/utils/PortalIcons';
+import { matchPortalIcon, portalIconPath, websiteFavicon, websiteIcon } from '@/utils/PortalIcons';
+import { builtinIconPath } from '@/utils/BuiltinIcons';
 import { discoverSiteIcon } from '@/utils/SiteIcons';
 import BrokenImage from '@/assets/interface-icons/broken-icon.svg';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
@@ -58,10 +60,14 @@ export default {
     appConfig() {
       return this.$store.getters.appConfig;
     },
-    resolvedIcon() {
-      if (this.icon === 'auto') return matchPortalIcon(this.url, this.title)?.src || this.discoveredIcon || websiteFavicon(this.url);
-      return portalIconPath(this.icon) || this.icon;
+    effectiveIcon() {
+      return this.url ? websiteIcon({ icon: this.icon, url: this.url, title: this.title }) : this.icon;
     },
+    resolvedIcon() {
+      if (this.effectiveIcon === 'auto') return matchPortalIcon(this.url, this.title)?.src || this.discoveredIcon || websiteFavicon(this.url);
+      return builtinIconPath(this.effectiveIcon) || portalIconPath(this.effectiveIcon) || this.effectiveIcon;
+    },
+    isGlyph() { return this.resolvedIcon.startsWith('/portal-icons/lucide/'); },
     isBrand() { return this.resolvedIcon.startsWith('/portal-icons/'); },
     monogram() {
       const label = this.title || this.getHostName(this.url).replace(/^www\./, '') || '?';
@@ -97,7 +103,7 @@ export default {
   methods: {
     async discoverAutoIcon() {
       const request=++this.iconRequest; this.discoveredIcon='';
-      if(this.icon!=='auto' || !this.url || matchPortalIcon(this.url,this.title))return;
+      if(this.effectiveIcon!=='auto' || !this.url || matchPortalIcon(this.url,this.title))return;
       const result=await discoverSiteIcon(this.url);
       if(request===this.iconRequest)this.discoveredIcon=result.icon;
     },

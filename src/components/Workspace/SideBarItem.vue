@@ -1,7 +1,7 @@
 <template>
-  <div @click="itemClicked()"
+  <div @click="itemClicked()" @keydown.enter="itemClicked()" @keydown.space.prevent="itemClicked()" role="button" tabindex="0" :aria-label="title"
     :class="`side-bar-item ${icon ? 'w-icon' : 'text-only'}`" v-tooltip="tooltip">
-    <Icon v-if="icon" :icon="icon" size="small" :url="url" />
+    <Icon v-if="icon || url" :icon="icon" size="small" :url="url" :title="title" />
     <p class="small-title" v-else>{{ title }}</p>
   </div>
 </template>
@@ -44,6 +44,11 @@ export default {
 <style lang="scss" scoped>
 
 div.side-bar-item {
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  &:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
   color: var(--side-bar-item-color);
   background: var(--side-bar-item-background);
   text-align: center;

@@ -1,11 +1,12 @@
 <template>
   <div class="focus-home" :style="getBackgroundImage()">
-    <div class="focus-heading"><PageTitle :title="pageInfo.title" :description="pageInfo.description" :logo="pageInfo.logo" /><router-link to="/" class="return-home">返回总站</router-link></div>
+    <div class="focus-heading"><PageTitle v-if="showHeadingTitle" :title="pageInfo.title" :logo="pageInfo.logo" /><span v-else>工作台 · 快速访问</span><router-link to="/" class="return-home">返回总站</router-link></div>
     <Home v-if="isEditMode" />
     <template v-else>
       <SettingsContainer @user-is-searchin="searching" :forceSearch="true" />
       <main class="focus-content">
         <div class="focus-status"><span>快速访问</span><span>{{ websiteCount }} 个网站 · {{ sections.length }} 个分类</span></div>
+        <p class="focus-help">简化导航视图：保留搜索、分类与网站入口，减少小组件干扰。</p>
         <nav class="focus-tabs" aria-label="分类筛选" v-if="sections.length">
           <button type="button" :class="{active: selectedSection === -1}" @click="selectedSection = -1">全部</button>
           <button v-for="(section,index) in sections" :key="section.name" type="button" :class="{active: selectedSection === index}" @click="selectedSection = index">{{ section.name }} <span>{{ (section.items || []).length }}</span></button>
@@ -24,12 +25,14 @@ import HomeMixin from '@/mixins/HomeMixin';
 import MinimalSection from '@/components/MinimalView/MinimalSection.vue';
 import SettingsContainer from '@/components/Settings/SettingsContainer.vue';
 import PageTitle from '@/components/PageStrcture/PageTitle.vue';
+import { shouldBeVisible } from '@/utils/config/SectionHelpers';
 import Home from './Home.vue';
 import { resolveRouteIntent, makePageName } from '@/utils/config/ConfigHelpers';
 export default {
   mixins: [HomeMixin], components: { MinimalSection, SettingsContainer, PageTitle, Home },
   data: () => ({ selectedSection: -1 }),
   computed: {
+    showHeadingTitle() { return !shouldBeVisible(this.$route.name); },
     filteredSections() { return (this.sections || []).map(section => ({...section, filteredItems: this.filterTiles(section.items, section.name, {showHidden: !!this.searchValue})})); },
     websiteCount() { const count = items => (items || []).reduce((n,item) => n + (item.subItems ? count(item.subItems) : 1),0); return this.sections.reduce((n,section) => n + count(section.items),0); },
   },
@@ -38,7 +41,8 @@ export default {
 </script>
 <style scoped lang="scss">
 .focus-home { min-height: 100dvh; background: var(--background); color: var(--primary); }
-.focus-heading { display: flex; gap: 1rem; align-items: center; padding: 1rem clamp(1rem,4vw,3rem); background: var(--background-darker); }
+.focus-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: 0.75rem clamp(1rem,4vw,3rem); background: var(--background-darker); }
+.focus-help { font-size: 0.85rem; line-height: 1.6; opacity: 0.8; }
 .return-home { color: inherit; text-decoration: none; font-size: 0.85rem; flex-shrink: 0; border: 1px solid currentColor; padding: 0.55rem 0.7rem; border-radius: var(--curve-factor-small); }
 .focus-content { max-width: 1280px; margin: 0 auto; padding: 1.5rem clamp(1rem,4vw,2rem); }
 .focus-status { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; font-size: 0.8rem; margin-bottom: 1rem; opacity: 0.85; }
@@ -49,8 +53,8 @@ export default {
 .focus-tabs span { opacity: 0.7; margin-left: 0.4rem; }
 .focus-category { margin: 1rem 0 1.5rem; }
 .focus-category h2 { margin: 0 0 0.75rem; font-size: 1.2rem; }
-.focus-category :deep(.minimal-section-inner) { height: auto; min-height: 0; padding: 0.5rem; background: var(--item-group-background); border: 1px solid var(--outline-color); border-radius: var(--curve-factor); }
-.focus-category :deep(.section-items) { grid-template-columns: repeat(auto-fill,minmax(min(160px,100%),1fr)); gap: 0.6rem; }
+.focus-category :deep(.minimal-section-inner) { display: block; height: auto; min-height: 0; padding: 0.5rem; background: var(--item-group-background); border: 1px solid var(--outline-color); border-radius: var(--curve-factor); }
+.focus-category :deep(.section-items) { grid-template-columns: repeat(auto-fill,minmax(min(160px,100%),1fr)); grid-auto-rows: max-content; align-items: start; min-height: 0; gap: 0.6rem; }
 .focus-category :deep(.item) { margin: 0; }
 .focus-category :deep(.sub-items-group) { grid-column: span 2; padding: 0.5rem; }
 .focus-empty { text-align: center; padding: 2rem 1rem; border: 1px dashed var(--outline-color); }

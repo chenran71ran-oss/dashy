@@ -57,6 +57,11 @@ html[data-theme] .sub-item-wrapper > a.item {
 }
 html[data-theme] .there-are-items .sub-items-group { margin: 0; min-width: 0; box-sizing: border-box; }
 html .item-icon, html .item-icon * { filter: none !important; box-shadow: none !important; text-shadow: none !important; }
+html .glyph-icon { display: inline-block; width: 2rem; height: 2rem; background: currentColor; mask-size: contain; mask-repeat: no-repeat; mask-position: center; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center; }
+html .glyph-icon.small { width: 1.5rem; height: 1.5rem; }
+html[data-theme] :is(.there-are-items, .focus-category, .sub-items-group) .item .glyph-icon { width: var(--portal-icon-size); height: var(--portal-icon-size); }
+html[data-theme] .focus-category .item-wrapper { min-height: 0; align-self: start; }
+html[data-theme] .focus-category .item-wrapper > a.item { flex-grow: 0; height: fit-content; }
 html .item-icon img { border-radius: 0; }
 html[data-theme] .there-are-items .add-site-launcher {
   grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 0.6rem;
