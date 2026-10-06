@@ -42,7 +42,7 @@
 
 3. KV ID 可在 Storage & databases → KV 中找到现有绑定对应的命名空间查看。填 Namespace ID，不填命名空间名称或账号 ID。构建脚本会把 ID 写入临时部署配置，不会写入前端或提交回 GitHub。
 4. 在 home → Settings → Variables & Secrets 确认已有运行时 **ADMIN_TOKEN** 存在。它不是 Build variable；不要添加 VITE_ADMIN_TOKEN，不要把密码提交到源码。keep_vars 保留面板变量；正常部署也不删除现有 secret。
-5. 触发构建。成功后确认绑定有 **HOME_KV** 和 **ASSETS**，并检查 Domains & Routes 中的总站域名。此项目未声明 route/routes 且 workers_dev=false，继续由面板管理域名。
+5. 连接已有 Worker 后，通过向 master 分支提交更新触发首次构建；在 Deployments → Go to build history 查看记录。保存构建变量本身不会启动构建。暂时关闭 Enable Preview builds，本项目的部署配置由 npm run deploy 生成。成功后确认绑定有 **HOME_KV** 和 **ASSETS**，并检查 Domains & Routes 中的总站域名。此项目未声明 route/routes 且 workers_dev=false，继续由面板管理域名。
 6. 打开总站，输入管理员密码。首次空白首页点击“开始添加网站”，添加分类和网站。表单“保存”暂存编辑，最后点击“保存到云端”。
 
 Cloudflare 的 GitHub 应用和当前 ChatGPT 的 GitHub 连接是两项授权；如果 CF 面板看不到 dashy，请在 CF 的仓库连接流程授权该仓库。
