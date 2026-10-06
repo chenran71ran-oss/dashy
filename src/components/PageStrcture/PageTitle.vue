@@ -1,12 +1,11 @@
 <template>
   <router-link to="/" class="page-titles" :disabled="isEditMode">
     <!-- Optional page logo image -->
-    <MechLogo v-if="!logo || /kenneth-mech|\/mech\//.test(logo)" class="site-logo" :alt="`${title} 标识`" />
+    <MechLogo v-if="!logo || /kenneth-mech|\/mech\//.test(logo)" class="site-logo" :alt="`${title} 标识`" syncFavicon />
     <img v-else-if="logo" :src="logo" class="site-logo" :alt="`${title} 标识`" />
     <!-- Page heading and sub-heading -->
     <div class="text">
       <h1>{{ title }}</h1>
-      <span class="subtitle">{{ description }}</span>
     </div>
     <EditModeIcon v-if="isEditMode" @click.stop.prevent="editTitle()"
       class="edit-icon" v-tooltip="tooltip()" />
@@ -57,6 +56,7 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
+  gap: 0.65rem;
   min-width: 0;
   flex: 1 1 auto;
   text-decoration: none;
@@ -69,16 +69,10 @@ export default {
     line-height: 1.15;
     margin: 0;
   }
-  span.subtitle {
-    color: var(--heading-text-color);
-    font-style: italic;
-    text-shadow: 1px 1px 2px #130f2347;
-    opacity: var(--dimming-factor);
-  }
   .site-logo {
-    margin: 0.2rem 0.5rem 0.2rem 0;
-    width: 3.5rem;
-    height: 3.5rem;
+    margin: 0;
+    width: clamp(2.6rem, 4vw, 3.4rem);
+    height: clamp(2.6rem, 4vw, 3.4rem);
     flex-shrink: 0;
     image-rendering: pixelated;
   }

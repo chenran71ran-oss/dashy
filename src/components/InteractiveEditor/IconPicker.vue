@@ -6,7 +6,12 @@
       <input :aria-label="label" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" placeholder="选择图标，或粘贴图片网址" />
       <button type="button" @click="toggle" :aria-expanded="open">{{ open ? '收起' : '选择图标' }}</button>
     </div>
-    <p v-if="allowAuto" class="picker-hint">{{ modelValue === 'auto' ? '自动匹配品牌；未收录则尝试网站 favicon，失败显示首字。' : '当前为手动图标，可切换为自动匹配。' }} <button type="button" class="auto-button" @click="choose('auto')">自动获取图标</button></p>
+    <div v-if="allowAuto" class="auto-tools">
+      <p class="picker-hint">{{ modelValue === 'auto' ? '自动：你的 QX 图库 → 网站声明图标 → favicon → 首字。' : '当前为手动图标，可切换为自动匹配。' }}</p>
+      <button type="button" class="auto-button" @click="choose('auto')">自动匹配图标</button>
+      <button type="button" class="auto-button" @click="readWebsiteIcon" :disabled="fetching || !url">{{ fetching ? '正在读取…' : '读取网站图标' }}</button>
+      <p v-if="discoveryNote" class="picker-hint" role="status">{{ discoveryNote }}</p>
+    </div>
     <div v-if="open" class="icon-library">
       <input v-model="query" aria-label="搜索图标" placeholder="搜索名称，如 GitHub、cloud、媒体、工具" />
       <p class="picker-hint">品牌图标来自你的 QX 库及内置图库，在本站加载。{{ query ? '搜索结果' : '常用图标' }}（{{ matches.length }}）</p>
@@ -26,12 +31,15 @@
 </template>
 <script>
 import { portalIcons } from '@/utils/PortalIcons';
+import { discoverSiteIcon } from '@/utils/SiteIcons';
 import Icon from '@/components/LinkItems/ItemIcon.vue';
 const common = [ ['🔗','链接 link'], ['🌐','网站 网络 web network'], ['🎬','媒体 电影 media movie Emby'], ['📊','监控 monitoring'], ['☁️','云 VPS cloud'], ['🖥️','服务器 server'], ['🛠️','工具 tools'], ['📚','阅读 reading'], ['💻','开发 code'], ['🎵','音乐 music'], ['🛡️','安全 security'], ['🚀','启动 rocket'] ].map(([value,title]) => ({value,title}));
 let library;
 export default {
   components: { Icon }, props: { modelValue: { type: String, default: '' }, label: { type: String, default: '图标' }, url: { type: String, default: '' }, siteTitle: { type: String, default: '' }, allowAuto: Boolean }, emits: ['update:modelValue'],
-  data: () => ({ open: false, query: '', entries: [], loading: false, loadError: false }),
+  data: () => ({ open: false, query: '', entries: [], loading: false, loadError: false, fetching: false, discoveryNote: '', discoveryRequest: 0 }),
+  watch: { url() { this.discoveryRequest += 1; this.fetching=false; this.discoveryNote=''; } },
+  beforeUnmount() { this.discoveryRequest += 1; },
   computed: {
     matches() {
       const q = this.query.trim().toLowerCase().replace(/^si-/, '');
@@ -43,6 +51,14 @@ export default {
     },
   },
   methods: {
+    async readWebsiteIcon() {
+      const request=++this.discoveryRequest; this.fetching=true;this.discoveryNote='';
+      const result=await discoverSiteIcon(this.url,{force:true});
+      if(request!==this.discoveryRequest)return;
+      this.fetching=false;
+      if(result.icon){this.choose(result.icon);this.discoveryNote=result.source==='site'?'已读取网站声明的图标，可在左侧预览。':'使用网站 favicon；无法显示时可从图库选择或填写图片地址。';}
+      else this.discoveryNote='暂时无法读取图标，请从图库选择或填写图片地址。';
+    },
     choose(value) { this.$emit('update:modelValue', value); this.open = false; },
     async toggle() {
       this.open = !this.open;
@@ -70,6 +86,8 @@ p { font-size: 0.75rem; opacity: 0.85; }
 .icon-grid button { display: flex; flex-direction: column; align-items: center; min-height: 64px; min-width: 0; gap: 0.3rem; }
 .icon-name { font-size: 0.65rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .auto-button { padding: 0.25rem 0.4rem; font-size: 0.75rem; }
+.auto-tools { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.auto-tools p { width: 100%; margin: 0.4rem 0; }
 svg { width: 24px; height: 24px; }
 .emoji { font-size: 24px; }
 </style>

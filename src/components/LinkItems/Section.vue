@@ -45,20 +45,9 @@
         />
       </template>
       <!-- When in edit mode, show additional item, for Add New item -->
-      <Item v-if="isEditMode"
-        :item="{
-          icon: ':heavy_plus_sign:',
-          title: $t('interactive-editor.edit-item.add-item-title'),
-          description: $t('interactive-editor.edit-item.add-item-description'),
-          id: 'add-new',
-        }"
-        :isAddNew="true"
-        :parentSectionTitle="title"
-        key="add-new"
-        class="add-new-item"
-        :sectionWidth="sectionWidth"
-        :itemSize="itemSize"
-      />
+      <button v-if="isEditMode" type="button" class="add-new-item add-site-launcher" @click="openAddItem">
+        <AddIcon aria-hidden="true" /><span>添加网站</span>
+      </button>
     </div>
     <div v-if="hasWidgets || isEditMode" class="widget-list" v-drag-sort="widgetDragConfig">
       <WidgetBase v-for="(widget, widgetIndex) in widgets" :key="`${widgetIndex}-${widget.type}`" :widget="widget" :index="widgetIndex" @editWidget="openEditWidget(widgetIndex)" @removeWidget="confirmRemoveWidget(widgetIndex)" />
@@ -71,6 +60,7 @@
       @closed="$emit('itemClicked')"
     />
     <!-- Edit item menu -->
+    <EditItem v-if="addItemMenuOpen" :isNew="true" :parentSectionTitle="title" @closeEditMenu="addItemMenuOpen = false" />
     <EditSection
       v-if="editMenuOpen"
       @closeEditSection="closeEditSection"
@@ -126,6 +116,7 @@ import ConfirmDialog from '@/components/FormElements/ConfirmDialog.vue';
 import AddIcon from '@/assets/interface-icons/interactive-editor-add.svg';
 
 const EditSection = defineAsyncComponent(() => import('@/components/InteractiveEditor/EditSection.vue'));
+const EditItem = defineAsyncComponent(() => import('@/components/InteractiveEditor/EditItem.vue'));
 const EditWidget = defineAsyncComponent(() => import('@/components/InteractiveEditor/EditWidget.vue'));
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import sortItems from '@/utils/SortItems';
@@ -159,6 +150,7 @@ export default {
     WidgetBase,
     IframeModal,
     EditSection,
+    EditItem,
     EditWidget,
     ConfirmDialog,
     AddIcon,
@@ -166,6 +158,7 @@ export default {
   data() {
     return {
       editMenuOpen: false,
+      addItemMenuOpen: false,
       contextMenuOpen: false,
       contextPos: {
         posX: undefined,
@@ -217,8 +210,8 @@ export default {
         || !!(this.displayData.itemCountX || this.displayData.itemCountY);
     },
     gridStyle() {
-      const minWidth = this.itemSize === 'large' ? 240 : (this.itemSize === 'small' ? 192 : 208);
-      const fitting = Math.max(1, Math.floor((this.sectionWidth - 16 + 12) / (minWidth + 12)));
+      const minWidth = this.itemSize === 'large' ? 184 : (this.itemSize === 'small' ? 128 : 152);
+      const fitting = Math.max(1, Math.floor((this.sectionWidth - 24 + 12) / (minWidth + 12)));
       let styles = this.displayData.itemCountX
         ? `grid-template-columns: repeat(${Math.min(this.displayData.itemCountX, fitting)}, minmax(0, 1fr));` : '';
       styles += this.displayData.itemCountY
@@ -256,6 +249,7 @@ export default {
     },
   },
   methods: {
+    openAddItem() { this.addItemMenuOpen = true; this.$store.commit(StoreKeys.SET_MODAL_OPEN, true); },
     /* Opens the iframe modal */
     triggerModal(url) {
       this.$refs[`iframeModal-${this.groupId}`].show(url);
@@ -411,10 +405,10 @@ export default {
   min-width: 0;
   gap: 0.75rem;
   align-items: stretch;
-  --portal-card-min: 13rem;
+  --portal-card-min: 9.5rem;
   grid-template-columns: repeat(auto-fill, minmax(min(var(--portal-card-min), 100%), 1fr));
-  &.inner-size-small { --portal-card-min: 12rem; }
-  &.inner-size-large { --portal-card-min: 15rem; }
+  &.inner-size-small { --portal-card-min: 8rem; }
+  &.inner-size-large { --portal-card-min: 11.5rem; }
 }
 
 .add-new-item {

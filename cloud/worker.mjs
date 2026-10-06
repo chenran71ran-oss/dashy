@@ -2,10 +2,11 @@
 // Runtime ADMIN_TOKEN only; never put the password in frontend build variables.
 import validSchema from './config-validator.cjs';
 import { CLOUD_CAPABILITIES } from './capabilities.mjs';
+import { discoverIcon } from './icon-discovery.mjs';
 const CONFIG_KEY = 'kenneth-home:dashy:v1';
 const OLD_CONFIG_KEY = 'kenneth-home:config:v1';
 export const DEFAULT_CONFIG = {
-  pageInfo: { title: 'Home Lab', description: '常用网站，随手直达。', logo: '/kenneth-mech.svg' },
+  pageInfo: { title: 'Home Lab', description: '', logo: '/mech/blue.png' },
   appConfig: { theme: 'nord-frost', language: 'zh-CN', layout: 'auto', iconSize: 'medium',
     defaultOpeningMethod: 'newtab', enableServiceWorker: false, enableErrorReporting: false,
     statusCheck: false, disableUpdateChecks: true, faviconApi: 'local',
@@ -198,6 +199,12 @@ export default {
         await authorize(req, env);
         const config = await readConfig(env);
         return json(u.pathname === '/conf.yml' ? config : { config });
+      }
+      if (u.pathname === '/api/icon-discovery' && method === 'POST') {
+        sameOrigin(req, u); await authorize(req, env);
+        const body = await limitedBody(req, 4096);
+        try { return json(await discoverIcon(body.origin)); }
+        catch { return json({ icon: '', source: 'unavailable' }); }
       }
       if (u.pathname === '/api/config' && ['POST', 'PUT'].includes(method)) {
         sameOrigin(req, u); await authorize(req, env);

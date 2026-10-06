@@ -195,7 +195,7 @@ export default {
     readActiveColCount() {
       const { sectionsContainer } = this.$refs;
       if (!sectionsContainer) return;
-      const fitting = Math.max(1, Math.floor((sectionsContainer.clientWidth + 16) / 304));
+      const fitting = Math.max(1, Math.floor((sectionsContainer.clientWidth + 16) / 360));
       this.activeColCount = (this.singleSectionView || this.layoutOrientation === 'horizontal')
         ? 1 : Math.min(this.colCount || fitting, fitting, Math.max(1, this.filteredSections.length));
     },

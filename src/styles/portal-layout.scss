@@ -24,7 +24,7 @@ html[data-theme] .home .item-group-container {
   .content-inner { min-width: 0; box-sizing: border-box; padding: 0.75rem; }
   .there-are-items {
     display: grid; height: auto; min-width: 0; gap: 0.75rem; overflow: visible;
-    grid-template-columns: repeat(auto-fill, minmax(min(var(--portal-card-min, 13rem), 100%), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(var(--portal-card-min, 9.5rem), 100%), 1fr));
   }
 }
 
@@ -36,21 +36,37 @@ html[data-theme] .sub-item-wrapper > a.item {
   box-sizing: border-box;
   width: 100%; min-width: 0; max-width: 100%; max-height: none;
   margin: 0; cursor: pointer;
-  gap: 0.5rem;
-  .tile-title { height: auto; min-width: 0; max-width: 100%; }
-  .tile-title span.text { width: auto; font-size: 1rem; line-height: 1.4; }
+  border-radius: max(10px, var(--curve-factor, 10px));
+  gap: 0.7rem;
+  .tile-title { flex: none; width: 100%; height: auto; min-height: 2.8em; min-width: 0; max-width: 100%; display: block; white-space: normal; overflow: visible; -webkit-line-clamp: unset; padding: 0; }
+  .tile-title span.text { width: auto; font-size: var(--portal-label-size, 1rem); line-height: 1.4; white-space: normal; overflow: visible; overflow-wrap: anywhere; text-overflow: clip; padding: 0; text-align: center; }
   .item-icon { flex-shrink: 0; }
 }
-html[data-theme] .there-are-items .item-wrapper > a.item.size-small {
-  display: flex; flex-direction: row-reverse; align-items: center; text-align: left;
-  padding: 0.65rem 0.75rem; min-height: 3.5rem;
+html[data-theme] :is(.there-are-items, .focus-category, .sub-items-group) .item-wrapper > a.item,
+html[data-theme] .sub-item-wrapper > a.item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  padding: 1rem 0.7rem; height: auto; min-height: 8.5rem;
+  --portal-icon-size: 3rem; --portal-label-size: 0.98rem;
+  &.size-small { min-height: 6.5rem; padding: 0.8rem 0.6rem; --portal-icon-size: 2rem; --portal-label-size: 0.88rem; gap: 0.6rem; }
+  &.size-large { min-height: 10rem; padding: 1.1rem 0.8rem; --portal-icon-size: 4rem; --portal-label-size: 1.05rem; }
+  .item-icon { display: grid; place-items: center; width: var(--portal-icon-size); min-width: 0; min-height: var(--portal-icon-size); }
+  .tile-icon, .simple-icons, .missing-image { width: var(--portal-icon-size); height: var(--portal-icon-size); min-width: 0; min-height: 0; max-width: none; max-height: none; margin: 0; padding: 0; object-fit: contain; }
+  .emoji-icon, .mdi, .fas, .fab, .far { font-size: var(--portal-icon-size); line-height: 1.1; }
+  .icon-monogram { width: var(--portal-icon-size); height: var(--portal-icon-size); font-size: calc(var(--portal-icon-size) * 0.55); }
+  p.description { height: auto; line-height: 1.4; overflow: visible; overflow-wrap: anywhere; }
 }
-html[data-theme] .there-are-items .item-wrapper > a.item:not(.size-small) {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 0.85rem 0.65rem; min-height: 7rem;
-}
-html[data-theme] .there-are-items .item-wrapper > a.item.size-large { min-height: 8.5rem; }
 html[data-theme] .there-are-items .sub-items-group { margin: 0; min-width: 0; box-sizing: border-box; }
+html .item-icon, html .item-icon * { filter: none !important; box-shadow: none !important; text-shadow: none !important; }
+html .item-icon img { border-radius: 0; }
+html[data-theme] .there-are-items .add-site-launcher {
+  grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  width: 100%; min-width: 0; min-height: 2.8rem; box-sizing: border-box; padding: 0.7rem;
+  border: 1px dashed currentColor; border-radius: 10px; color: var(--item-text-color); background: var(--item-background);
+  cursor: pointer; font: inherit; line-height: 1.4; white-space: normal;
+  svg { width: 1.2rem; height: 1.2rem; flex-shrink: 0; }
+  &:hover { background: var(--item-background-hover); color: var(--item-text-color-hover); }
+  &:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+}
 html[data-theme] .item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 html[data-theme] .item .tile-title span.text { font-family: var(--font-body), 'PingFang SC', 'Microsoft YaHei', 'NotoSansSC', sans-serif; }
 html[data-theme] .section-header h3 { font-family: var(--font-headings), 'PingFang SC', 'Microsoft YaHei', 'NotoSansSC', sans-serif; }

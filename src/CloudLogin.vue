@@ -1,7 +1,7 @@
 <template>
   <main class="cloud-login">
     <form class="cloud-login-panel" @submit.prevent="login">
-      <MechLogo />
+      <MechLogo syncFavicon />
       <p class="cloud-label">HOME LAB / PERSONAL PORTAL</p>
       <h1>Home Lab</h1>
       <p>输入管理员密码，进入你的导航面板。</p>

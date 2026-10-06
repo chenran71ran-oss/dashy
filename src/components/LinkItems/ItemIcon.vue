@@ -22,6 +22,7 @@
 
 <script>
 import { matchPortalIcon, portalIconPath, websiteFavicon } from '@/utils/PortalIcons';
+import { discoverSiteIcon } from '@/utils/SiteIcons';
 import BrokenImage from '@/assets/interface-icons/broken-icon.svg';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import EmojiUnicodeRegex from '@/utils/EmojiUnicodeRegex';
@@ -58,7 +59,7 @@ export default {
       return this.$store.getters.appConfig;
     },
     resolvedIcon() {
-      if (this.icon === 'auto') return matchPortalIcon(this.url, this.title)?.src || websiteFavicon(this.url);
+      if (this.icon === 'auto') return matchPortalIcon(this.url, this.title)?.src || this.discoveredIcon || websiteFavicon(this.url);
       return portalIconPath(this.icon) || this.icon;
     },
     isBrand() { return this.resolvedIcon.startsWith('/portal-icons/'); },
@@ -82,13 +83,24 @@ export default {
       broken: false, // If true, was unable to resolve icon
       attemptedFallback: false,
       siPath: '', // Resolved SVG path for simple-icons (set async)
+      discoveredIcon: '',
+      iconRequest: 0,
     };
   },
   watch: {
     resolvedIcon: { immediate: true, handler: 'resolveSimpleIcon' },
-    url: 'resolveSimpleIcon',
+    url: { immediate: true, handler: 'discoverAutoIcon' },
+    icon: 'discoverAutoIcon',
+    title: 'discoverAutoIcon',
   },
+  beforeUnmount() { this.iconRequest += 1; },
   methods: {
+    async discoverAutoIcon() {
+      const request=++this.iconRequest; this.discoveredIcon='';
+      if(this.icon!=='auto' || !this.url || matchPortalIcon(this.url,this.title))return;
+      const result=await discoverSiteIcon(this.url);
+      if(request===this.iconRequest)this.discoveredIcon=result.icon;
+    },
     /* Determine icon type, e.g. local or remote asset, SVG, favicon, font-awesome, etc */
     determineImageType(img) {
       let imgType;
@@ -285,6 +297,7 @@ export default {
     getFallbackIcon() {
       const iconType = this.iconType || '';
       if (this.isBrand) return websiteFavicon(this.url) || undefined;
+      if (this.icon === 'auto' && this.discoveredIcon && this.discoveredIcon !== websiteFavicon(this.url)) return websiteFavicon(this.url) || undefined;
       if (iconType.includes('favicon')) return this.getFavicon(this.url, 'local');
       if (iconType === 'generative') return this.getGenerativeIcon(this.url, iconCdns.generativeFallback);
       if (iconType === 'home-lab-icons') return this.getHomeLabIcon(this.icon, iconCdns.homeLabIconsFallback);
