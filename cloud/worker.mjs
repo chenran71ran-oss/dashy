@@ -1,6 +1,7 @@
 // Kenneth portal · original Dashy frontend + Cloudflare Assets + KV.
 // Runtime ADMIN_TOKEN only; never put the password in frontend build variables.
 import validSchema from './config-validator.cjs';
+import { CLOUD_CAPABILITIES } from './capabilities.mjs';
 const CONFIG_KEY = 'kenneth-home:dashy:v1';
 const OLD_CONFIG_KEY = 'kenneth-home:config:v1';
 export const DEFAULT_CONFIG = {
@@ -88,7 +89,6 @@ function validateConfig(raw) {
   delete config.appConfig.auth;
   config.appConfig.enableServiceWorker = false;
   config.appConfig.enableErrorReporting = false;
-  config.appConfig.statusCheck = false;
   config.appConfig.faviconApi = 'local';
   config.appConfig.enableFontAwesome = false;
   config.appConfig.enableMaterialDesignIcons = false;
@@ -102,14 +102,34 @@ function validateConfig(raw) {
     for (const item of list || []) {
       if (++count > 200) fail('最多保存200个网站和小分类');
       if (item.url) validateUrl(item.url);
-      item.statusCheck = false;
+      if (item.statusCheckUrl) validateUrl(item.statusCheckUrl);
+      if (item.localUrl) validateUrl(item.localUrl);
       if (item.icon && /^(javascript|vbscript):/i.test(item.icon)) fail('图标地址无效');
       if (item.subItems) items(item.subItems, depth + 1);
     }
   }
   if ((config.sections || []).length > 60) fail('最多60个分类');
+  let widgetCount = 0;
   for (const section of config.sections || []) {
-    if (section.widgets?.length) fail('此云端版本用于导航，不提供 Dashy 的服务器监控小组件');
+    for (const widget of section.widgets || []) {
+      if (++widgetCount > 100) fail('最多保存100个小组件');
+      const type = widget.type?.toLowerCase();
+      // Unsupported upstream widgets remain in KV; the UI shows a deferred card.
+      if (!CLOUD_CAPABILITIES.widgets.includes(type)) continue;
+      const options = widget.options || {};
+      if (type === 'clock') {
+        try { new Intl.DateTimeFormat(options.format || 'zh-CN', { timeZone: options.timeZone || 'UTC' }).format(); }
+        catch { fail('时钟的时区或语言格式无效'); }
+      }
+      if (type === 'image') {
+        if (typeof options.imagePath !== 'string' || !options.imagePath.trim()) fail('图片小组件需要图片地址');
+        if (!/^\/(?!\/)/.test(options.imagePath)) validateUrl(options.imagePath);
+      }
+      if (type === 'iframe') {
+        validateUrl(options.url);
+        if (options.frameHeight !== undefined && (!Number.isFinite(options.frameHeight) || options.frameHeight < 80 || options.frameHeight > 1200)) fail('嵌入网页高度应为80至1200像素');
+      }
+    }
     items(section.items);
   }
   return config;

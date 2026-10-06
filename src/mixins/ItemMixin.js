@@ -1,5 +1,6 @@
 /** Reusable mixin for items */
 import request from '@/utils/request';
+import { CLOUD_CAPABILITIES } from '../../cloud/capabilities.mjs';
 import router from '@/router';
 import longPress from '@/directives/LongPress';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
@@ -52,6 +53,7 @@ export default {
     },
     /* Determines if user has enabled online status checks */
     enableStatusCheck() {
+      if (!CLOUD_CAPABILITIES.statusChecks) return false;
       const globalPref = this.appConfig.statusCheck || false;
       const itemPref = this.item.statusCheck;
       return typeof itemPref === 'boolean' ? itemPref : globalPref;
@@ -73,6 +75,7 @@ export default {
     },
     /* Determines if user has enabled hosts ping checks */
     isPingCheckEnabled() {
+      if (!CLOUD_CAPABILITIES.pingChecks) return false;
       const globalPref = this.appConfig.pingCheckEnabled || false;
       const itemPref = this.item.pingCheckEnabled;
       return (typeof itemPref === 'boolean' ? itemPref : globalPref) && !!this.pingCheckHost;
@@ -111,7 +114,7 @@ export default {
     },
     /* True if a non-empty alternative local URL has been configured for this item */
     hasLocalUrl() {
-      return !!(this.item.localUrl && typeof this.item.localUrl === 'string'
+      return CLOUD_CAPABILITIES.localUrlChecks && !!(this.item.localUrl && typeof this.item.localUrl === 'string'
         && this.item.localUrl.trim());
     },
     /* Timeout (ms) for the local URL reachability probe, clamped to a sane range */

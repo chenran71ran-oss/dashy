@@ -1,4 +1,4 @@
-# Home Lab 总站 · Dashy 原版前端 / Cloudflare 云构建版
+# Kenneth 总站 · Dashy 原版前端 / Cloudflare 云构建版
 
 这是一份真实复用 Dashy 前端的改造项目，不是按截图重写的单文件页面。
 原始项目：https://github.com/Lissy93/dashy
@@ -20,7 +20,9 @@
 
 ## 范围说明
 
-本项目是基础导航站，未搬运 Dashy 的 Node/Express 服务。服务器监控、ping、状态检测、代理请求、监控小组件及多 YAML 子页面不在此版范围内。不会显示编造的在线状态。
+本项目复用 Dashy 前端，后端是 Cloudflare Worker + KV，未运行原版 Node/Express 服务。HTTP、Ping、内网访问等探针选项在“编辑入口 → 探针与内网访问”中保留，并附中文说明；保存时不再把启用标志改成 false。当前这些功能尚未接入，浏览器不发起探针请求、不显示在线状态、不自动切换内网地址。
+
+小组件已恢复添加、编辑、删除与排序入口，当前启用时钟、图片、嵌入网页三种。其余原版组件的源码和已存配置保留，但显示“尚未接入”提示，不加载 API、不假装有监控数据。`cloud/capabilities.mjs` 是前后端共用的能力列表；后续必须先实现数据接口，再开启对应能力。单纯把开关改成 true 不会实现探针后端。
 旧版本网站如已存入 `kenneth-home:config:v1`，首次读取时转换为分类与小分类；原键保持不动。保存新版本后使用 `kenneth-home:dashy:v1`。隐藏入口转换为 Dashy 的 hideFromHomepage：默认首页隐藏，但搜索或编辑模式可显示；置顶转换为所在分类靠前排列。
 
 ## 部署：只需在 Cloudflare 面板操作
@@ -42,7 +44,7 @@
 
 3. KV ID 可在 Storage & databases → KV 中找到现有绑定对应的命名空间查看。填 Namespace ID，不填命名空间名称或账号 ID。构建脚本会把 ID 写入临时部署配置，不会写入前端或提交回 GitHub。
 4. 在 home → Settings → Variables & Secrets 确认已有运行时 **ADMIN_TOKEN** 存在。它不是 Build variable；不要添加 VITE_ADMIN_TOKEN，不要把密码提交到源码。keep_vars 保留面板变量；正常部署也不删除现有 secret。
-5. 连接已有 Worker 后，通过向 master 分支提交更新触发首次构建；在 Deployments → Go to build history 查看记录。保存构建变量本身不会启动构建。暂时关闭 Enable Preview builds，本项目的部署配置由 npm run deploy 生成。成功后确认绑定有 **HOME_KV** 和 **ASSETS**，并检查 Domains & Routes 中的总站域名。此项目未声明 route/routes 且 workers_dev=false，继续由面板管理域名。
+5. 触发构建。成功后确认绑定有 **HOME_KV** 和 **ASSETS**，并检查 Domains & Routes 中的总站域名。此项目未声明 route/routes 且 workers_dev=false，继续由面板管理域名。
 6. 打开总站，输入管理员密码。首次空白首页点击“开始添加网站”，添加分类和网站。表单“保存”暂存编辑，最后点击“保存到云端”。
 
 Cloudflare 的 GitHub 应用和当前 ChatGPT 的 GitHub 连接是两项授权；如果 CF 面板看不到 dashy，请在 CF 的仓库连接流程授权该仓库。
@@ -50,9 +52,41 @@ Fork 原版附带的 Docker、文档发布和其他 GitHub Actions 不用于此 
 
 ## 小分类与图标
 
-添加网站时，在更多字段中选“小分类”，然后“＋ 添加网站”。父级填分类名称，网址留空；组内每个网站填写名称与完整网址。进入编辑模式后，小分类标题旁有“编辑小分类”。
+添加入口时，选择“网站”或“小分类”。小分类填名称，点击“＋ 添加网站”，组内每个网站填写名称与完整网址。进入编辑模式后，小分类标题旁有“编辑小分类”。
 
 图标支持 Dashy 原生形式：`si-jellyfin`、`si-github`、`si-cloudflare` 等 Simple Icons，emoji，及 HTTP/HTTPS 图片地址。部分第三方图标来源依赖其 CDN 可用性。自定义图片使用你有权使用的资源。页面自身打包了像素机甲标识，并保留 Dashy 原版字体；中文额外提供 Noto Sans SC，字体许可证见 src/assets/fonts/NotoSansSC-LICENSE.txt。
+
+## 探针设置的用途
+
+| 原版选项 | 功能 | 当前 CF 版 |
+| --- | --- | --- |
+| HTTP 状态检测 | 请求网站或 /health 接口，按返回状态码显示状态；可设置检测间隔 | 设置可保存，检测服务待接入 |
+| 检测地址 | 用专用健康接口代替网站主页，卡片跳转地址保持原值 | 设置可保存 |
+| 接受的状态码 | 为登录页、跳转页等指定额外成功码，如301或401 | 设置可保存；401只表示接口响应，不证明业务正常 |
+| 请求头 | 原版可给健康接口附认证或其他请求头 | 设置可保存；真实秘密应放运行时 CF Secrets，后续用专用接口读取 |
+| 重定向次数 / 忽略 TLS 错误 | 原版请求的重定向与证书策略 | 设置可保存；Worker 未实现这些策略 |
+| Ping | ICMP 连通性、延迟；主机能 Ping 通不等于网页正常 | 需独立探针服务或监控服务 API |
+| 内网网址 / 超时 / 检测间隔 | 原版从当前浏览器探测 LAN 地址，成功后优先打开内网入口 | 设置可保存；自动切换待接入 |
+
+检测间隔使用秒，超时使用毫秒；0通常表示仅页面加载时检测或沿用原版默认值，详见表单提示。当前设置仅预留，未在用户关闭页面后持续监控。后续若实现页面内 HTTP 检查，和24小时监控仍是两回事；持续监控可使用现有 Uptime Kuma 等服务。
+
+## 添加小组件
+
+1. 进入“编辑网站”，在目标分类中点击“添加小组件”。需要分类时先“添加分类”。
+2. 选择类型，按表单设置，点击“保存”查看预览。
+3. 最后点击“保存到云端”；修改会写入现有 KV，不会添加示例卡片或重置已有网站。
+
+| 当前类型 | 设置方式 | 注意事项 |
+| --- | --- | --- |
+| 时钟 | 时区可填 Asia/Shanghai；语言可填 zh-CN；可选择12/24小时 | 使用设备时间，无需第三方请求或 API Key；可添加多时区时钟 |
+| 图片 | 填 HTTPS 图片地址或本站资源路径；可设置刷新间隔 | 可显示监控服务导出的图表快照；远程图片可用性取决于源站 |
+| 嵌入网页 | 填 HTTPS 网页地址，设置80至1200像素高度 | 对方 CSP / X-Frame-Options 必须允许嵌入；拒绝连接时改用普通网站卡片 |
+
+小组件显示在首页与分类页；专注视图保持网站导航。编辑模式下可通过组件右上角按钮修改、删除，拖动排序。默认不自动添加任何小组件。
+
+原版还有天气、RSS、ICS日历、CPU/内存/磁盘/网络、Uptime Kuma、Pi-hole、AdGuard、Proxmox与自定义 API 等。API 型组件需要提供对应服务地址、接口授权和返回格式；跨域接口可能需要后端代理。这里没有移植通用 cors-proxy，也没有实现原版 DASHY_ 环境变量替换，所以不能直接勾 useProxy 或填变量名期待它生效。后续优先按明确服务做专用、受登录保护的 Worker 接口，敏感 Key 放 CF 运行时 Secrets，前端只取展示数据；局域网监控还需有能访问内网的采集服务。所有配置都会发给已登录的浏览器，因此不要把需要对浏览器保密的 Cookie/Token 写入组件 options。
+
+原版说明：https://dashy.to/docs/widgets/ 与 https://dashy.to/docs/status-indicators/。
 
 ## 文件说明
 
@@ -69,26 +103,12 @@ Fork 原版附带的 Docker、文档发布和其他 GitHub Actions 不用于此 
 
 已通过生产构建、Wrangler 部署打包检查、workerd 运行时登录/读取/保存检查，以及浏览器中的密码登录、空列表、原版编辑新增网站、小分类修改、保存刷新恢复、旧数据转换、退出和接口保护。检查了320、390、430、768、1440、1920像素宽度的页面溢出情况。
 
-测试使用隔离的内存/本地 KV 与测试密码；预览卡片仅来自测试数据，不包含在默认配置中。没有更改或部署到你的线上账户。桌面与手机验证使用 Chromium，尚未在真实 Windows、iPhone Safari 上逐项实测。
+新增功能也通过了探针设置保存后原值保留且不发请求、时钟/图片/网页添加与取消编辑、刷新恢复、删除、非法时区/网址拦截，以及320至1440像素页面和弹窗验证。
+
+测试使用隔离的内存/本地 KV 与测试密码；预览卡片和小组件仅来自测试数据，不包含在默认配置中，没有写入线上 KV。源码提交后由已配置的 Cloudflare Workers Builds 执行部署；测试未代替线上构建结果确认。桌面与手机验证使用 Chromium，尚未在真实 Windows、iPhone Safari 上逐项实测。
 
 Cloudflare 官方参考：
 - https://developers.cloudflare.com/workers/ci-cd/builds/configuration/
 - https://developers.cloudflare.com/workers/ci-cd/builds/build-image/
 - https://developers.cloudflare.com/workers/static-assets/binding/
 - https://developers.cloudflare.com/workers/wrangler/configuration/
-
-## Home Lab 交互修订
-
-- 旧默认标题在读取配置时更新为 Home Lab，已有分类、网站和图标保留；替换像素机甲标识。
-- 常用工具栏直接展开：主题、布局、卡片尺寸、编辑和视图；小屏自动换行，也可收起。
-- 网站与分类使用简洁中文表单，提供可搜索的本地图标库与预览。高级服务器探测字段不出现在导航表单。
-- 弹窗只保留内容区滚动，支持 Escape、键盘焦点约束；取消小分类编辑不会更改原数据。
-- 专注视图改为紧凑的分类筛选和卡片网格；工作台未选择站点时显示导航首页。小分类内同时显示图标与名称。
-
-## 数据与公开仓库
-
-仓库仅保存程序源码。通过后台添加的网站配置由 Worker 写入 HOME_KV，不写回 GitHub；ADMIN_TOKEN 只从 Cloudflare 运行时绑定读取，不嵌入前端。管理员会话使用带 Secure/HttpOnly/SameSite=Strict 标记的 Cookie（本地 HTTP 测试不加 Secure），只绑定本站主机，且配置接口要求有效会话并禁用缓存。密码与 Cookie 不记录到日志。
-
-请将 ADMIN_TOKEN 保存为 Cloudflare 运行时 Secret，不要使用 VITE_ 或 DASHY_ 前缀来保存凭证，也不要将敏感数据粘贴到仓库、截图、公开构建日志或前端资源。本站的 KV、账户和已登录设备仍需保护，公开源码不等于零风险保证。本地图标不向第三方查询；自行填写的远程图标或背景网址仍会向相应服务器发起请求。本次检查覆盖本站改造代码，其他 Worker 的数据接口不在本次审查范围内。
-
-搜索框仅筛选本站入口，按 Enter 打开首个可见结果，不把搜索关键词交给外部搜索引擎。

@@ -1,270 +1,118 @@
 <template>
-  <modal
-    :name="modalName"
-    :resizable="true"
-    width="50%"
-    height="80%"
-    classes="dashy-modal edit-widget"
-    @closed="modalClosed"
-  >
-    <div class="interactive-editor-inner edit-widget-inner" v-if="allowViewConfig">
-      <h3 class="title">
-        {{ $t(`interactive-editor.edit-widget.${isAddNew ? 'add' : 'edit'}-widget-title`) }}
-      </h3>
-      <Input
-        v-model="form.type"
-        :label="$t('interactive-editor.edit-widget.type-label')"
-        layout="horizontal"
-      />
-      <Input
-        v-model="form.label"
-        :label="$t('interactive-editor.edit-widget.label-label')"
-        layout="horizontal"
-      />
-      <Input
-        v-model="form.updateInterval"
-        :label="$t('interactive-editor.edit-widget.update-interval-label')"
-        type="number"
-        layout="horizontal"
-      />
-      <Input
-        v-model="form.timeout"
-        :label="$t('interactive-editor.edit-widget.timeout-label')"
-        type="number"
-        layout="horizontal"
-      />
-      <Radio
-        v-model="form.useProxy"
-        :label="$t('interactive-editor.edit-widget.use-proxy-label')"
-        :options="boolRadioOptions"
-        :initialOption="form.useProxy"
-      />
-      <Radio
-        v-model="form.allowInsecure"
-        :label="$t('interactive-editor.edit-widget.allow-insecure-label')"
-        :options="boolRadioOptions"
-        :initialOption="form.allowInsecure"
-      />
-      <Radio
-        v-model="form.ignoreErrors"
-        :label="$t('interactive-editor.edit-widget.ignore-errors-label')"
-        :options="boolRadioOptions"
-        :initialOption="form.ignoreErrors"
-      />
-      <h4 class="options-heading">
-        {{ $t('interactive-editor.edit-widget.options-heading') }}
-      </h4>
-      <div class="row option-row" v-for="(opt, i) in optionRows" :key="i">
-        <Input
-          v-model="opt.key"
-          :placeholder="$t('interactive-editor.edit-widget.key-placeholder')"
-          layout="horizontal"
-        />
-        <Input
-          v-model="opt.value"
-          :placeholder="$t('interactive-editor.edit-widget.value-placeholder')"
-          layout="horizontal"
-        />
-        <BinIcon @click="removeOption(i)" />
-      </div>
-      <span class="add-field-tag" @click="addOption">
-        <AddIcon /> {{ $t('interactive-editor.edit-widget.add-option-btn') }}
-      </span>
+  <modal :name="modalName" :resizable="false" width="min(680px, 94vw)" height="auto" classes="dashy-modal edit-widget" @closed="modalClosed">
+    <div class="portal-editor" v-if="allowViewConfig">
+      <h3>{{ isAddNew ? '添加小组件' : '编辑小组件' }}</h3>
+      <label>小组件类型<select v-model="draft.type" aria-label="小组件类型" @change="typeChanged">
+        <optgroup label="当前可用">
+          <option value="clock">时钟 · 时间与日期</option>
+          <option value="image">图片 · 图片或图表快照</option>
+          <option value="iframe">嵌入网页 · 对方需允许嵌入</option>
+        </optgroup>
+        <option v-if="!supported" :value="draft.type">{{ draft.type }} · 尚未接入</option>
+        <optgroup label="源码保留，待接入数据服务">
+          <option disabled>天气 / RSS / 日历 / 自定义 API</option>
+          <option disabled>CPU / 内存 / 存储 / 网络流量</option>
+          <option disabled>Uptime Kuma / Pi-hole / AdGuard / Proxmox</option>
+        </optgroup>
+      </select></label>
+      <p class="editor-note">{{ description }}</p>
+      <label>显示名称<input v-model="draft.label" aria-label="小组件名称" placeholder="可选，例如 北京时间" maxlength="120" /></label>
+      <template v-if="draft.type === 'clock'">
+        <label>时区<input v-model="options.timeZone" aria-label="时区" placeholder="留空跟随设备，例如 Asia/Shanghai" /></label>
+        <label>显示语言<input v-model="options.format" aria-label="时间语言" placeholder="留空跟随设备，例如 zh-CN" /></label>
+        <label>地点名称<input v-model="options.customCityName" aria-label="地点名称" placeholder="可选，例如 北京" /></label>
+        <label class="check"><input type="checkbox" v-model="options.hideDate" /> 隐藏日期</label>
+        <label class="check"><input type="checkbox" v-model="options.hideSeconds" /> 隐藏秒数</label>
+        <label>时间制式<select v-model="hourFormat" aria-label="时间制式"><option value="auto">跟随设备语言</option><option value="24">24小时</option><option value="12">12小时</option></select></label>
+      </template>
+      <template v-else-if="draft.type === 'image'">
+        <label>图片地址 <span class="required">*</span><input v-model="options.imagePath" aria-label="图片地址" placeholder="https://example.com/chart.png 或 /kenneth-mech.svg" /></label>
+        <label>替代文字<input v-model="options.alt" aria-label="图片替代文字" placeholder="图片内容说明" /></label>
+        <label>自动刷新间隔（秒）<input v-model.number="draft.updateInterval" aria-label="图片刷新间隔" type="number" min="0" max="7200" placeholder="0：不自动刷新；最少2秒" /></label>
+      </template>
+      <template v-else-if="draft.type === 'iframe'">
+        <label>嵌入网址 <span class="required">*</span><input v-model="options.url" aria-label="嵌入网址" placeholder="https://example.com/status" /></label>
+        <label>高度（像素）<input v-model.number="options.frameHeight" aria-label="嵌入高度" type="number" min="80" max="1200" placeholder="默认320" /></label>
+        <p class="editor-hint">对方的 CSP / X-Frame-Options 可能禁止嵌入。遇到拒绝连接时，改成普通网站卡片跳转。HTTPS 总站请使用 HTTPS 嵌入地址。</p>
+      </template>
+      <details v-if="!supported"><summary>保留的原版参数（JSON）</summary><pre class="widget-options-preview">{{ JSON.stringify(draft.options || {}, null, 2) }}</pre></details>
+      <p class="editor-error" role="alert" v-if="error">{{ error }}</p>
+      <p class="editor-hint">保存后暂存到编辑预览，最后点击“保存到云端”。小组件显示在首页与分类页面。</p>
       <SaveCancelButtons :saveClick="saveWidget" :cancelClick="closeModal" />
     </div>
     <AccessError v-else />
   </modal>
 </template>
-
 <script>
-import AddIcon from '@/assets/interface-icons/interactive-editor-add.svg';
-import BinIcon from '@/assets/interface-icons/interactive-editor-remove.svg';
-import SaveCancelButtons from '@/components/InteractiveEditor/SaveCancelButtons';
+import { CLOUD_CAPABILITIES } from '../../../cloud/capabilities.mjs';
+import SaveCancelButtons from './SaveCancelButtons';
 import AccessError from '@/components/Configuration/AccessError';
-import Input from '@/components/FormElements/Input';
-import Radio from '@/components/FormElements/Radio';
 import StoreKeys from '@/utils/StoreMutations';
 import safeClone from '@/utils/safeClone';
 import { modalNames } from '@/utils/config/defaults';
-import ErrorHandler, { InfoHandler, InfoKeys } from '@/utils/logging/ErrorHandler';
-
-const emptyForm = () => ({
-  type: '',
-  label: '',
-  updateInterval: '',
-  timeout: '',
-  useProxy: '',
-  allowInsecure: '',
-  ignoreErrors: '',
-});
-
-/* Coerce a string from a free-form options input back to its likely native type. */
-const coerceValue = (raw) => {
-  if (typeof raw !== 'string') return raw;
-  const trimmed = raw.trim();
-  if (trimmed === '') return '';
-  if (trimmed === 'true') return true;
-  if (trimmed === 'false') return false;
-  if (/^-?\d+$/.test(trimmed)) return parseInt(trimmed, 10);
-  if (/^-?\d*\.\d+$/.test(trimmed)) return parseFloat(trimmed);
-  return raw;
-};
-
+const validUrl = value => { try { const u = new URL(value); return ['https:', 'http:'].includes(u.protocol) && !u.username && !u.password; } catch { return false; } };
 export default {
-  name: 'EditWidget',
-  components: {
-    Input, Radio, AddIcon, BinIcon, AccessError, SaveCancelButtons,
-  },
-  props: {
-    sectionName: { type: String, required: true },
-    widgetIndex: { type: Number, default: -1 },
-    isAddNew: Boolean,
-  },
+  name: 'EditWidget', components: { SaveCancelButtons, AccessError },
+  props: { sectionName: { type: String, required: true }, widgetIndex: { type: Number, default: -1 }, isAddNew: Boolean },
   emits: ['closeEditWidget'],
-  data() {
-    return {
-      modalName: modalNames.EDIT_WIDGET,
-      form: emptyForm(),
-      optionRows: [],
-      boolRadioOptions: [
-        { label: 'true', value: 'true' },
-        { label: 'false', value: 'false' },
-      ],
-    };
-  },
+  data: () => ({ modalName: modalNames.EDIT_WIDGET, draft: {}, hourFormat: 'auto', error: '', typeOptions: {} }),
   computed: {
     allowViewConfig() { return this.$store.getters.permissions.allowViewConfig; },
+    supported() { return CLOUD_CAPABILITIES.widgets.includes(this.draft.type); },
+    options() { return this.draft.options || {}; },
+    description() {
+      return { clock: '直接使用设备时间，无需 API Key。可同时添加不同时区的时钟。', image: '展示图片、壁纸或监控服务导出的图表快照。远程图片由浏览器加载。', iframe: '把对方允许嵌入的页面放进分类，例如公开状态页；不需要填写 API Key。' }[this.draft.type] || '该组件的源码和配置已保留，当前 CF 版未接入所需 API 或代理服务，不会发起数据请求。';
+    },
   },
-  /* Populate form before children render so Radio's `initialOption` is set on its first creation. */
   created() {
-    if (this.isAddNew) return;
     const live = this.$store.getters.getSectionByName(this.sectionName);
-    const widget = safeClone(live?.widgets?.[this.widgetIndex], {});
-    this.form = {
-      type: widget.type || '',
-      label: widget.label || '',
-      updateInterval: widget.updateInterval ?? '',
-      timeout: widget.timeout ?? '',
-      useProxy: widget.useProxy === undefined ? '' : String(widget.useProxy),
-      allowInsecure: widget.allowInsecure === undefined ? '' : String(widget.allowInsecure),
-      ignoreErrors: widget.ignoreErrors === undefined ? '' : String(widget.ignoreErrors),
-    };
-    this.optionRows = Object.entries(widget.options || {}).map(([key, value]) => ({
-      key,
-      value: typeof value === 'object' ? JSON.stringify(value) : String(value),
-    }));
+    this.draft = safeClone(this.isAddNew ? { type: 'clock', options: {} } : live?.widgets?.[this.widgetIndex], {});
+    this.draft.type = this.draft.type?.toLowerCase() || 'clock';
+    this.draft.options ||= {};
+    this.hourFormat = typeof this.options.use12Hour === 'boolean' ? (this.options.use12Hour ? '12' : '24') : 'auto';
+    this.typeOptions[this.draft.type] = this.draft.options;
   },
-  mounted() {
-    this.$modal.show(this.modalName);
-  },
+  mounted() { this.$modal.show(this.modalName); },
   methods: {
-    addOption() {
-      this.optionRows.push({ key: '', value: '' });
-    },
-    removeOption(index) {
-      this.optionRows.splice(index, 1);
-    },
-    /* Build a clean widget object, omitting empty/default fields so they don't bloat the YAML. */
-    buildWidget() {
-      const widget = { type: this.form.type.trim() };
-      if (this.form.label) widget.label = this.form.label;
-      if (this.form.updateInterval !== '' && this.form.updateInterval !== null) {
-        widget.updateInterval = Number(this.form.updateInterval);
-      }
-      if (this.form.timeout !== '' && this.form.timeout !== null) {
-        widget.timeout = Number(this.form.timeout);
-      }
-      if (this.form.useProxy === 'true') widget.useProxy = true;
-      else if (this.form.useProxy === 'false') widget.useProxy = false;
-      if (this.form.allowInsecure === 'true') widget.allowInsecure = true;
-      else if (this.form.allowInsecure === 'false') widget.allowInsecure = false;
-      if (this.form.ignoreErrors === 'true') widget.ignoreErrors = true;
-      else if (this.form.ignoreErrors === 'false') widget.ignoreErrors = false;
-      const options = {};
-      this.optionRows.forEach(({ key, value }) => {
-        const k = (key || '').trim();
-        if (k) options[k] = coerceValue(value);
-      });
-      if (Object.keys(options).length) widget.options = options;
-      return widget;
+    typeChanged() {
+      this.draft.options = this.typeOptions[this.draft.type] ||= {};
+      this.hourFormat = typeof this.options.use12Hour === 'boolean' ? (this.options.use12Hour ? '12' : '24') : 'auto';
+      this.error = '';
     },
     saveWidget() {
-      if (!this.form.type || !this.form.type.trim()) {
-        this.$toast.error(this.$t('interactive-editor.edit-widget.missing-type-err'));
-        return;
+      this.error = '';
+      const widget = safeClone(this.draft, {});
+      const options = widget.options;
+      if (widget.type === 'clock') {
+        for (const key of ['timeZone', 'format', 'customCityName']) { if (!options[key]?.trim()) delete options[key]; else options[key] = options[key].trim(); }
+        try { new Intl.DateTimeFormat(options.format || navigator.language, { timeZone: options.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone }).format(); }
+        catch { this.error = '请填写有效时区（例如 Asia/Shanghai）和语言（例如 zh-CN）。'; return; }
+        if (this.hourFormat === 'auto') delete options.use12Hour;
+        else options.use12Hour = this.hourFormat === '12';
       }
-      try {
-        const widget = this.buildWidget();
-        if (this.isAddNew) {
-          this.$store.commit(StoreKeys.INSERT_WIDGET, { sectionName: this.sectionName, widget });
-        } else {
-          this.$store.commit(StoreKeys.UPDATE_WIDGET, {
-            sectionName: this.sectionName,
-            widgetIndex: this.widgetIndex,
-            widget,
-          });
-        }
-        this.$store.commit(StoreKeys.SET_EDIT_MODE, true);
-        InfoHandler(`Widget ${this.isAddNew ? 'added' : 'updated'}: ${widget.type}`, InfoKeys.EDITOR);
-        this.closeModal();
-      } catch (e) {
-        ErrorHandler('Failed to save widget', e);
-        this.$toast.error('Error saving widget. See Logs.');
+      if (widget.type === 'image') {
+        options.imagePath = (options.imagePath || '').trim();
+        if (!/^\/(?!\/)/.test(options.imagePath) && !validUrl(options.imagePath)) { this.error = '请填写完整的图片网址，或以 / 开头的本站图片路径。'; return; }
+        if (widget.updateInterval === '' || widget.updateInterval === null) delete widget.updateInterval;
+        else if (widget.updateInterval !== undefined && (!Number.isFinite(widget.updateInterval) || widget.updateInterval < 0 || widget.updateInterval > 7200 || (widget.updateInterval > 0 && widget.updateInterval < 2))) { this.error = '刷新间隔应为0（关闭）或2至7200秒。'; return; }
       }
+      if (widget.type === 'iframe') {
+        options.url = (options.url || '').trim();
+        if (!validUrl(options.url)) { this.error = '请填写完整的 HTTP/HTTPS 嵌入网址。'; return; }
+        if (options.frameHeight === '' || options.frameHeight === undefined) options.frameHeight = 320;
+        if (!Number.isFinite(options.frameHeight) || options.frameHeight < 80 || options.frameHeight > 1200) { this.error = '高度应为80至1200像素。'; return; }
+      }
+      if (this.isAddNew) this.$store.commit(StoreKeys.INSERT_WIDGET, { sectionName: this.sectionName, widget });
+      else this.$store.commit(StoreKeys.UPDATE_WIDGET, { sectionName: this.sectionName, widgetIndex: this.widgetIndex, widget });
+      this.$store.commit(StoreKeys.SET_EDIT_MODE, true);
+      this.closeModal();
     },
-    closeModal() {
-      this.$modal.hide(this.modalName);
-    },
-    modalClosed() {
-      this.$store.commit(StoreKeys.SET_MODAL_OPEN, false);
-      this.$emit('closeEditWidget');
-    },
+    closeModal() { this.$modal.hide(this.modalName); },
+    modalClosed() { this.$store.commit(StoreKeys.SET_MODAL_OPEN, false); this.$emit('closeEditWidget'); },
   },
 };
 </script>
-
 <style lang="scss">
-@import '@/styles/style-helpers.scss';
-
-.edit-widget-inner {
-  @extend .svg-button;
-  h3.title { font-size: 1.5rem; margin: 0.25rem 0; }
-  h4.options-heading { margin: 1rem 0 0.5rem; }
-  .row.option-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.25rem 0;
-    .input-container { flex: 1; }
-  }
-  .add-field-tag {
-    display: inline-flex;
-    align-items: center;
-    margin: 0.5rem 0.2rem;
-    padding: 0.2rem 0.5rem;
-    cursor: pointer;
-    border: 1px solid var(--interactive-editor-color);
-    border-radius: var(--curve-factor);
-    &:hover {
-      background: var(--interactive-editor-color);
-      color: var(--interactive-editor-background);
-    }
-    svg { margin-right: 0.25rem; border: none; }
-  }
-  /* Match EditItem's local form-element overrides for theme consistency */
-  div.input-container input.input-field,
-  .radio-container div.radio-wrapper {
-    color: var(--interactive-editor-color);
-    border-color: var(--interactive-editor-color);
-    background: var(--interactive-editor-background);
-  }
-  svg {
-    path { fill: var(--interactive-editor-color); }
-    background: var(--interactive-editor-background);
-    &:hover, &.selected {
-      path { fill: var(--interactive-editor-background); }
-      background: var(--interactive-editor-color);
-    }
-  }
-}
+@import '@/styles/portal-editor.scss';
+.widget-options-preview { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.8rem; }
 </style>

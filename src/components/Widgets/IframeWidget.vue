@@ -5,7 +5,8 @@
     :key="updateCount"
     :src="frameUrl"
     :id="frameId"
-    title="Iframe Widget"
+    :title="options.label || '嵌入网页小组件'"
+    referrerpolicy="no-referrer"
     allow="fullscreen; clipboard-write"
     :style="frameHeight ? `height: ${frameHeight}px` : ''"
   />
@@ -31,11 +32,11 @@ export default {
       return usersChoice;
     },
     frameHeight() {
-      return this.options.frameHeight;
+      return this.options.frameHeight || 320;
     },
     /* Generates an ID for the iframe */
     frameId() {
-      return `iframe-${btoa(this.frameUrl || 'empty').substring(0, 16)}`;
+      return `iframe-${encodeURIComponent(this.frameUrl || 'empty').substring(0, 32)}`;
     },
   },
   methods: {

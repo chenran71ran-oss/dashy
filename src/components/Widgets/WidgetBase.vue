@@ -1,15 +1,15 @@
 <template>
   <div :class="`widget-base ${ loading ? 'is-loading' : '' }`">
     <!-- Update Action Button -->
-    <Button :click="update" class="action-btn update-btn" v-if="!hideControls && !loading">
+    <Button :click="update" class="action-btn update-btn" aria-label="刷新小组件" v-if="supported && !hideControls && !loading">
       <UpdateIcon />
     </Button>
     <!-- Edit Action Button (visible in edit mode) -->
-    <Button :click="emitEdit" class="action-btn edit-btn" v-if="isEditMode && !loading">
+    <Button :click="emitEdit" class="action-btn edit-btn" aria-label="编辑小组件" v-if="isEditMode">
       <EditIcon />
     </Button>
     <!-- Remove Action Button (visible in edit mode) -->
-    <Button :click="emitRemove" class="action-btn remove-btn" v-if="isEditMode && !loading">
+    <Button :click="emitRemove" class="action-btn remove-btn" aria-label="删除小组件" v-if="isEditMode">
       <BinIcon />
     </Button>
     <!-- Loading Spinner -->
@@ -18,15 +18,16 @@
     </div>
     <!-- Error Message Display -->
     <div v-if="error" class="widget-error">
-      <p class="error-msg">An error occurred, see the logs for more info.</p>
+      <p class="error-msg">小组件未能加载，请检查地址或配置。</p>
       <p class="error-output">{{ errorMsg }}</p>
-      <p class="retry-link" @click="update">Retry</p>
+      <button type="button" class="retry-link" @click="update">重试</button>
     </div>
     <!-- Widget Label -->
     <div class="widget-label" v-if="widgetOptions.label">{{ widgetOptions.label }}</div>
     <!-- Widget -->
     <div :class="`widget-wrap ${ error ? 'has-error' : '' }`">
-      <component
+      <p v-if="!supported" class="widget-deferred">{{ widgetType }}：源码与配置已保留，当前 CF 版尚未接入所需数据服务。</p>
+      <component v-else
         v-bind:is="component"
         :options="widgetOptions"
         @loading="setLoaderState"
@@ -39,6 +40,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue';
+import { CLOUD_CAPABILITIES } from '../../../cloud/capabilities.mjs';
 // Import form elements, icons and utils
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import Button from '@/components/FormElements/Button';
@@ -169,6 +171,7 @@ export default {
     errorMsg: null,
   }),
   computed: {
+    supported() { return CLOUD_CAPABILITIES.widgets.includes(this.widgetType); },
     appConfig() {
       return this.$store.getters.appConfig;
     },
@@ -205,6 +208,7 @@ export default {
       return this.widget.hideControls;
     },
     component() {
+      if (!this.supported) return null;
       const type = COMPAT[this.widgetType] || this.widget.type;
       if (!type) {
         ErrorHandler('Widget type was not found');
@@ -223,7 +227,7 @@ export default {
     /* Calls update data method on widget */
     update() {
       this.error = false;
-      this.$refs[this.widgetRef].update();
+      this.$refs[this.widgetRef]?.update();
     },
     /* Shows message when error occurred */
     handleError(msg) {
@@ -244,10 +248,13 @@ export default {
 @import "@/styles/media-queries.scss";
 
 .widget-base {
+  min-width: 0;
+  overflow-wrap: anywhere;
   position: relative;
   padding: 0.75rem 0.5rem 0.5rem 0.5rem;
   background: var(--widget-base-background);
   box-shadow: var(--widget-base-shadow, none);
+  .widget-deferred { color: var(--widget-text-color); font-size: 0.85rem; line-height: 1.7; }
 
   // Refresh and full-page action buttons
   button.action-btn {

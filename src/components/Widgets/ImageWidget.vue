@@ -1,6 +1,6 @@
 <template>
 <div class="image-widget">
-  <img :src="imagePath" :style="imageDimensions" class="embedded-image" />
+  <img :src="imagePath" :alt="options.alt || options.label || '图片小组件'" referrerpolicy="no-referrer" :style="imageDimensions" class="embedded-image" @error="error('图片加载失败，请检查地址。')" />
 </div>
 </template>
 
@@ -60,6 +60,7 @@ export default {
 .image-widget {
   img.embedded-image {
     max-width: 100%;
+    height: auto;
     margin: 0.2rem auto;
   }
 }

@@ -34,7 +34,7 @@ export default {
     /* Get city name from time-zone, or return users custom city name */
     cityName() {
       if (this.options.customCityName) return this.options.customCityName;
-      return this.timeZone.split('/')[1].replaceAll('_', ' ');
+      return (this.timeZone.split('/').pop() || this.timeZone).replaceAll('_', ' ');
     },
     showSeconds() {
       return !this.options.hideSeconds;
@@ -57,7 +57,7 @@ export default {
         hour: 'numeric',
         minute: 'numeric',
         ...(this.showSeconds && { second: 'numeric' }),
-        ...(this.use12Hour && { hourCycle: 'h12' }),
+        hourCycle: this.use12Hour ? 'h12' : 'h23',
       }).format();
     },
     /* Get and format the date */
@@ -103,7 +103,7 @@ export default {
     margin: 0;
   }
   .time {
-    font-size: 4rem;
+    font-size: clamp(2rem, 8vw, 3.2rem);
     padding: 0.5rem;
     text-align: center;
     font-variant-numeric: tabular-nums;

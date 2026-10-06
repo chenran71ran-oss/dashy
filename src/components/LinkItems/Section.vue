@@ -60,6 +60,10 @@
         :itemSize="itemSize"
       />
     </div>
+    <div v-if="hasWidgets || isEditMode" class="widget-list" v-drag-sort="widgetDragConfig">
+      <WidgetBase v-for="(widget, widgetIndex) in widgets" :key="`${widgetIndex}-${widget.type}`" :widget="widget" :index="widgetIndex" @editWidget="openEditWidget(widgetIndex)" @removeWidget="confirmRemoveWidget(widgetIndex)" />
+      <button v-if="isEditMode" type="button" class="add-widget-launcher" @click="openAddWidget"><AddIcon /> 添加小组件</button>
+    </div>
     <!-- Modal for opening in modal view -->
     <IframeModal
       :ref="`iframeModal-${groupId}`"
@@ -478,6 +482,12 @@ export default {
 }
 
 .widget-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  min-width: 0;
+  .widget-base { min-width: 0; }
   &.wide {
     display: flex;
     align-items: flex-start;
