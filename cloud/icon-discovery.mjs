@@ -56,10 +56,13 @@ async function limitedHtml(response) {
 export async function discoverIcon(value, fetcher=fetch) {
   const root=publicIconUrl(value); root.pathname='/';root.search='';
   const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),6500);
+  let stage='dns';
   try {
     let target=root, response;
     for(let redirects=0;redirects<=2;redirects++){
+      stage='dns';
       await checkDns(target.hostname,fetcher,controller.signal,fetcher===fetch);
+      stage='request';
       response=await fetcher(target.href,{method:'GET',redirect:'manual',credentials:'omit',signal:controller.signal,headers:{Accept:'text/html',Range:'bytes=0-65535'}});
       if(![301,302,303,307,308].includes(response.status))break;
       const location=response.headers.get('location');await response.body?.cancel();
@@ -67,7 +70,8 @@ export async function discoverIcon(value, fetcher=fetch) {
       // Public redirects may select a locale path. Queries never come from the user's bookmark.
       target=publicIconUrl(location,target);target.search='';
     }
-    if(!response.ok || !(response.headers.get('content-type')||'').toLowerCase().includes('html'))return {icon:`${root.origin}/favicon.ico`,source:'favicon'};
+    if(!response.ok || !(response.headers.get('content-type')||'').toLowerCase().includes('html'))return {icon:`${root.origin}/favicon.ico`,source:'favicon',reason:response.ok?'not-html':`http-${response.status}`};
+    stage='html';
     const links=await parseLinks(await limitedHtml(response));
     const candidates=links.map(entry=>{
       try { const url=publicIconUrl(entry.href.replace(/&amp;/g,'&'),target);return {...entry,icon:url.href,
@@ -75,5 +79,6 @@ export async function discoverIcon(value, fetcher=fetch) {
       catch { return null; }
     }).filter(Boolean).sort((a,b)=>b.score-a.score);
     return {icon:candidates[0]?.icon||`${target.origin}/favicon.ico`,source:candidates.length?'site':'favicon'};
-  } finally { clearTimeout(timer); }
+  } catch(error) { error.iconReason=controller.signal.aborted?'timeout':stage;throw error; }
+  finally { clearTimeout(timer); }
 }

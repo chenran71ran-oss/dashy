@@ -204,7 +204,7 @@ export default {
         sameOrigin(req, u); await authorize(req, env);
         const body = await limitedBody(req, 4096);
         try { return json(await discoverIcon(body.origin)); }
-        catch { return json({ icon: '', source: 'unavailable' }); }
+        catch (error) { return json({ icon: '', source: 'unavailable', reason: ['dns','request','html','timeout'].includes(error.iconReason)?error.iconReason:'public-site-required' }); }
       }
       if (u.pathname === '/api/config' && ['POST', 'PUT'].includes(method)) {
         sameOrigin(req, u); await authorize(req, env);

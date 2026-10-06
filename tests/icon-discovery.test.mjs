@@ -44,5 +44,12 @@ test('discovery endpoint requires login and same origin, without writing KV',asy
   const cookie=login.headers.get('set-cookie').split(';')[0];
   assert.equal((await worker.fetch(request('https://elsewhere.example',cookie),env)).status,403);
   const response=await worker.fetch(request('http://127.0.0.1',cookie),env);
-  assert.equal(response.status,200);assert.deepEqual(await response.json(),{icon:'',source:'unavailable'});assert.equal(writes,0);
+  assert.equal(response.status,200);assert.deepEqual(await response.json(),{icon:'',source:'unavailable',reason:'public-site-required'});assert.equal(writes,0);
+});
+test('failed metadata lookups preserve a useful reason and still supply the root favicon',async()=>{
+  await assert.rejects(discoverIcon('https://dns-failed.example',async()=>new Response('',{status:503})),error=>error.iconReason==='dns');
+  const blocked=await discoverIcon('https://http-failed.example',async url=>url.includes('/dns-query?')?dns():new Response('',{status:403}));
+  assert.equal(blocked.reason,'http-403');assert.equal(blocked.source,'favicon');
+  const result=await discoverSiteIcon('https://read-failed.example/sub?token=secret',{fetcher:async()=>Response.json({icon:'',source:'unavailable',reason:'dns'})});
+  assert.equal(result.icon,'https://read-failed.example/favicon.ico');assert.equal(result.source,'unavailable');assert.equal(result.reason,'dns');
 });

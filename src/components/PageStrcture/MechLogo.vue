@@ -25,7 +25,16 @@ export default {
     schedulePalette() { cancelAnimationFrame(this.paletteFrame); this.paletteFrame=requestAnimationFrame(this.updatePalette); },
     updatePalette() {
       this.theme=document.documentElement.dataset.theme||'nord-frost';
-      this.palette=mechPalette(cssRgb('--primary','#88c0d0'),cssRgb('--background','#3b4252'),this.theme);
+      let accent=cssRgb('--primary','#88c0d0');
+      // Some themes use a neutral primary for text and a vivid header for their accent.
+      if(Math.max(...accent)-Math.min(...accent)<30){
+        const titleBar=document.querySelector('#dashy > header');
+        const stop=titleBar && getComputedStyle(titleBar).backgroundImage.match(/rgba?\([^)]+\)/)?.[0];
+        const gradient=stop?.match(/[\d.]+/g)?.slice(0,3).map(Number);
+        const candidates=[gradient,cssRgb('--background-darker','#3b4252')].filter(Boolean);
+        accent=candidates.find(rgb=>Math.max(...rgb)-Math.min(...rgb)>=30)||accent;
+      }
+      this.palette=mechPalette(accent,cssRgb('--background','#3b4252'),this.theme);
       this.$nextTick(this.updateTabIcon);
     },
     updateTabIcon() {

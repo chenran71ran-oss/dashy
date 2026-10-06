@@ -10,7 +10,7 @@
       <p class="picker-hint">{{ modelValue === 'auto' ? '自动：你的 QX 图库 → 网站声明图标 → favicon → 首字。' : '当前为手动图标，可切换为自动匹配。' }}</p>
       <button type="button" class="auto-button" @click="choose('auto')">自动匹配图标</button>
       <button type="button" class="auto-button" @click="readWebsiteIcon" :disabled="fetching || !url">{{ fetching ? '正在读取…' : '读取网站图标' }}</button>
-      <p v-if="discoveryNote" class="picker-hint" role="status">{{ discoveryNote }}</p>
+      <p v-if="discoveryNote" class="picker-hint" role="status" :data-icon-reason="discoveryReason">{{ discoveryNote }}</p>
     </div>
     <div v-if="open" class="icon-library">
       <input v-model="query" aria-label="搜索图标" placeholder="搜索名称，如 GitHub、cloud、媒体、工具" />
@@ -37,7 +37,7 @@ const common = [ ['🔗','链接 link'], ['🌐','网站 网络 web network'], [
 let library;
 export default {
   components: { Icon }, props: { modelValue: { type: String, default: '' }, label: { type: String, default: '图标' }, url: { type: String, default: '' }, siteTitle: { type: String, default: '' }, allowAuto: Boolean }, emits: ['update:modelValue'],
-  data: () => ({ open: false, query: '', entries: [], loading: false, loadError: false, fetching: false, discoveryNote: '', discoveryRequest: 0 }),
+  data: () => ({ open: false, query: '', entries: [], loading: false, loadError: false, fetching: false, discoveryNote: '', discoveryReason: '', discoveryRequest: 0 }),
   watch: { url() { this.discoveryRequest += 1; this.fetching=false; this.discoveryNote=''; } },
   beforeUnmount() { this.discoveryRequest += 1; },
   computed: {
@@ -56,7 +56,12 @@ export default {
       const result=await discoverSiteIcon(this.url,{force:true});
       if(request!==this.discoveryRequest)return;
       this.fetching=false;
-      if(result.icon){this.choose(result.icon);this.discoveryNote=result.source==='site'?'已读取网站声明的图标，可在左侧预览。':'使用网站 favicon；无法显示时可从图库选择或填写图片地址。';}
+      this.discoveryReason=result.reason||'';
+      if(result.icon){
+        this.choose(result.icon);
+        const problem=result.reason==='dns'?'暂无法解析网站':result.reason==='timeout'?'读取网站超时':result.reason==='public-site-required'?'仅支持公开 HTTPS 网站':result.reason?'网站元信息暂不可用':'';
+        this.discoveryNote=result.source==='site'?'已读取网站声明的图标，可在左侧预览。':`${problem?problem+'，先使用':'使用'}网站 favicon；无法显示时可从图库选择或填写图片地址。`;
+      }
       else this.discoveryNote='暂时无法读取图标，请从图库选择或填写图片地址。';
     },
     choose(value) { this.$emit('update:modelValue', value); this.open = false; },
