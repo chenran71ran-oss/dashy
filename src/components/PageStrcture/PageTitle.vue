@@ -1,7 +1,8 @@
 <template>
   <router-link to="/" class="page-titles" :disabled="isEditMode">
     <!-- Optional page logo image -->
-    <img v-if="logo" :src="logo" class="site-logo" :alt="`${title} 标识`" />
+    <MechLogo v-if="!logo || /kenneth-mech|\/mech\//.test(logo)" class="site-logo" :alt="`${title} 标识`" />
+    <img v-else-if="logo" :src="logo" class="site-logo" :alt="`${title} 标识`" />
     <!-- Page heading and sub-heading -->
     <div class="text">
       <h1>{{ title }}</h1>
@@ -13,6 +14,7 @@
 </template>
 
 <script>
+import MechLogo from './MechLogo.vue';
 import EditModeIcon from '@/assets/interface-icons/interactive-editor-edit-mode.svg';
 import StoreKeys from '@/utils/StoreMutations';
 import { modalNames } from '@/utils/config/defaults';
@@ -26,6 +28,7 @@ export default {
   },
   components: {
     EditModeIcon,
+    MechLogo,
   },
   computed: {
     isEditMode() {
@@ -72,10 +75,10 @@ export default {
     text-shadow: 1px 1px 2px #130f2347;
     opacity: var(--dimming-factor);
   }
-  img.site-logo {
+  .site-logo {
     margin: 0.2rem 0.5rem 0.2rem 0;
-    width: 3rem;
-    height: 3rem;
+    width: 3.5rem;
+    height: 3.5rem;
     flex-shrink: 0;
     image-rendering: pixelated;
   }

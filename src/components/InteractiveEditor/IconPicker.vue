@@ -2,16 +2,18 @@
   <div class="icon-picker">
     <label class="icon-input-label">{{ label }}</label>
     <div class="icon-input-row">
-      <Icon :icon="modelValue || '🔗'" size="small" class="icon-preview" />
+      <Icon :icon="modelValue || '🔗'" :url="url" :title="siteTitle" size="small" class="icon-preview" />
       <input :aria-label="label" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" placeholder="选择图标，或粘贴图片网址" />
       <button type="button" @click="toggle" :aria-expanded="open">{{ open ? '收起' : '选择图标' }}</button>
     </div>
+    <p v-if="allowAuto" class="picker-hint">{{ modelValue === 'auto' ? '自动匹配品牌；未收录则尝试网站 favicon，失败显示首字。' : '当前为手动图标，可切换为自动匹配。' }} <button type="button" class="auto-button" @click="choose('auto')">自动获取图标</button></p>
     <div v-if="open" class="icon-library">
       <input v-model="query" aria-label="搜索图标" placeholder="搜索名称，如 GitHub、cloud、媒体、工具" />
-      <p class="picker-hint">内置图标在本站加载。{{ query ? '搜索结果' : '常用图标' }}（{{ matches.length }}）</p>
+      <p class="picker-hint">品牌图标来自你的 QX 库及内置图库，在本站加载。{{ query ? '搜索结果' : '常用图标' }}（{{ matches.length }}）</p>
       <div class="icon-grid">
         <button v-for="entry in matches.slice(0, 48)" :key="entry.value" type="button" @click="choose(entry.value)" :title="entry.title" :aria-label="entry.title">
-          <svg v-if="entry.path" viewBox="0 0 24 24" aria-hidden="true"><path :d="entry.path" :fill="entry.hex ? '#' + entry.hex : 'currentColor'" /></svg>
+          <Icon v-if="entry.src" :icon="entry.src" size="small" />
+          <svg v-else-if="entry.path" viewBox="0 0 24 24" aria-hidden="true"><path :d="entry.path" :fill="entry.hex ? '#' + entry.hex : 'currentColor'" /></svg>
           <span v-else class="emoji">{{ entry.value }}</span><span class="icon-name">{{ entry.title }}</span>
         </button>
       </div>
@@ -23,17 +25,20 @@
   </div>
 </template>
 <script>
+import { portalIcons } from '@/utils/PortalIcons';
 import Icon from '@/components/LinkItems/ItemIcon.vue';
 const common = [ ['🔗','链接 link'], ['🌐','网站 网络 web network'], ['🎬','媒体 电影 media movie Emby'], ['📊','监控 monitoring'], ['☁️','云 VPS cloud'], ['🖥️','服务器 server'], ['🛠️','工具 tools'], ['📚','阅读 reading'], ['💻','开发 code'], ['🎵','音乐 music'], ['🛡️','安全 security'], ['🚀','启动 rocket'] ].map(([value,title]) => ({value,title}));
 let library;
 export default {
-  components: { Icon }, props: { modelValue: { type: String, default: '' }, label: { type: String, default: '图标' } }, emits: ['update:modelValue'],
+  components: { Icon }, props: { modelValue: { type: String, default: '' }, label: { type: String, default: '图标' }, url: { type: String, default: '' }, siteTitle: { type: String, default: '' }, allowAuto: Boolean }, emits: ['update:modelValue'],
   data: () => ({ open: false, query: '', entries: [], loading: false, loadError: false }),
   computed: {
     matches() {
       const q = this.query.trim().toLowerCase().replace(/^si-/, '');
-      const all = [...common, ...this.entries];
-      if (!q) { const wanted = ['github','cloudflare','jellyfin','plex','youtube','netflix','spotify','docker','proxmox','homeassistant','nextcloud','bitwarden','notion','telegram','rss']; return [...common, ...this.entries.filter(e => wanted.includes(e.slug))]; }
+      const brands = portalIcons.map(e => ({...e, value: 'portal-' + e.id, slug: e.id}));
+      const covered = new Set([...brands.map(e => e.slug), 'googlegemini']);
+      const all = [...brands, ...common, ...this.entries.filter(e => !covered.has(e.slug))];
+      if (!q) { const wanted = ['github','cloudflare','jellyfin','plex','youtube','netflix','spotify','docker','proxmox','homeassistant','nextcloud','bitwarden','notion','telegram','rss']; return [...brands, ...common, ...this.entries.filter(e => wanted.includes(e.slug) && !brands.some(b => b.id === e.slug))]; }
       return all.filter(e => (e.title + ' ' + (e.slug || '')).toLowerCase().includes(q));
     },
   },
@@ -61,9 +66,10 @@ button { padding: 0.5rem; color: var(--interactive-editor-color); background: va
 button:hover, button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .icon-library { margin-top: 0.6rem; padding: 0.7rem; border: 1px dashed currentColor; border-radius: var(--curve-factor); }
 p { font-size: 0.75rem; opacity: 0.85; }
-.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 0.45rem; }
+.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 0.45rem; }
 .icon-grid button { display: flex; flex-direction: column; align-items: center; min-height: 64px; min-width: 0; gap: 0.3rem; }
 .icon-name { font-size: 0.65rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.auto-button { padding: 0.25rem 0.4rem; font-size: 0.75rem; }
 svg { width: 24px; height: 24px; }
 .emoji { font-size: 24px; }
 </style>

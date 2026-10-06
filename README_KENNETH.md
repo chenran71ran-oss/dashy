@@ -112,3 +112,17 @@ Cloudflare 官方参考：
 - https://developers.cloudflare.com/workers/ci-cd/builds/build-image/
 - https://developers.cloudflare.com/workers/static-assets/binding/
 - https://developers.cloudflare.com/workers/wrangler/configuration/
+
+## 布局与图标（2026-10-06）
+
+四种布局共享容器尺寸计算，分类列数会受实际宽度限制。垂直布局每个分类一列卡片并自动换行；水平布局逐行显示分类；自动布局使用规整网格；瀑布布局按分类内容高度紧凑排列。卡片的小、中、大尺寸独立适配，每个分类手动设置的列数也会在窄屏收缩。
+
+Home Lab 图标目录位于 `public/portal-icons/`。QX 品牌图标从 [QX-icons](https://github.com/chenran71ran-oss/QX-icons) 镜像，来源路径及 Git SHA 记录在 `qx-sources.json`；其他品牌 SVG 来自项目已有 Simple Icons，Dashy 使用原项目标识。图标在本站加载，正常访问不依赖 GitHub。品牌及商标属于各自权利人。
+
+新增网站默认 `icon: auto`：先按域名或明确品牌名称匹配目录，再尝试网站的 `/favicon.ico`；获取失败显示首字。请求只使用网站 origin，不带网站路径、订阅 token 或 Referrer。非标准位置的图标可通过选择器粘贴完整图片地址。手动上传/图片地址保持优先，不修改网站网址和登录信息。旧的通用占位图标对已识别品牌自动替换显示，不改 KV 的原始数据。图标选择器支持 `portal-chatgpt` 等 ID、原有 `si-`、emoji 和图片网址。
+
+维护图标可运行 `node scripts/sync-portal-icons.mjs` 后提交资源；仅用于更新已收录的 QX 图标，用户添加网站不需要运行脚本。
+
+新高达使用用户提供图片编辑后的透明 PNG：`public/mech/blue.png` 和 `public/mech/red.png`。内置 imagegen 编辑提示为“保留像素头像及轮廓，去除蓝底，保留透明；红色版本只将蓝色装甲改为深红、青色眼睛改为战斗红眼”。红/粉色主题采用独立红眼资源，绿/紫色主题采用原图色相变体，其余采用原蓝白形态。主题变更后自动更新，登录页及总站/专注/工作台共用标识。自定义 logo 保持优先。
+
+验证命令：`node --test tests/portal-icons.test.mjs`、`npm run build`。

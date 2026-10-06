@@ -24,7 +24,7 @@
         <p class="description">{{ item.description }}</p>
       </div>
       <!-- Item Icon -->
-      <Icon :icon="itemIcon" :url="item.url" :size="size" :color="item.color"
+      <Icon :icon="itemIcon" :url="item.url" :size="size" :color="item.color" :title="item.title"
         v-bind:style="customStyles" class="bounce" />
       <!-- Small icon, showing opening method on hover -->
       <ItemOpenMethodIcon class="opening-method-icon"
@@ -75,6 +75,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue';
+import { websiteIcon } from '@/utils/PortalIcons';
 import Icon from '@/components/LinkItems/ItemIcon.vue';
 import ItemOpenMethodIcon from '@/components/LinkItems/ItemOpenMethodIcon';
 import StatusIndicator from '@/components/LinkItems/StatusIndicator';
@@ -109,7 +110,7 @@ export default {
   computed: {
     /* Returns either item.icon, or appConfig.defaultIcon, or null */
     itemIcon() {
-      return this.item.icon || this.$store.getters.appConfig?.defaultIcon;
+      return websiteIcon(this.item, this.$store.getters.appConfig?.defaultIcon);
     },
     makeColumnCount() {
       if ((this.sectionDisplayData || {}).itemCountX) return this.sectionDisplayData.itemCountX;

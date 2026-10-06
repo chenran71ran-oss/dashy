@@ -30,12 +30,12 @@ html {
 
   /* Default app font face */
   body, div, p, a, span, label, input, button, .text {
-    font-family: var(--font-body);
+    font-family: var(--font-body), 'PingFang SC', 'Microsoft YaHei', 'NotoSansSC', sans-serif;
   }
 
   /* Headings font face */
   h1, h2, h3, h4, h5, .heading {
-    font-family:  var(--font-headings);
+    font-family: var(--font-headings), 'PingFang SC', 'Microsoft YaHei', 'NotoSansSC', sans-serif;
   }
 
   /* Monospace, for code and raw data output */

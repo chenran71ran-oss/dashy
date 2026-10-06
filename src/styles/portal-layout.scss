@@ -1,0 +1,62 @@
+/* Theme palettes remain in charge of colors. Portal geometry has one source of truth. */
+html[data-theme^='material'] {
+  --font-body: 'Raleway', 'PingFang SC', 'Microsoft YaHei', 'NotoSansSC', sans-serif;
+  --font-headings: 'Francois One', 'PingFang SC', 'Microsoft YaHei', 'NotoSansSC', sans-serif;
+}
+html[data-theme] .home .item-group-container {
+  box-sizing: border-box;
+  width: calc(100% - clamp(1.5rem, 4vw, 4rem));
+  max-width: 1800px;
+  margin: 1rem auto 2rem;
+  overflow: visible;
+  display: grid;
+  grid-template-columns: repeat(var(--portal-col-count, 1), minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+  &.orientation-horizontal, &.single-section-view { grid-template-columns: minmax(0, 1fr); }
+  &.orientation-masonry { grid-auto-rows: 8px; row-gap: 0; grid-auto-flow: row dense; }
+  &.orientation-vertical .there-are-items { grid-template-columns: minmax(0, 1fr); }
+  > .collapsable { margin: 0; min-width: 0; box-sizing: border-box; width: 100%; height: fit-content; }
+  > .add-new-section { margin: 0; box-sizing: border-box; width: 100%; }
+  &.edit-mode { margin-bottom: 12rem; }
+  .section-header { min-width: 0; gap: 0.15rem; }
+  .section-header h3 { min-width: 0; line-height: 1.4; font-size: clamp(1.05rem, 0.9rem + 0.4vw, 1.35rem); }
+  .content-inner { min-width: 0; box-sizing: border-box; padding: 0.75rem; }
+  .there-are-items {
+    display: grid; height: auto; min-width: 0; gap: 0.75rem; overflow: visible;
+    grid-template-columns: repeat(auto-fill, minmax(min(var(--portal-card-min, 13rem), 100%), 1fr));
+  }
+}
+
+/* Fixed widths and percentages from theme/flex layouts must not leak into grid cells. */
+html[data-theme] :is(.there-are-items, .focus-category, .sub-items-group) .item-wrapper,
+html[data-theme] .sub-item-wrapper { min-width: 0; width: 100%; box-sizing: border-box; }
+html[data-theme] :is(.there-are-items, .focus-category, .sub-items-group) .item-wrapper > a.item,
+html[data-theme] .sub-item-wrapper > a.item {
+  box-sizing: border-box;
+  width: 100%; min-width: 0; max-width: 100%; max-height: none;
+  margin: 0; cursor: pointer;
+  gap: 0.5rem;
+  .tile-title { height: auto; min-width: 0; max-width: 100%; }
+  .tile-title span.text { width: auto; font-size: 1rem; line-height: 1.4; }
+  .item-icon { flex-shrink: 0; }
+}
+html[data-theme] .there-are-items .item-wrapper > a.item.size-small {
+  display: flex; flex-direction: row-reverse; align-items: center; text-align: left;
+  padding: 0.65rem 0.75rem; min-height: 3.5rem;
+}
+html[data-theme] .there-are-items .item-wrapper > a.item:not(.size-small) {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 0.85rem 0.65rem; min-height: 7rem;
+}
+html[data-theme] .there-are-items .item-wrapper > a.item.size-large { min-height: 8.5rem; }
+html[data-theme] .there-are-items .sub-items-group { margin: 0; min-width: 0; box-sizing: border-box; }
+html[data-theme] .item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+html[data-theme] .item .tile-title span.text { font-family: var(--font-body), 'PingFang SC', 'Microsoft YaHei', 'NotoSansSC', sans-serif; }
+html[data-theme] .section-header h3 { font-family: var(--font-headings), 'PingFang SC', 'Microsoft YaHei', 'NotoSansSC', sans-serif; }
+
+/* Material's font glyph hover strip relied on an unloaded Font Awesome font. Use the SVG affordance. */
+html[data-theme='material'] a.item, html[data-theme='material-dark'] a.item {
+  &::before { content: none; }
+  &:hover div.bounce, &:focus-within div.bounce { text-indent: 0; }
+}

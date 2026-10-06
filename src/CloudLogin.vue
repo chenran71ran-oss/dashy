@@ -1,7 +1,7 @@
 <template>
   <main class="cloud-login">
     <form class="cloud-login-panel" @submit.prevent="login">
-      <img src="/kenneth-mech.svg" alt="Home Lab 像素机甲标识" width="80" height="80">
+      <MechLogo />
       <p class="cloud-label">HOME LAB / PERSONAL PORTAL</p>
       <h1>Home Lab</h1>
       <p>输入管理员密码，进入你的导航面板。</p>
@@ -15,6 +15,7 @@
 </template>
 <script setup>
 import { ref } from 'vue';
+import MechLogo from './components/PageStrcture/MechLogo.vue';
 const emit = defineEmits(['authenticated']);
 const password = ref('');
 const busy = ref(false);

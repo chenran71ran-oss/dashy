@@ -14,8 +14,8 @@
       class="sub-item-link item"
     >
       <!-- Item Icon (shows title as fallback when no icon) -->
-      <Icon v-if="item.icon" :icon="item.icon" :url="item.url"
-      size="small" v-bind:style="customStyles" class="sub-icon-img bounce" />
+      <Icon :icon="websiteIcon(item)" :url="item.url"
+      :title="item.title" size="small" v-bind:style="customStyles" class="sub-icon-img bounce" />
       <span class="sub-item-text">{{ item.title }}</span>
     </a>
     <!-- Right-click context menu -->
@@ -32,6 +32,7 @@
 </template>
 
 <script>
+import { websiteIcon } from '@/utils/PortalIcons';
 import Icon from '@/components/LinkItems/ItemIcon.vue';
 import ContextMenu from '@/components/LinkItems/ItemContextMenu';
 import ItemMixin from '@/mixins/ItemMixin';
@@ -56,7 +57,7 @@ export default {
   data() {
     return {};
   },
-  methods: {},
+  methods: { websiteIcon },
 };
 </script>
 

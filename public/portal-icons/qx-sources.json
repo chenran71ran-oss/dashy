@@ -1,0 +1,106 @@
+{
+  "repository": "chenran71ran-oss/QX-icons",
+  "ref": "main",
+  "files": [
+    {
+      "file": "ChatGPT.png",
+      "source": "icons/qx/apps/ChatGPT.png",
+      "sha": "ef3cd532e6fa0dfb84cd680d68d0fae03bfffab8"
+    },
+    {
+      "file": "Claude.png",
+      "source": "icons/qx/apps/Claude.png",
+      "sha": "dcbc298d531d9ecce7b42c349cbf86cc5693934f"
+    },
+    {
+      "file": "Emby.png",
+      "source": "icons/qx/apps/Emby.png",
+      "sha": "b615fbab6de4bb871a8af832d6bb0fab0a79db17"
+    },
+    {
+      "file": "Gemini.png",
+      "source": "icons/qx/apps/Gemini.png",
+      "sha": "14e240ae309c72a6dd2253798e2e153230be1e3a"
+    },
+    {
+      "file": "GitHub.png",
+      "source": "icons/qx/apps/GitHub.png",
+      "sha": "656c6dec7634962c102136db7a26131d045d9eb4"
+    },
+    {
+      "file": "GlobalSpeed.png",
+      "source": "icons/qx/apps/GlobalSpeed.png",
+      "sha": "70b0a287480df9e5a2969c90664b763165d73d73"
+    },
+    {
+      "file": "Google.png",
+      "source": "icons/qx/apps/Google.png",
+      "sha": "5c4eb7dacd682ee2eb8461645e1cc2b5e75075a5"
+    },
+    {
+      "file": "Instagram.png",
+      "source": "icons/qx/apps/Instagram.png",
+      "sha": "3c2b1ccd906e01a6de77f21c148ce23f3dc0f07f"
+    },
+    {
+      "file": "Netflix.png",
+      "source": "icons/qx/apps/Netflix.png",
+      "sha": "9662e358713bd486c7483bb16bc8634554fffc9e"
+    },
+    {
+      "file": "Reddit.png",
+      "source": "icons/qx/apps/Reddit.png",
+      "sha": "031fc06d87481498004e906d88eaa42bd60b60f7"
+    },
+    {
+      "file": "Speedtest.png",
+      "source": "icons/qx/apps/Speedtest.png",
+      "sha": "104409d6461232f080414218a079272a93e0bd99"
+    },
+    {
+      "file": "Spotify.png",
+      "source": "icons/qx/apps/Spotify.png",
+      "sha": "79da02deaa1fa0cd79076437b58bea989df6062c"
+    },
+    {
+      "file": "Telegram.png",
+      "source": "icons/qx/apps/Telegram.png",
+      "sha": "898075d0e467e8771fe925556ada94886d7059a8"
+    },
+    {
+      "file": "TikTok.png",
+      "source": "icons/qx/apps/TikTok.png",
+      "sha": "2657069441deebda09f0e5ef85b0d42ee68fcb41"
+    },
+    {
+      "file": "X.png",
+      "source": "icons/qx/apps/X.png",
+      "sha": "908a7b363ef7799e51a33df447222e64bb4eeeb8"
+    },
+    {
+      "file": "DMIT.png",
+      "source": "icons/qx/subscriptions/DMIT.png",
+      "sha": "24e3f54487b5848642f9b74f655fd32a8dd47c23"
+    },
+    {
+      "file": "Haita.png",
+      "source": "icons/qx/subscriptions/Haita.png",
+      "sha": "1d2e23dfe9b4ea40e2e52b9c123cfeffb268301a"
+    },
+    {
+      "file": "Liangxin.png",
+      "source": "icons/qx/subscriptions/Liangxin.png",
+      "sha": "44e6e415cdb86b5ef1da9e9432c75fdd0c0e3643"
+    },
+    {
+      "file": "RN-VPS.png",
+      "source": "icons/qx/subscriptions/RN-VPS.png",
+      "sha": "70ba215afef32f1553185dfc4c4d36b962305208"
+    },
+    {
+      "file": "Yuetutu.png",
+      "source": "icons/qx/subscriptions/Yuetutu.png",
+      "sha": "2896924ffce50d739b5e2274c8e9cbe15a53adb0"
+    }
+  ]
+}

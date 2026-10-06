@@ -12,6 +12,7 @@ export default {
   data: () => ({
     masonryRowSpan: 0,
     masonryResizeObserver: null,
+    masonryFrame: 0,
   }),
   computed: {
     isMasonry() {
@@ -22,18 +23,27 @@ export default {
       return `grid-row: span ${this.masonryRowSpan}`;
     },
   },
+  watch: {
+    isMasonry() { this.$nextTick(this.scheduleMasonrySpan); },
+  },
   mounted() {
-    this.updateMasonrySpan();
+    this.scheduleMasonrySpan();
     this.setupMasonryObserver();
   },
   beforeUnmount() {
+    cancelAnimationFrame(this.masonryFrame);
     if (this.masonryResizeObserver) {
       this.masonryResizeObserver.disconnect();
       this.masonryResizeObserver = null;
     }
   },
   methods: {
+    scheduleMasonrySpan() {
+      cancelAnimationFrame(this.masonryFrame);
+      this.masonryFrame = requestAnimationFrame(() => this.updateMasonrySpan());
+    },
     updateMasonrySpan() {
+      if (!this.isMasonry) return;
       const el = this.$el;
       if (!el || !el.parentElement) return;
       const parentStyle = getComputedStyle(el.parentElement);
@@ -42,11 +52,11 @@ export default {
       const marginY = (parseFloat(style.marginTop) || 0)
         + (parseFloat(style.marginBottom) || 0);
       const total = el.offsetHeight + marginY;
-      this.masonryRowSpan = Math.max(1, Math.ceil(total / rowUnit));
+      this.masonryRowSpan = Math.max(1, Math.ceil((total + 16) / rowUnit));
     },
     setupMasonryObserver() {
       if (typeof ResizeObserver === 'undefined' || !this.$el) return;
-      this.masonryResizeObserver = new ResizeObserver(() => this.updateMasonrySpan());
+      this.masonryResizeObserver = new ResizeObserver(() => this.scheduleMasonrySpan());
       this.masonryResizeObserver.observe(this.$el);
     },
   },

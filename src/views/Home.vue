@@ -15,7 +15,7 @@
     </div>
     <!-- Main content, section for each group of items -->
     <div v-if="checkTheresData(sections) || isEditMode" :class="computedClass"
-      ref="sectionsContainer" v-drag-sort="sectionDragConfig">
+      :style="`--portal-col-count: ${activeColCount}`" ref="sectionsContainer" v-drag-sort="sectionDragConfig">
       <template v-for="section in filteredSections" :key="makeSectionId(section)">
         <Section
           :index="section.configIndex"
@@ -89,6 +89,7 @@ export default {
     layout: '',
     itemSizeBound: '',
     activeColCount: 1,
+    containerObserver: null,
   }),
   computed: {
     singleSectionView() {
@@ -133,7 +134,7 @@ export default {
     },
     computedClass() {
       let classes = 'item-group-container '
-      + ` orientation-${this.$store.getters.layout} item-size-${this.itemSizeBound}`;
+      + ` orientation-${this.$store.getters.layout} item-size-${this.iconSize}`;
       if (this.isEditMode) classes += ' edit-mode';
       if (this.singleSectionView) classes += ' single-section-view';
       if (this.colCount) classes += ` col-count-${this.colCount}`;
@@ -154,8 +155,10 @@ export default {
   watch: {
     /* Re-read col count once after config loaded */
     sections() {
-      this.$nextTick(this.readActiveColCount);
+      this.$nextTick(this.observeContainer);
     },
+    layoutOrientation() { this.$nextTick(this.readActiveColCount); },
+    colCount() { this.$nextTick(this.readActiveColCount); },
   },
   methods: {
     /* Clears input field, once a searched item is opened */
@@ -181,14 +184,20 @@ export default {
       const { sections } = this.$store.state.config;
       this.$store.commit(StoreKeys.SET_SECTIONS, reorder(sections || [], oldIndex, newIndex));
     },
+    observeContainer() {
+      this.containerObserver?.disconnect();
+      if (this.$refs.sectionsContainer) {
+        this.containerObserver = new ResizeObserver(this.readActiveColCount);
+        this.containerObserver.observe(this.$refs.sectionsContainer);
+        this.readActiveColCount();
+      }
+    },
     readActiveColCount() {
       const { sectionsContainer } = this.$refs;
       if (!sectionsContainer) return;
-      const cs = getComputedStyle(sectionsContainer);
-      const varVal = parseInt(cs.getPropertyValue('--col-count'), 10);
-      if (!Number.isNaN(varVal) && varVal > 0) {
-        this.activeColCount = varVal;
-      }
+      const fitting = Math.max(1, Math.floor((sectionsContainer.clientWidth + 16) / 304));
+      this.activeColCount = (this.singleSectionView || this.layoutOrientation === 'horizontal')
+        ? 1 : Math.min(this.colCount || fitting, fitting, Math.max(1, this.filteredSections.length));
     },
   },
   mounted() {
@@ -196,11 +205,12 @@ export default {
     this.initiateMaterialDesignIcons();
     this.layout = this.layoutOrientation;
     this.itemSizeBound = this.iconSize;
-    this.readActiveColCount();
+    this.$nextTick(this.observeContainer);
     window.addEventListener('resize', this.readActiveColCount);
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.readActiveColCount);
+    this.containerObserver?.disconnect();
   },
 };
 </script>

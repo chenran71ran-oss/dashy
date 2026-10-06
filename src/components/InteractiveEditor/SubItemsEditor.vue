@@ -4,7 +4,7 @@
     <div v-for="(item,index) in modelValue" :key="index" class="cloud-subitem-row">
       <label>名称<input :value="item.title" @input="update(index,'title',$event.target.value)" placeholder="网站名称"></label>
       <label>网址<input :value="item.url" @input="update(index,'url',$event.target.value)" placeholder="https://example.com" type="url"></label>
-      <IconPicker :modelValue="item.icon" @update:modelValue="update(index,'icon',$event)" />
+      <IconPicker :url="item.url" :siteTitle="item.title" allowAuto :modelValue="item.icon" @update:modelValue="update(index,'icon',$event)" />
       <button type="button" @click="remove(index)">删除</button>
     </div>
     <button type="button" @click="add">＋ 添加网站</button>
@@ -19,7 +19,7 @@ export default {
   methods: {
     update(index,key,value) { this.$emit('update:modelValue',this.modelValue.map((item,i)=>i===index?{...item,[key]:value}:item)); },
     remove(index) { this.$emit('update:modelValue',this.modelValue.filter((_,i)=>i!==index)); },
-    add() { this.$emit('update:modelValue',[...this.modelValue,{title:'',url:'',icon:'🔗',target:'newtab'}]); },
+    add() { this.$emit('update:modelValue',[...this.modelValue,{title:'',url:'',icon:'auto',target:'newtab'}]); },
   },
 };
 </script>

@@ -209,10 +209,11 @@ export default {
 @import '@/styles/media-queries.scss';
 
 .collapsable {
+  box-sizing: border-box;
   width: 100%;
-  width: stretch;
+  min-width: 0;
   height: fit-content;
-  margin: 10px;
+  margin: 0;
   padding: var(--item-group-padding);
   border-radius: var(--curve-factor);
   box-shadow: var(--item-group-shadow);
@@ -247,14 +248,15 @@ export default {
     padding: 0.25rem;
     color: var(--item-group-heading-text-color);
     border-radius: var(--curve-factor);
-    h3 { flex: 1; margin: 0; padding: 0; cursor: pointer; }
-    .section-icon { margin-right: 0.5rem; cursor: pointer; }
+    h3 { flex: 1; min-width: 0; margin: 0; padding: 0; cursor: pointer; overflow-wrap: anywhere; line-height: 1.35; }
+    .section-icon { flex-shrink: 0; margin-right: 0.5rem; cursor: pointer; }
   }
 
   .collapse-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
     width: 1.6rem;
     height: 1.6rem;
     cursor: pointer;
@@ -303,6 +305,7 @@ export default {
   /* Section edit buttons, pushed to the right by the flex-1 h3.
    * Shares hover styling with .collapse-toggle. */
   .header-action {
+    flex-shrink: 0;
     box-sizing: content-box;
     width: 1rem;
     height: 1rem;

@@ -8,7 +8,7 @@
       </div>
       <label>名称 <span class="required">*</span><input v-model="draft.title" aria-label="名称" placeholder="网站或小分类名称" maxlength="120" /></label>
       <label v-if="kind === 'link'">网址 <span class="required">*</span><input v-model="draft.url" type="url" aria-label="网址" placeholder="https://example.com" /></label>
-      <IconPicker v-model="draft.icon" />
+      <IconPicker v-model="draft.icon" :url="kind === 'link' ? draft.url : ''" :siteTitle="draft.title" :allowAuto="kind === 'link'" />
       <label>说明<input v-model="draft.description" aria-label="说明" placeholder="可选，鼠标悬停时显示" /></label>
       <label v-if="kind === 'link'">打开方式<select v-model="draft.target" aria-label="打开方式"><option value="newtab">新标签页</option><option value="sametab">当前标签页</option></select></label>
       <SubItemsEditor v-if="kind === 'group'" v-model="draft.subItems" />
@@ -70,7 +70,7 @@ export default {
     this.kind = this.draft.subItems ? 'group' : 'link';
     this.draft.subItems ||= [];
     this.draft.target ||= 'newtab';
-    this.draft.icon ||= '🔗';
+    this.draft.icon ||= this.kind === 'link' ? 'auto' : '🔗';
     this.tags = (this.draft.tags || []).join(', ');
     this.hidden = !!this.draft.displayData?.hideFromHomepage;
     this.probeHeaders = this.draft.statusCheckHeaders ? JSON.stringify(this.draft.statusCheckHeaders, null, 2) : '';

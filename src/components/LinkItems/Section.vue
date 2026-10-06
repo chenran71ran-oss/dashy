@@ -217,9 +217,10 @@ export default {
         || !!(this.displayData.itemCountX || this.displayData.itemCountY);
     },
     gridStyle() {
-      let styles = '';
-      styles += this.displayData.itemCountX
-        ? `grid-template-columns: repeat(${this.displayData.itemCountX}, minmax(0, 1fr));` : '';
+      const minWidth = this.itemSize === 'large' ? 240 : (this.itemSize === 'small' ? 192 : 208);
+      const fitting = Math.max(1, Math.floor((this.sectionWidth - 16 + 12) / (minWidth + 12)));
+      let styles = this.displayData.itemCountX
+        ? `grid-template-columns: repeat(${Math.min(this.displayData.itemCountX, fitting)}, minmax(0, 1fr));` : '';
       styles += this.displayData.itemCountY
         ? `grid-template-rows: repeat(${this.displayData.itemCountY}, auto);` : '';
       return styles;
@@ -405,50 +406,15 @@ export default {
 }
 
 .there-are-items {
-  height: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(8rem, 100%), 1fr));
-  &.inner-size-small {
-    grid-template-columns: repeat(auto-fill, minmax(min(10rem, 100%), 1fr));
-  }
-  &.inner-size-large {
-    grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
-  }
-  &.item-group-grid {
-    overflow: auto;
-    @extend .scroll-bar;
-    @include phone { --item-col-count: 1; }
-    @include tablet { --item-col-count: 2; }
-    @include laptop { --item-col-count: 2; }
-    @include monitor { --item-col-count: 3; }
-    @include big-screen { --item-col-count: 4; }
-    @include big-screen-up { --item-col-count: 5; }
-    grid-template-columns: repeat(var(--item-col-count, 2), minmax(0, 1fr));
-  }
-}
-.orientation-horizontal:not(.single-section-view) {
-  display: flex;
-  flex-direction: column;
-  .there-are-items {
-    display: grid;
-    @include phone { --item-col-count: 2; }
-    @include tablet { --item-col-count: 4; }
-    @include laptop { --item-col-count: 6; }
-    @include monitor { --item-col-count: 8; }
-    @include big-screen { --item-col-count: 10; }
-    @include big-screen-up { --item-col-count: 12; }
-    grid-template-columns: repeat(var(--item-col-count, 2), minmax(0, 1fr));
-  }
-  .there-are-items.inner-size-large {
-    display: grid;
-    @include phone { --item-col-count: 1; }
-    @include tablet { --item-col-count: 2; }
-    @include laptop { --item-col-count: 3; }
-    @include monitor { --item-col-count: 5; }
-    @include big-screen { --item-col-count: 6; }
-    @include big-screen-up { --item-col-count: 8; }
-    grid-template-columns: repeat(var(--item-col-count, 2), minmax(0, 1fr));
-  }
+  height: auto;
+  min-width: 0;
+  gap: 0.75rem;
+  align-items: stretch;
+  --portal-card-min: 13rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--portal-card-min), 100%), 1fr));
+  &.inner-size-small { --portal-card-min: 12rem; }
+  &.inner-size-large { --portal-card-min: 15rem; }
 }
 
 .add-new-item {

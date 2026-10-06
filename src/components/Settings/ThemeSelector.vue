@@ -13,7 +13,7 @@
     <IconPalette
       v-if="!hidePallete"
       class="color-button"
-      @click="openThemeConfigurator" @keydown.enter="openThemeConfigurator" @keydown.space.prevent="openThemeConfigurator" role="button" tabindex="0" :aria-label="$t('theme-maker.title')"
+      @click="openThemeConfigurator" @keydown.enter="openThemeConfigurator" @keydown.space.prevent="openThemeConfigurator" role="button" aria-hidden="false" tabindex="0" :aria-label="$t('theme-maker.title')"
       v-tooltip="$t('theme-maker.title')"
     />
     <CustomThemeMaker

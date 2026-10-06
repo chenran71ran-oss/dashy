@@ -1,9 +1,9 @@
 <template>
-  <div v-if="icon" :class="`item-icon wrapper-${size}`">
+  <div v-if="icon" :class="[`item-icon wrapper-${size}`, {'brand-icon': isBrand}]">
     <!-- Font-Awesome Icon -->
     <i v-if="iconType === 'font-awesome'" :class="`${icon} ${size}`" ></i>
     <!-- Emoji Icon -->
-    <i v-else-if="iconType === 'emoji'" :class="`emoji-icon ${size}`" >{{getEmoji(iconPath)}}</i>
+    <i v-else-if="iconType === 'emoji' && !broken" :class="`emoji-icon ${size}`" >{{getEmoji(iconPath)}}</i>
     <!-- Material Design Icon -->
     <span v-else-if="iconType === 'mdi'" :class=" `mdi ${icon} ${size}`"></span>
     <!-- Simple-Icons (siPath resolved async after lazy-load) -->
@@ -12,15 +12,16 @@
       <path v-if="siPath" :d="siPath" />
     </svg>
     <!-- Standard image asset icon -->
-    <img v-else-if="icon" :src="iconPath" @error="onImageError" loading="lazy" referrerpolicy="no-referrer"
+    <img v-else-if="iconPath && !broken" :src="iconPath" :alt="title ? `${title} 图标` : ''" @error="onImageError" loading="lazy" referrerpolicy="no-referrer"
       :class="`tile-icon ${size} ${broken ? 'broken' : ''}`"
     />
     <!-- Icon could not load/ broken url -->
-    <BrokenImage v-if="broken" :class="`missing-image ${size}`" />
+    <span v-if="broken || iconType === 'none'" class="icon-monogram" aria-hidden="true">{{ monogram }}</span>
   </div>
 </template>
 
 <script>
+import { matchPortalIcon, portalIconPath, websiteFavicon } from '@/utils/PortalIcons';
 import BrokenImage from '@/assets/interface-icons/broken-icon.svg';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import EmojiUnicodeRegex from '@/utils/EmojiUnicodeRegex';
@@ -44,6 +45,7 @@ export default {
   name: 'Icon',
   props: {
     icon: { type: String, default: '' }, // Path to icon asset
+    title: { type: String, default: '' },
     url: { type: String, default: '' }, // Used for fetching the favicon
     size: { type: String, default: '' }, // Either small, medium or large
   },
@@ -55,15 +57,24 @@ export default {
     appConfig() {
       return this.$store.getters.appConfig;
     },
+    resolvedIcon() {
+      if (this.icon === 'auto') return matchPortalIcon(this.url, this.title)?.src || websiteFavicon(this.url);
+      return portalIconPath(this.icon) || this.icon;
+    },
+    isBrand() { return this.resolvedIcon.startsWith('/portal-icons/'); },
+    monogram() {
+      const label = this.title || this.getHostName(this.url).replace(/^www\./, '') || '?';
+      return Array.from(label)[0].toUpperCase();
+    },
     /* Determines the type of icon */
     iconType() {
-      return this.determineImageType(this.icon);
+      return this.determineImageType(this.resolvedIcon);
     },
     /* Gets the icon path, dependent on icon type */
     iconPath() {
       if (this.broken) return undefined;
       if (this.attemptedFallback) return this.getFallbackIcon();
-      return this.getIconPath(this.icon, this.url);
+      return this.getIconPath(this.resolvedIcon, this.url);
     },
   },
   data() {
@@ -74,7 +85,8 @@ export default {
     };
   },
   watch: {
-    icon: { immediate: true, handler: 'resolveSimpleIcon' },
+    resolvedIcon: { immediate: true, handler: 'resolveSimpleIcon' },
+    url: 'resolveSimpleIcon',
   },
   methods: {
     /* Determine icon type, e.g. local or remote asset, SVG, favicon, font-awesome, etc */
@@ -195,7 +207,7 @@ export default {
     },
     /* Fetches the path of local images, from Docker container */
     getLocalImagePath(img) {
-      return `/${iconCdns.localPath}/${img}`;
+      return img.startsWith('/') ? img : `/${iconCdns.localPath}/${img}`;
     },
     /* Formats the URL for fetching the generative icons */
     getGenerativeIcon(url, cdn) {
@@ -204,7 +216,7 @@ export default {
     },
     /* Loads SVG path for simple-icons ID. Only loads SI module on first use */
     async resolveSimpleIcon() {
-      const requestedIcon = this.icon;
+      const requestedIcon = this.resolvedIcon;
       this.broken = false;
       this.attemptedFallback = false;
       this.siPath = '';
@@ -219,8 +231,8 @@ export default {
         this.imageNotFound('Failed to load simple-icons module');
         return;
       }
-      if (this.icon !== requestedIcon) return;
-      const imageName = this.icon.slice(3).toLowerCase();
+      if (this.resolvedIcon !== requestedIcon) return;
+      const imageName = this.resolvedIcon.slice(3).toLowerCase();
       const icon = Object.values(mod).find((entry) => entry?.slug === imageName);
       if (!icon) {
         this.imageNotFound(`No icon was found for '${imageName}' in Simple Icons`);
@@ -240,6 +252,7 @@ export default {
     },
     /* For a given URL, return the hostname only. Used for favicon and generative icons */
     getHostName(url) {
+      if (!url) return '';
       try {
         return new URL(url).hostname;
       } catch {
@@ -263,7 +276,7 @@ export default {
     /* On <img> error: try fallback once; if none available or already tried, mark broken */
     onImageError() {
       if (this.attemptedFallback || this.getFallbackIcon() === undefined) {
-        this.imageNotFound();
+        this.broken = true;
         return;
       }
       this.attemptedFallback = true;
@@ -271,6 +284,7 @@ export default {
     /* Returns fallback URL for icon types that have one, else undefined */
     getFallbackIcon() {
       const iconType = this.iconType || '';
+      if (this.isBrand) return websiteFavicon(this.url) || undefined;
       if (iconType.includes('favicon')) return this.getFavicon(this.url, 'local');
       if (iconType === 'generative') return this.getGenerativeIcon(this.url, iconCdns.generativeFallback);
       if (iconType === 'home-lab-icons') return this.getHomeLabIcon(this.icon, iconCdns.homeLabIconsFallback);
@@ -372,4 +386,9 @@ export default {
       fill: currentColor;
     }
   }
+</style>
+
+<style scoped>
+.icon-monogram { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: 8px; background: var(--primary-transparent-60, #8882); font-family: sans-serif; font-weight: 700; line-height: 1; }
+.brand-icon img.tile-icon { object-fit: contain; filter: none !important; padding: 0 !important; }
 </style>
