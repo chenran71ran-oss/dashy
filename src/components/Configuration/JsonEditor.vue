@@ -56,15 +56,7 @@
           {{ $t('config-editor.preview-button') }}
           <PreviewIcon />
         </Button>
-        <Button
-          v-if="allowSaveLocally"
-          :click="onSaveLocally"
-          :disallow="!isValid"
-          v-tooltip="$t('interactive-editor.menu.save-locally-tooltip')"
-        >
-          {{ $t('interactive-editor.menu.save-locally-btn') }}
-          <SaveLocallyIcon />
-        </Button>
+
       </div>
       <Button
         class="primary-action"

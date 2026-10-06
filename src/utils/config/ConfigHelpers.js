@@ -147,14 +147,14 @@ export const formatConfigPath = (configPath) => {
  * Initiates the Accumulator class and generates a complete config object
  * Self-executing function, returns the full user config as a JSON object
  */
-export const config = (() => {
+export const config = () => {
   const Accumulator = new ConfigAccumulator();
   return {
     appConfig: Accumulator.appConfig(),
     pageInfo: Accumulator.pageInfo(),
     sections: filterUserSections(Accumulator.sections()),
   };
-})();
+};
 
 /**
  * Generates an object containing booleans indicating which

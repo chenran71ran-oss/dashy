@@ -68,7 +68,7 @@
       </router-link>
     </section>
 
-    <section v-if="userState !== 0" class="section auth-row">
+    <section class="section auth-row">
       <AuthButtons :userType="userState" />
     </section>
   </div>

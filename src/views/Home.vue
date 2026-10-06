@@ -44,7 +44,8 @@
         <Button :click="reAuth">{{ $t('home.sign-in-again') }}</Button>
       </template>
       <template v-else>
-        {{ searchValue ? $t('home.no-results') : $t('home.no-data') }}
+        {{ searchValue ? $t('home.no-results') : '还没有网站。添加分类，再放入你的常用入口。' }}
+        <p v-if="!searchValue"><Button :click="() => $store.commit('SET_EDIT_MODE', true)">开始添加网站</Button></p>
       </template>
     </div>
     <!-- Show banner at bottom of screen, for Saving config changes -->

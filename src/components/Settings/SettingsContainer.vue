@@ -14,7 +14,7 @@
         v-tooltip="$t('settings.options-tooltip')"
         :aria-label="$t('settings.options-tooltip')"
         :aria-expanded="panelOpen"
-        tabindex="-2"
+        tabindex="0"
       >
         <IconOptions />
       </button>

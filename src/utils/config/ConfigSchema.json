@@ -24,7 +24,10 @@
       "items": {
         "title": "Page",
         "type": "object",
-        "required": ["name", "path"],
+        "required": [
+          "name",
+          "path"
+        ],
         "additionalProperties": false,
         "properties": {
           "name": {
@@ -224,7 +227,11 @@
           "title": "Theme Color",
           "type": "string",
           "description": "Color applied to the browser chrome (mobile address bar). Any valid CSS color value.",
-          "examples": ["#2a7cf0", "rebeccapurple", "rgb(40, 60, 120)"]
+          "examples": [
+            "#2a7cf0",
+            "rebeccapurple",
+            "rgb(40, 60, 120)"
+          ]
         }
       },
       "required": [
@@ -427,7 +434,9 @@
         },
         "contentMaxWidth": {
           "title": "Content Max Width",
-          "type": ["string"],
+          "type": [
+            "string"
+          ],
           "description": "Max width of the main sections area on the homepage. Pass as a percentage or CSS unit. Leave blank for the responsive default",
           "examples": [
             "98%",
@@ -556,7 +565,9 @@
         "externalStyleSheet": {
           "title": "External Stylesheets",
           "description": "URL or list of URLs of external stylesheets to load",
-          "type": ["array"],
+          "type": [
+            "array"
+          ],
           "items": {
             "type": "string"
           }
@@ -650,10 +661,20 @@
                   }
                 },
                 "additionalProperties": false,
-                "required": ["user"],
+                "required": [
+                  "user"
+                ],
                 "oneOf": [
-                  { "required": ["hash"] },
-                  { "required": ["password"] }
+                  {
+                    "required": [
+                      "hash"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "password"
+                    ]
+                  }
                 ]
               }
             },
@@ -682,21 +703,21 @@
                   "type": "string",
                   "description": "ClientId from OIDC provider"
                 },
-                "adminRole" : {
+                "adminRole": {
                   "title": "Admin Role",
                   "type": "string",
                   "description": "The role that will be considered as admin. If not set, no roles will be considered as admin"
                 },
-                "adminGroup" : {
+                "adminGroup": {
                   "title": "Admin Group",
                   "type": "string",
                   "description": "The group that will be considered as admin. If not set, no groups will be considered as admin"
                 },
-                "scope" : {
-                    "title": "OIDC Scope",
-                    "type": "string",
-                    "description": "The scope(s) to request from the OIDC provider"
-                  },
+                "scope": {
+                  "title": "OIDC Scope",
+                  "type": "string",
+                  "description": "The scope(s) to request from the OIDC provider"
+                },
                 "showLoginPage": {
                   "title": "Show Dashy's Login Page",
                   "type": "boolean",
@@ -717,7 +738,9 @@
                 "allowedIssuers": {
                   "title": "Allowed Token Issuers",
                   "type": "array",
-                  "items": { "type": "string" },
+                  "items": {
+                    "type": "string"
+                  },
                   "description": "List of issuer URLs to accept tokens from, overriding the issuer in the discovery document. Only needed for multi-tenant providers where the token issuer differs from the configured endpoint"
                 },
                 "disableServerSideCheck": {
@@ -791,7 +814,7 @@
                   "description": "The Client ID of the client you created for use with Dashy"
                 },
                 "idpHint": {
-                  "title" : "IdP hint",
+                  "title": "IdP hint",
                   "type": "string",
                   "description": "Set to the 'Alias' of an existing Identity Provider in the specified realm to skip the Keycloak login page and redirect straight to the external IdP for authentication"
                 },
@@ -906,12 +929,12 @@
         "additionalProperties": false,
         "properties": {
           "name": {
-            "title": "Section Name",
+            "title": "分类名称",
             "type": "string",
             "description": "Title/ heading for a section. Required and must be unique"
           },
           "icon": {
-            "title": "Section Icon",
+            "title": "分类图标",
             "type": "string",
             "description": "Icon will be displayed next to title"
           },
@@ -1132,24 +1155,24 @@
               ],
               "properties": {
                 "title": {
-                  "title": "Item Text",
+                  "title": "网站 / 小分类名称",
                   "type": "string",
                   "description": "Title of the item"
                 },
                 "description": {
-                  "title": "Description",
+                  "title": "说明",
                   "type": "string",
                   "nullable": true,
                   "description": "Short description, shown on hover or in a tooltip"
                 },
                 "icon": {
-                  "title": "Icon",
+                  "title": "图标",
                   "type": "string",
                   "nullable": true,
                   "description": "An icon, either as a font-awesome, simple-icon, selfh.st, or mdi identifier, emoji, favicon, generative or the URL/path to a local or remote icon asset"
                 },
                 "url": {
-                  "title": "Service URL",
+                  "title": "网址",
                   "type": "string",
                   "description": "The destination to navigate to when item is clicked, expressed as a valid URL, IP or hostname"
                 },
@@ -1291,7 +1314,7 @@
                   }
                 },
                 "target": {
-                  "title": "Opening Method",
+                  "title": "打开方式",
                   "type": "string",
                   "enum": [
                     "newtab",
@@ -1316,7 +1339,14 @@
                   "type": "string",
                   "pattern": "^[a-z0-9_-]+$",
                   "not": {
-                    "enum": ["home", "minimal", "workspace", "login", "download", "404"]
+                    "enum": [
+                      "home",
+                      "minimal",
+                      "workspace",
+                      "login",
+                      "download",
+                      "404"
+                    ]
                   },
                   "description": "A short lowercase word which, when visited as a path on your dashboard (e.g. /my-app), redirects straight to this item"
                 },
@@ -1423,7 +1453,7 @@
                   "description": "Unique ID for each item. Generated automatically, shouldn't need to be set manually."
                 },
                 "subItems": {
-                  "title": "Sub-Items",
+                  "title": "小分类",
                   "type": "array",
                   "description": "Optional list of nested sub-items, displayed as smaller icons within the parent item. Each sub-item supports the same core fields as a regular item",
                   "items": {

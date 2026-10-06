@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <!-- Encoding and Viewport -->
   <meta charset="utf-8">
@@ -7,16 +7,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <meta name="referrer" content="no-referrer">
   <!-- Favicon, App Icon -->
-  <link rel="icon" type="image/png" sizes="64x64" href="/web-icons/favicon-64x64.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/web-icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/web-icons/favicon-16x16.png">
-  <link rel="icon" type="image/png" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/kenneth-mech.svg">
   <link rel="stylesheet" type="text/css" href="/loading-screen.css" />
   <link rel="stylesheet" type="text/css" href="/theme-fonts.css" media="print" onload="this.media='all'" />
   <!-- Lets the browser offer Dashy as a keyword search engine, for jumping to apps by alias -->
   <link rel="search" type="application/opensearchdescription+xml" title="Dashy" href="/opensearch.xml" />
   <!-- Default Page Title -->
-  <title>Dashy</title>
+  <title>Kenneth 的总站</title>
 </head>
 
 <body>
@@ -24,8 +21,8 @@
   <div id="app">
     <!-- Loading screen, will be replaced when app loaded -->
     <div class="loading-placeholder" id="loader">
-      <h1>Dashy</h1>
-      <p class="loading">Loading... </p>
+      <h1>Kenneth 的总站</h1>
+      <p class="loading">正在加载… </p>
       <!-- Error message, only visible if app not mounted within 5 secs -->
       <div class="catastrophic-error" id="err-wrap" style="display:none;">
         <p class="err-l1">It looks like something's gone wrong...</p>
@@ -55,6 +52,6 @@
   </script>
 
   <!-- Vite entry point -->
-  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/cloud-main.js"></script>
 </body>
 </html>

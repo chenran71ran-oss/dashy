@@ -9,17 +9,19 @@
   >
   <div class="edit-item-inner" v-if="allowViewConfig">
     <!-- Title and Item ID -->
-    <h3 class="title">Edit Item</h3>
+    <h3 class="title">编辑网站 / 小分类</h3>
     <p class="sub-title">Editing {{item.title}} (ID: {{itemId}})</p>
     <!-- If no elements added to form, show info message -->
     <p class="warning-note" v-if="formData.length === 0">
       No data configured yet. Click an attribute in the list below to add the field to the form.
     </p>
+    <p>普通网站填写网址；小分类可在下方添加 小分类字段。</p>
     <!-- For each data attribute, render the correct type of input field -->
     <div class="row" v-for="(row, index) in formData" :key="row.name">
       <!-- Text box, for text/ number/ raw input elements -->
+      <SubItemsEditor v-if="row.name === 'subItems'" v-model="formData[index].value" />
       <Input
-        v-if="row.type === 'text' || row.type === 'number'"
+        v-else-if="row.type === 'text' || row.type === 'number'"
         v-model="formData[index].value"
         :description="row.description"
         :label="row.title || row.name"
@@ -72,6 +74,7 @@
 </template>
 
 <script>
+import SubItemsEditor from './SubItemsEditor.vue';
 import AddIcon from '@/assets/interface-icons/interactive-editor-add.svg';
 import BinIcon from '@/assets/interface-icons/interactive-editor-remove.svg';
 import SaveCancelButtons from '@/components/InteractiveEditor/SaveCancelButtons';
@@ -111,6 +114,7 @@ export default {
     },
   },
   components: {
+    SubItemsEditor,
     Input,
     Radio,
     Select,
@@ -136,7 +140,7 @@ export default {
       return {
         name: property,
         description: this.schema[property].description,
-        value: this.item[property],
+        value: property === 'subItems' ? (this.item[property] || []) : this.item[property],
         type: this.getInputType(this.schema[property]),
         enum: this.schema[property].enum,
         title: this.schema[property].title,
@@ -232,6 +236,11 @@ export default {
     /* Some fields require a bit of extra processing before they're saved */
     formatBeforeSave(item) {
       const newItem = item;
+      if (!newItem.url) delete newItem.url;
+      if (newItem.subItems && !newItem.subItems.length) delete newItem.subItems;
+      for (const sub of newItem.subItems || []) {
+        if (!sub.title || !/^https?:\/\//i.test(sub.url || '')) throw new Error('小分类网站需要名称和完整网址');
+      }
       newItem.id = this.itemId;
       if (newItem.hotkey) newItem.hotkey = parseInt(newItem.hotkey, 10);
       const strToTags = (tags) => {

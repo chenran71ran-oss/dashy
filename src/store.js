@@ -451,7 +451,7 @@ const store = createStore({
         const response = await request.get(configFilePath, makeBasicAuthHeaders());
         let data;
         try {
-          data = yamlLoad(response.data);
+          data = (typeof response.data === 'string' ? yamlLoad(response.data) : response.data);
         } catch (parseError) {
           commit(CRITICAL_ERROR_MSG, `Failed to parse YAML: ${parseError.message}`);
           return { ...emptyConfig };
@@ -527,7 +527,7 @@ const store = createStore({
         }
         let subFile;
         try {
-          subFile = yamlLoad(response.data) || {};
+          subFile = (typeof response.data === 'string' ? yamlLoad(response.data) : response.data) || {};
         } catch (parseError) {
           commit(CRITICAL_ERROR_MSG, `Failed to parse sub-config YAML: ${parseError.message}`);
           return { ...emptyConfig };

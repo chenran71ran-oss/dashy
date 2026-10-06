@@ -11,7 +11,6 @@ import Modal from '@/components/FormElements/Modal.vue'; // In-house modal compo
 import VModal from '@/plugins/modal';   // $modal.show()/hide() plugin
 import store from '@/store';            // Store, for local state management
 import router from '@/router';          // Router, for navigation
-import serviceWorker from '@/utils/InitServiceWorker'; // Service worker initialization
 import i18n from '@/utils/i18n';                      // i18n instance (exported so non-component callers can t())
 import ErrorReporting from '@/utils/logging/ErrorReporting';  // Error reporting initializer (off)
 import clickOutside from '@/directives/ClickOutside'; // Directive for closing popups, modals, etc
@@ -53,7 +52,7 @@ window.addEventListener('unhandledrejection', (event) => {
 const isDevMode = import.meta.env.DEV;
 app.config.performance = isDevMode;
 
-serviceWorker();
+// Cloud portal: do not cache private configuration in a service worker.
 
 // Checks if user enabled error reporting, and if so will initialize it
 ErrorReporting(app, router);

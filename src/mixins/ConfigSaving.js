@@ -1,8 +1,7 @@
 import { Progress } from 'rsup-progress';
-import { dump as yamlDump } from '@/utils/yaml';
 import request from '@/utils/request';
 import ErrorHandler, { InfoHandler } from '@/utils/logging/ErrorHandler';
-import { localStorageKeys, serviceEndpoints } from '@/utils/config/defaults';
+import { localStorageKeys } from '@/utils/config/defaults';
 import {
   configScope, stripRootOwnedFields, clearScopedLocalConfig,
 } from '@/utils/config/ConfigHelpers';
@@ -35,11 +34,8 @@ export default {
         ...base,
         sections: (base.sections || []).map(({ filteredItems: _filteredItems, ...s }) => s),
       };
-      const yaml = yamlDump(JSON.parse(JSON.stringify(jsonConfig)));
-      const baseUrl = import.meta.env.VITE_APP_DOMAIN || window.location.origin;
-      const endpoint = `${baseUrl}${serviceEndpoints.save}`;
-      const filename = isSubPag ? (state.currentConfigInfo.confPath || '') : '';
-      const body = { config: yaml, timestamp: new Date(), filename };
+      const endpoint = '/api/config';
+      const body = { config: jsonConfig };
       const saveRequest = request.post(endpoint, body);
       this.progress.start();
       return saveRequest.then((response) => {

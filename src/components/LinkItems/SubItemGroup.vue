@@ -1,6 +1,7 @@
 <template>
   <div class="sub-items-group" :style="`--sub-item-col-count: ${columnCount}`">
-    <p v-if="title" class="sub-item-group-title">{{ title }}</p>
+    <p v-if="title" class="sub-item-group-title">{{ title }} <button v-if="$store.state.editMode" type="button" class="cloud-edit-group" @click="editing = true">编辑小分类</button></p>
+    <EditItem v-if="editing" :itemId="itemId" @closeEditMenu="editing = false" />
     <SubItem
       v-for="(subItem, subIndex) in subItems"
       :key="subIndex"
@@ -12,9 +13,11 @@
 </template>
 
 <script>
+import EditItem from '@/components/InteractiveEditor/EditItem.vue';
 import SubItem from '@/components/LinkItems/SubItem.vue';
 
 export default {
+  data: () => ({ editing: false }),
   props: {
     itemId: { type: String, required: true },
     subItems: { type: Array, required: true },
@@ -24,6 +27,7 @@ export default {
   emits: ['triggerModal'],
   components: {
     SubItem,
+    EditItem,
   },
   computed: {
     /* Determine number of columns to split items into, depending on number of items */
@@ -47,6 +51,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.cloud-edit-group { cursor:pointer; background:transparent; border:1px solid var(--primary); color:var(--primary); border-radius:3px; font-size:12px; padding:3px 6px; }
 .sub-items-group {
   display: grid;
   margin: 0.25rem;

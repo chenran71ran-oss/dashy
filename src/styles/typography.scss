@@ -1,3 +1,4 @@
+@font-face { font-family: 'NotoSansSC'; src: url('@/assets/fonts/NotoSansSC-Regular.woff2') format('woff2'); font-display: swap; }
 
 /* Fonts used by the default theme, and bundled within the app */
 @font-face {
@@ -16,9 +17,9 @@
 }
 
 html {
-  --font-body: 'Raleway', 'Trebuchet MS', sans-serif;
-  --font-headings: 'Inconsolata', 'Georgia', sans-serif;
-  --font-monospace: 'PTMono', ui-monospace, Menlo, Monaco, Consolas,
+  --font-body: 'Raleway', 'PingFang SC', 'Microsoft YaHei', 'NotoSansSC', 'Trebuchet MS', sans-serif;
+  --font-headings: 'Inconsolata', 'PingFang SC', 'Microsoft YaHei', 'NotoSansSC', 'Georgia', sans-serif;
+  --font-monospace: 'PTMono', 'NotoSansSC', ui-monospace, Menlo, Monaco, Consolas,
     'Courier New', monospace;
 
   font-size: 1rem;

@@ -60,21 +60,6 @@
         :itemSize="itemSize"
       />
     </div>
-    <div
-      v-if="hasWidgets || isEditMode"
-      :class="`widget-list ${isWide? 'wide' : ''}`" v-drag-sort="widgetDragConfig">
-      <WidgetBase
-        v-for="(widget, widgetIndx) in widgets"
-        :key="widget.id"
-        :widget="widget"
-        :index="index"
-        @editWidget="openEditWidget(widgetIndx)"
-        @removeWidget="confirmRemoveWidget(widgetIndx)"
-      />
-      <span v-if="isEditMode" class="add-widget-launcher" @click="openAddWidget">
-        <AddIcon /> {{ $t('interactive-editor.edit-widget.add-widget-btn') }}
-      </span>
-    </div>
     <!-- Modal for opening in modal view -->
     <IframeModal
       :ref="`iframeModal-${groupId}`"

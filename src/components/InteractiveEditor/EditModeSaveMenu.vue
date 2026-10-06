@@ -46,17 +46,7 @@
         {{ $t('interactive-editor.menu.edit-app-config-btn') }}
         <AppConfigIcon />
       </Button>
-      <!-- Button to open pages editor (only if not on sub-page rn) -->
-      <Button
-        :click="openEditMultiPages"
-        :disallow="!permissions.allowViewConfig || isSubConfig"
-        v-tooltip="tooltip($t(isSubConfig
-          ? 'interactive-editor.menu.edit-pages-subconfig-disabled'
-          : 'interactive-editor.menu.edit-pages-tooltip'))"
-      >
-        {{ $t('interactive-editor.menu.edit-pages-btn') }}
-        <MultiPagesIcon />
-      </Button>
+
     </div>
 
     <div class="edit-banner-section empty-space"></div>
@@ -66,14 +56,6 @@
       <p class="section-sub-title">
         {{ $t('interactive-editor.menu.config-save-methods-subheading') }}
       </p>
-      <Button
-        :click="saveLocally"
-        :disallow="!permissions.allowSaveLocally"
-        v-tooltip="tooltip($t('interactive-editor.menu.save-locally-tooltip'))"
-      >
-        {{ $t('interactive-editor.menu.save-locally-btn') }}
-        <SaveLocallyIcon />
-      </Button>
       <Button
         :click="writeToDisk"
         :disallow="!permissions.allowWriteToDisk"

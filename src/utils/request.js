@@ -93,6 +93,8 @@ async function makeRequest(config, retriedAfterRenew = false) {
     method: method.toUpperCase(),
     headers: { ...headers },
     signal: controller.signal,
+    credentials: 'same-origin',
+    cache: 'no-store',
   };
 
   // For local API requests, attach auth headers when configured
@@ -146,6 +148,7 @@ async function makeRequest(config, retriedAfterRenew = false) {
 
     // Throw on non-2xx (matching axios behavior)
     if (!res.ok) {
+      if (res.status === 401 && isLocal && window.__KH_CLOUD_AUTH) window.location.reload();
       if (res.status === 401 && isLocal && !retriedAfterRenew && (sso.oidc || sso.keycloak)) {
         statusMsg('SSO', 'API request was unauthorized; attempting session renewal.');
         if (await renewSsoSession(sso)) return makeRequest(config, true);
