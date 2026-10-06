@@ -1,1 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><path fill="#2e3440" d="M8 8h64v64H8z"/><g fill="#eceff4"><path d="M20 28h40v30H20zM28 20h24v12H28zM14 34h8v18h-8zM58 34h8v18h-8z"/></g><path fill="#ebcb8b" d="M16 8h8v12h8v8h-8v-8h-8zM56 8h8v12h-8v8h-8v-8h8z"/><path fill="#88c0d0" d="M26 34h12v6H26zM42 34h12v6H42z"/><path fill="#bf616a" d="M36 42h8v12h-8z"/><path fill="#434c5e" d="M26 56h28v6H26z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" shape-rendering="crispEdges" role="img" aria-label="Home Lab pixel mech">
+<path fill="#253447" d="M8 10h32v28H8zM4 18h40v16H4zM12 38h24v6H12z"/>
+<path fill="#e9eff5" d="M12 12h24v26H12zM8 18h6v14H8zM34 18h6v14h-6zM16 36h16v6H16z"/>
+<path fill="#f3bf51" d="M4 2h4v8h4v4h4v4h4v4h-4v-4h-4v-4H8v-4H4zM40 2h4v8h-4v4h-4v4h-4v4h-4v-4h4v-4h4v-4h4z"/>
+<path fill="#3b72ab" d="M20 8h8v12h-8zM12 24h8v4h-8zM28 24h8v4h-8z"/>
+<path fill="#89dcc9" d="M14 24h6v2h-6zM28 24h6v2h-6z"/>
+<path fill="#cf575d" d="M22 16h4v6h-4zM20 32h8v8h-8z"/>
+<path fill="#647888" d="M16 30h4v2h-4zM28 30h4v2h-4zM16 34h2v4h-2zM30 34h2v4h-2z"/>
+</svg>

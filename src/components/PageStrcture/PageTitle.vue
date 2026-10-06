@@ -1,7 +1,7 @@
 <template>
   <router-link to="/" class="page-titles" :disabled="isEditMode">
     <!-- Optional page logo image -->
-    <img v-if="logo" :src="logo" class="site-logo" />
+    <img v-if="logo" :src="logo" class="site-logo" :alt="`${title} 标识`" />
     <!-- Page heading and sub-heading -->
     <div class="text">
       <h1>{{ title }}</h1>
@@ -55,16 +55,15 @@ export default {
   flex-direction: row;
   align-items: center;
   min-width: 0;
-  overflow: hidden;
+  flex: 1 1 auto;
   text-decoration: none;
   position: relative;
   .text { min-width: 0; }
   h1 {
     color: var(--heading-text-color);
     font-size: clamp(1.4rem, 0.5rem + 3vw, 2.5rem);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+    line-height: 1.15;
     margin: 0;
   }
   span.subtitle {
@@ -75,12 +74,14 @@ export default {
   }
   img.site-logo {
     margin: 0.2rem 0.5rem 0.2rem 0;
-    max-width: 3.5rem;
-    height: fit-content;
+    width: 3rem;
+    height: 3rem;
+    flex-shrink: 0;
+    image-rendering: pixelated;
   }
   @include phone {
-    flex-direction: column;
-    text-align: center;
+    flex-direction: row;
+    text-align: left;
     padding: 0.25rem 0;
   }
   &[disabled] {

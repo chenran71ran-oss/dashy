@@ -1,124 +1,54 @@
 <template>
-  <modal
-    :name="modalName" @closed="modalClosed"
-    :resizable="true" width="50%" height="80%"
-    classes="dashy-modal edit-section"
-  >
-    <div class="interactive-editor-inner" v-if="allowViewConfig">
-      <h3>
-        {{ $t(`interactive-editor.edit-section.${isAddNew ? 'add' : 'edit'}-section-title`) }}
-      </h3>
-      <SchemaForm v-model="sectionData" :schema="customSchema" />
-      <SaveCancelButtons :saveClick="saveSection" :cancelClick="modalClosed" />
-    </div>
-    <AccessError v-else />
+  <modal :name="modalName" :resizable="false" width="min(640px, 94vw)" height="auto" classes="dashy-modal edit-section" @closed="modalClosed">
+    <div class="portal-editor" v-if="allowViewConfig">
+      <h3>{{ isAddNew ? '添加分类' : '编辑分类' }}</h3>
+      <label>分类名称 <span class="required">*</span><input v-model="sectionData.name" aria-label="分类名称" placeholder="例如：常用工具、媒体与娱乐" maxlength="120" /></label>
+      <IconPicker v-model="sectionData.icon" label="分类图标" />
+      <details>
+        <summary>布局选项</summary>
+        <label>排序方式<select v-model="sectionData.displayData.sortBy" aria-label="排序方式"><option value="default">保持当前顺序</option><option value="alphabetical">按名称</option><option value="most-used">按使用频率</option></select></label>
+        <label>每行卡片数<select v-model.number="sectionData.displayData.itemCountX" aria-label="每行卡片数"><option :value="0">自动适配屏幕</option><option v-for="n in 6" :key="n" :value="n">{{ n }}</option></select></label>
+        <label class="check"><input type="checkbox" v-model="sectionData.displayData.collapsed" /> 默认折叠分类</label>
+      </details>
+      <p v-if="error" class="editor-error" role="alert">{{ error }}</p>
+      <p class="editor-hint">分类保存后可继续添加网站，最后点击“保存到云端”。</p>
+      <SaveCancelButtons :saveClick="saveSection" :cancelClick="closeModal" />
+    </div><AccessError v-else />
   </modal>
 </template>
-
 <script>
-import { defineAsyncComponent } from 'vue';
-import DashySchema from '@/utils/config/ConfigSchema.json';
+import IconPicker from './IconPicker.vue';
 import StoreKeys from '@/utils/StoreMutations';
 import { modalNames } from '@/utils/config/defaults';
-import ErrorHandler, { InfoHandler, InfoKeys } from '@/utils/logging/ErrorHandler';
 import safeClone from '@/utils/safeClone';
-import pruneSchemaDefaults from '@/utils/config/pruneSchemaDefaults';
 import { makePageName } from '@/utils/config/ConfigHelpers';
-import SaveCancelButtons from '@/components/InteractiveEditor/SaveCancelButtons';
+import SaveCancelButtons from './SaveCancelButtons';
 import AccessError from '@/components/Configuration/AccessError';
-
-const SchemaForm = defineAsyncComponent(() => import('@/components/FormElements/SchemaForm.vue'));
-
-/* Curated subset of the section schema: omits `items` (edited per-item elsewhere)
- * and trims displayData to the commonly-tweaked attributes. */
-const sectionProps = DashySchema.properties.sections.items.properties;
-const displayProps = sectionProps.displayData.properties;
-const SECTION_SCHEMA = {
-  type: 'object',
-  required: DashySchema.properties.sections.items.required,
-  properties: {
-    name: sectionProps.name,
-    icon: sectionProps.icon,
-    displayData: {
-      type: 'object',
-      title: sectionProps.displayData.title,
-      description: sectionProps.displayData.description,
-      properties: {
-        sortBy: displayProps.sortBy,
-        rows: displayProps.rows,
-        cols: displayProps.cols,
-        collapsed: displayProps.collapsed,
-        hideForGuests: displayProps.hideForGuests,
-      },
-    },
-  },
-};
-
 export default {
-  name: 'EditSection',
-  components: { SaveCancelButtons, AccessError, SchemaForm },
-  props: {
-    sectionName: { type: String, default: '' },
-    isAddNew: Boolean,
-  },
-  emits: ['closeEditSection'],
-  data() {
-    return {
-      modalName: modalNames.EDIT_SECTION,
-      customSchema: SECTION_SCHEMA,
-      sectionData: {},
-    };
-  },
-  computed: {
-    allowViewConfig() { return this.$store.getters.permissions.allowViewConfig; },
-  },
+  components: { SaveCancelButtons, AccessError, IconPicker },
+  props: { sectionName: { type: String, default: '' }, isAddNew: Boolean }, emits: ['closeEditSection'],
+  data: () => ({ modalName: modalNames.EDIT_SECTION, sectionData: {displayData:{}}, error: '' }),
+  computed: { allowViewConfig() { return this.$store.getters.permissions.allowViewConfig; } },
   mounted() {
-    const live = this.isAddNew ? null : this.$store.getters.getSectionByName(this.sectionName);
-    this.sectionData = safeClone(live, {});
+    this.sectionData = safeClone(this.isAddNew ? {} : this.$store.getters.getSectionByName(this.sectionName), {});
+    this.sectionData.displayData = { sortBy: 'default', itemCountX: 0, ...this.sectionData.displayData };
     this.$modal.show(this.modalName);
   },
   methods: {
-    modalClosed() {
-      this.$store.commit(StoreKeys.SET_MODAL_OPEN, false);
-      this.$emit('closeEditSection');
-    },
-    /* Section names used as id, so need to be present and unique  */
-    validateName(name) {
-      if (!name || !name.trim()) return this.$t('interactive-editor.edit-section.missing-name-err');
-      const slug = makePageName(name);
-      const others = (this.$store.state.config.sections || [])
-        .filter((section) => this.isAddNew || (section.name || '') !== this.sectionName);
-      if (others.some((section) => makePageName(section.name) === slug)) {
-        return this.$t('interactive-editor.edit-section.duplicate-name-err', { name });
-      }
-      return null;
-    },
+    closeModal() { this.$modal.hide(this.modalName); },
+    modalClosed() { this.$store.commit(StoreKeys.SET_MODAL_OPEN, false); this.$emit('closeEditSection'); },
     saveSection() {
-      try {
-        /* Form only edits metadata, so preserve the live section's items array. */
-        const payload = pruneSchemaDefaults(this.sectionData, this.customSchema);
-        const nameError = this.validateName(payload.name);
-        if (nameError) { this.$toast.error(nameError); return; }
-        if (!this.isAddNew) {
-          const live = this.$store.getters.getSectionByName(this.sectionName);
-          if (live?.items) payload.items = live.items;
-          this.$store.commit(StoreKeys.UPDATE_SECTION, { sectionName: this.sectionName, sectionData: payload });
-        } else {
-          this.$store.commit(StoreKeys.INSERT_SECTION, payload);
-        }
-        this.$store.commit(StoreKeys.SET_EDIT_MODE, true);
-        const label = payload.name || '(unnamed)';
-        InfoHandler(`Section ${this.isAddNew ? 'added' : 'updated'}: ${label}`, InfoKeys.EDITOR);
-        this.$emit('closeEditSection');
-      } catch (e) {
-        ErrorHandler('Failed to save section', e);
-        this.$toast.error('Error saving changes. See Logs.');
-      }
+      this.error = '';
+      const payload = safeClone(this.sectionData, {}); payload.name = (payload.name || '').trim();
+      if (!payload.name) { this.error = '请填写分类名称。'; return; }
+      const others = (this.$store.state.config.sections || []).filter(s => this.isAddNew || s.name !== this.sectionName);
+      if (others.some(s => makePageName(s.name) === makePageName(payload.name))) { this.error = '这个分类名称已存在，请换一个名称。'; return; }
+      if (!payload.displayData.itemCountX) delete payload.displayData.itemCountX;
+      if (this.isAddNew) this.$store.commit(StoreKeys.INSERT_SECTION, payload);
+      else { const live = this.$store.getters.getSectionByName(this.sectionName); payload.items = live?.items || []; this.$store.commit(StoreKeys.UPDATE_SECTION, { sectionName: this.sectionName, sectionData: payload }); }
+      this.$store.commit(StoreKeys.SET_EDIT_MODE, true); this.closeModal();
     },
   },
 };
 </script>
-
-<style lang="scss">
-@import '@/styles/style-helpers.scss';
-</style>
+<style lang="scss">@import '@/styles/portal-editor.scss';</style>

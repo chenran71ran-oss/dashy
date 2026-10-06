@@ -5,7 +5,7 @@
       ref="SearchBar"
       @user-is-searchin="userIsTypingSomething"
     />
-    <div class="options-outer" v-click-outside="closePanel">
+    <div class="options-outer" :class="{ expanded: panelOpen }">
       <button
         type="button"
         class="options-trigger"
@@ -67,11 +67,12 @@ export default {
     LanguageSwitcher,
     IconOptions,
   },
+  props: { forceSearch: Boolean },
   emits: ['user-is-searchin'],
-  data: () => ({ panelOpen: false, modalNames }),
+  data: () => ({ panelOpen: true, modalNames }),
   computed: {
     searchVisible() {
-      return this.$store.getters.visibleComponents.searchBar;
+      return this.forceSearch || this.$store.getters.visibleComponents.searchBar;
     },
     combinedConfig() {
       const app = this.$store.getters.appConfig;
@@ -102,19 +103,27 @@ section {
   position: relative;
   display: flex;
   align-items: stretch;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem;
   background: linear-gradient(0deg, var(--background) 0%, var(--background-darker) 100%);
   box-shadow: var(--settings-container-shadow);
 }
 
 .options-outer {
-  position: relative;
+  position: static;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   flex: 1;
   padding: 0.25rem 0.5rem;
+  gap: 0.75rem;
   background: var(--settings-background);
   border-radius: var(--curve-factor-navbar) 0 0;
+}
+.options-outer.expanded .options-trigger { display: none; }
+@media(max-width: 900px) {
+  .options-outer { flex-basis: 100%; justify-content: flex-start; min-width: 0; }
 }
 
 .options-trigger {

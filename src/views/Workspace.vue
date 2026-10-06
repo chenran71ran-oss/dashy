@@ -1,18 +1,20 @@
 <template>
-  <div class="work-space">
+  <div class="work-space" :class="{ 'showing-landing': !url && !widgets }">
     <SideBar
       :sections="sections"
       @launch-app="launchApp"
       @launch-widget="launchWidget"
       :initUrl="getInitialUrl()"
     />
-    <WebContent :url="url" v-if="!isMultiTaskingEnabled" />
+    <Minimal v-if="!url && !widgets" class="workspace-landing" />
+    <WebContent :url="url" v-else-if="!isMultiTaskingEnabled" />
     <MultiTaskingWebComtent :url="url" v-else />
     <WidgetView :widgets="widgets" v-if="widgets" />
   </div>
 </template>
 
 <script>
+import Minimal from './Minimal.vue';
 import HomeMixin from '@/mixins/HomeMixin';
 import SideBar from '@/components/Workspace/SideBar';
 import WebContent from '@/components/Workspace/WebContent';
@@ -41,6 +43,7 @@ export default {
     },
   },
   components: {
+    Minimal,
     SideBar,
     WebContent,
     WidgetView,
@@ -49,7 +52,7 @@ export default {
   methods: {
     launchApp(options) {
       if (options.target === 'newtab') {
-        window.open(options.url, '_blank');
+        window.open(options.url, '_blank', 'noopener,noreferrer');
       } else if (options.target === 'newwindow') {
         const { width, height } = window.screen;
         window.open(options.url, '_blank', `width=${width},height=${height},noopener,noreferrer`);
@@ -89,7 +92,7 @@ export default {
     },
   },
   mounted() {
-    this.initiateFontAwesome();
+    HomeMixin.methods.initiateFontAwesome.call(this);
     this.initiateMaterialDesignIcons();
     this.url = this.getInitialUrl();
   },
@@ -98,6 +101,11 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.workspace-landing { margin-left: var(--side-bar-width); }
+@media(max-width:600px) {
+  .workspace-landing { margin-left: 0; }
+  .showing-landing :deep(.side-bar) { display: none; }
+}
 .work-space {
   min-height: fit-content;
 }

@@ -1,0 +1,69 @@
+<template>
+  <div class="icon-picker">
+    <label class="icon-input-label">{{ label }}</label>
+    <div class="icon-input-row">
+      <Icon :icon="modelValue || '🔗'" size="small" class="icon-preview" />
+      <input :aria-label="label" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" placeholder="选择图标，或粘贴图片网址" />
+      <button type="button" @click="toggle" :aria-expanded="open">{{ open ? '收起' : '选择图标' }}</button>
+    </div>
+    <div v-if="open" class="icon-library">
+      <input v-model="query" aria-label="搜索图标" placeholder="搜索名称，如 GitHub、cloud、媒体、工具" />
+      <p class="picker-hint">内置图标在本站加载。{{ query ? '搜索结果' : '常用图标' }}（{{ matches.length }}）</p>
+      <div class="icon-grid">
+        <button v-for="entry in matches.slice(0, 48)" :key="entry.value" type="button" @click="choose(entry.value)" :title="entry.title" :aria-label="entry.title">
+          <svg v-if="entry.path" viewBox="0 0 24 24" aria-hidden="true"><path :d="entry.path" :fill="entry.hex ? '#' + entry.hex : 'currentColor'" /></svg>
+          <span v-else class="emoji">{{ entry.value }}</span><span class="icon-name">{{ entry.title }}</span>
+        </button>
+      </div>
+      <p v-if="loading" role="status">正在加载图标库…</p>
+      <p v-else-if="!matches.length">没有匹配结果，可直接填写 emoji 或图片网址。</p>
+      <p v-if="matches.length > 48">显示前48个结果，请输入更具体的名称。</p>
+      <p v-if="loadError">图标库暂时无法加载，仍可使用常用图标。</p>
+    </div>
+  </div>
+</template>
+<script>
+import Icon from '@/components/LinkItems/ItemIcon.vue';
+const common = [ ['🔗','链接 link'], ['🌐','网站 网络 web network'], ['🎬','媒体 电影 media movie Emby'], ['📊','监控 monitoring'], ['☁️','云 VPS cloud'], ['🖥️','服务器 server'], ['🛠️','工具 tools'], ['📚','阅读 reading'], ['💻','开发 code'], ['🎵','音乐 music'], ['🛡️','安全 security'], ['🚀','启动 rocket'] ].map(([value,title]) => ({value,title}));
+let library;
+export default {
+  components: { Icon }, props: { modelValue: { type: String, default: '' }, label: { type: String, default: '图标' } }, emits: ['update:modelValue'],
+  data: () => ({ open: false, query: '', entries: [], loading: false, loadError: false }),
+  computed: {
+    matches() {
+      const q = this.query.trim().toLowerCase().replace(/^si-/, '');
+      const all = [...common, ...this.entries];
+      if (!q) { const wanted = ['github','cloudflare','jellyfin','plex','youtube','netflix','spotify','docker','proxmox','homeassistant','nextcloud','bitwarden','notion','telegram','rss']; return [...common, ...this.entries.filter(e => wanted.includes(e.slug))]; }
+      return all.filter(e => (e.title + ' ' + (e.slug || '')).toLowerCase().includes(q));
+    },
+  },
+  methods: {
+    choose(value) { this.$emit('update:modelValue', value); this.open = false; },
+    async toggle() {
+      this.open = !this.open;
+      if (!this.open || this.entries.length) return;
+      this.loading = true;
+      try { library ||= import('simple-icons'); const icons = await library; this.entries = Object.values(icons).filter(e => e && e.slug && e.path).map(e => ({...e, value: 'si-' + e.slug})); }
+      catch { this.loadError = true; library = null; }
+      finally { this.loading = false; }
+    },
+  },
+};
+</script>
+<style scoped lang="scss">
+.icon-picker { min-width: 0; width: 100%; }
+.icon-input-label { display: block; margin-bottom: 0.4rem; }
+.icon-input-row { display: flex; gap: 0.5rem; align-items: center; }
+input { width: 100%; min-width: 0; box-sizing: border-box; padding: 0.65rem; color: var(--interactive-editor-color); background: var(--interactive-editor-background); border: 1px solid currentColor; border-radius: var(--curve-factor-small); font-size: 1rem; }
+.icon-input-row input { flex: 1; }
+.icon-preview { flex-shrink: 0; width: 2rem; }
+button { padding: 0.5rem; color: var(--interactive-editor-color); background: var(--interactive-editor-background); border: 1px solid currentColor; border-radius: var(--curve-factor-small); cursor: pointer; white-space: nowrap; }
+button:hover, button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.icon-library { margin-top: 0.6rem; padding: 0.7rem; border: 1px dashed currentColor; border-radius: var(--curve-factor); }
+p { font-size: 0.75rem; opacity: 0.85; }
+.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 0.45rem; }
+.icon-grid button { display: flex; flex-direction: column; align-items: center; min-height: 64px; min-width: 0; gap: 0.3rem; }
+.icon-name { font-size: 0.65rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+svg { width: 24px; height: 24px; }
+.emoji { font-size: 24px; }
+</style>

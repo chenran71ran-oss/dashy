@@ -6,14 +6,14 @@
       :options="themeNames"
       v-model="selectedTheme"
       class="theme-dropdown"
-      :tabindex="-2"
+      :tabindex="0"
       @option:selected="themeChangedInUI"
     />
     </div>
     <IconPalette
       v-if="!hidePallete"
       class="color-button"
-      @click="openThemeConfigurator"
+      @click="openThemeConfigurator" @keydown.enter="openThemeConfigurator" @keydown.space.prevent="openThemeConfigurator" role="button" tabindex="0" :aria-label="$t('theme-maker.title')"
       v-tooltip="$t('theme-maker.title')"
     />
     <CustomThemeMaker

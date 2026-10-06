@@ -1,9 +1,9 @@
 <template>
   <main class="cloud-login">
     <form class="cloud-login-panel" @submit.prevent="login">
-      <img src="/kenneth-mech.svg" alt="" width="80" height="80">
-      <p class="cloud-label">KENNETH / PERSONAL PORTAL</p>
-      <h1>总站入口</h1>
+      <img src="/kenneth-mech.svg" alt="Home Lab 像素机甲标识" width="80" height="80">
+      <p class="cloud-label">HOME LAB / PERSONAL PORTAL</p>
+      <h1>Home Lab</h1>
       <p>输入管理员密码，进入你的导航面板。</p>
       <label for="admin-password">管理员密码</label>
       <input id="admin-password" v-model="password" type="password" autocomplete="current-password" required autofocus :disabled="busy">

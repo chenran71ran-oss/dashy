@@ -1,4 +1,4 @@
-# Kenneth 总站 · Dashy 原版前端 / Cloudflare 云构建版
+# Home Lab 总站 · Dashy 原版前端 / Cloudflare 云构建版
 
 这是一份真实复用 Dashy 前端的改造项目，不是按截图重写的单文件页面。
 原始项目：https://github.com/Lissy93/dashy
@@ -76,3 +76,19 @@ Cloudflare 官方参考：
 - https://developers.cloudflare.com/workers/ci-cd/builds/build-image/
 - https://developers.cloudflare.com/workers/static-assets/binding/
 - https://developers.cloudflare.com/workers/wrangler/configuration/
+
+## Home Lab 交互修订
+
+- 旧默认标题在读取配置时更新为 Home Lab，已有分类、网站和图标保留；替换像素机甲标识。
+- 常用工具栏直接展开：主题、布局、卡片尺寸、编辑和视图；小屏自动换行，也可收起。
+- 网站与分类使用简洁中文表单，提供可搜索的本地图标库与预览。高级服务器探测字段不出现在导航表单。
+- 弹窗只保留内容区滚动，支持 Escape、键盘焦点约束；取消小分类编辑不会更改原数据。
+- 专注视图改为紧凑的分类筛选和卡片网格；工作台未选择站点时显示导航首页。小分类内同时显示图标与名称。
+
+## 数据与公开仓库
+
+仓库仅保存程序源码。通过后台添加的网站配置由 Worker 写入 HOME_KV，不写回 GitHub；ADMIN_TOKEN 只从 Cloudflare 运行时绑定读取，不嵌入前端。管理员会话使用带 Secure/HttpOnly/SameSite=Strict 标记的 Cookie（本地 HTTP 测试不加 Secure），只绑定本站主机，且配置接口要求有效会话并禁用缓存。密码与 Cookie 不记录到日志。
+
+请将 ADMIN_TOKEN 保存为 Cloudflare 运行时 Secret，不要使用 VITE_ 或 DASHY_ 前缀来保存凭证，也不要将敏感数据粘贴到仓库、截图、公开构建日志或前端资源。本站的 KV、账户和已登录设备仍需保护，公开源码不等于零风险保证。本地图标不向第三方查询；自行填写的远程图标或背景网址仍会向相应服务器发起请求。本次检查覆盖本站改造代码，其他 Worker 的数据接口不在本次审查范围内。
+
+搜索框仅筛选本站入口，按 Enter 打开首个可见结果，不把搜索关键词交给外部搜索引擎。

@@ -6,6 +6,7 @@
       @mouseup.right="openContextMenu"
       v-longPress="true"
       :href="hyperLinkHref"
+      :aria-label="item.title"
       :target="anchorTarget"
       v-tooltip="subItemTooltip"
       rel="noopener noreferrer" tabindex="0"
@@ -15,7 +16,7 @@
       <!-- Item Icon (shows title as fallback when no icon) -->
       <Icon v-if="item.icon" :icon="item.icon" :url="item.url"
       size="small" v-bind:style="customStyles" class="sub-icon-img bounce" />
-      <span v-else class="sub-item-text">{{ item.title }}</span>
+      <span class="sub-item-text">{{ item.title }}</span>
     </a>
     <!-- Right-click context menu -->
     <ContextMenu
@@ -61,10 +62,17 @@ export default {
 
 <style lang="scss">
 .sub-item-wrapper {
+  min-width: 0;
   flex-grow: 1;
   flex-basis: 6rem;
   display: flex;
   a.sub-item-link {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
     margin: 0.2rem;
     .sub-icon-img {
       margin: 0;
@@ -76,7 +84,8 @@ export default {
       text-align: center;
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
+      white-space: normal;
+      overflow-wrap: anywhere;
       color: var(--item-text-color);
     }
   }

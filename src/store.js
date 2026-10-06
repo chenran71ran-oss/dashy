@@ -54,7 +54,7 @@ const {
 
 const emptyConfig = {
   appConfig: {},
-  pageInfo: { title: 'Dashy' },
+  pageInfo: { title: 'Home Lab' },
   sections: [],
 };
 

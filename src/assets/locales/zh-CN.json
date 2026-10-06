@@ -119,8 +119,8 @@
   "alternate-views": {
     "alternate-view-heading": "切换视图",
     "default": "默认",
-    "workspace": "工作空间",
-    "minimal": "最小化"
+    "workspace": "工作台",
+    "minimal": "专注视图"
   },
   "remote-config": {
     "title": "加载远程配置？",
@@ -367,7 +367,7 @@
     },
     "edit-section": {
       "edit-section-title": "编辑 Section",
-      "add-section-title": "添加新的 Section",
+      "add-section-title": "添加分类",
       "edit-tooltip": "单击以修改，或右键点击以获取更多选项",
       "remove-confirm": "确定要删除此部分吗？ 此操作可以稍后撤消。"
     },

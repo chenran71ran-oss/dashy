@@ -4,10 +4,11 @@ import validSchema from './config-validator.cjs';
 const CONFIG_KEY = 'kenneth-home:dashy:v1';
 const OLD_CONFIG_KEY = 'kenneth-home:config:v1';
 export const DEFAULT_CONFIG = {
-  pageInfo: { title: 'Kenneth 的总站', description: '常用网站，点击直达。', logo: '/kenneth-mech.svg' },
+  pageInfo: { title: 'Home Lab', description: '常用网站，随手直达。', logo: '/kenneth-mech.svg' },
   appConfig: { theme: 'nord-frost', language: 'zh-CN', layout: 'auto', iconSize: 'medium',
     defaultOpeningMethod: 'newtab', enableServiceWorker: false, enableErrorReporting: false,
-    statusCheck: false, disableUpdateChecks: true },
+    statusCheck: false, disableUpdateChecks: true, faviconApi: 'local',
+    enableFontAwesome: false, enableMaterialDesignIcons: false, webSearch: { disableWebSearch: true } },
   sections: [],
 };
 const BASE_HEADERS = {'cache-control':'no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer'};
@@ -80,11 +81,18 @@ function validateConfig(raw) {
   if (raw.appConfig?.auth?.users?.length || raw.appConfig?.auth?.enableKeycloak || raw.appConfig?.auth?.enableOidc) fail('登录统一使用 Cloudflare 的 ADMIN_TOKEN，无需设置第二套账户');
   if (!validSchema(raw)) fail('配置校验失败：' + (validSchema.errors?.[0]?.instancePath || '/') + ' ' + (validSchema.errors?.[0]?.message || '格式不正确'));
   const config = structuredClone(raw);
+  config.pageInfo ||= {};
+  if (!config.pageInfo.title || /^Kenneth\s*的/.test(config.pageInfo.title)) config.pageInfo.title = 'Home Lab';
+  config.pageInfo.logo ||= '/kenneth-mech.svg';
   config.appConfig ||= {};
   delete config.appConfig.auth;
   config.appConfig.enableServiceWorker = false;
   config.appConfig.enableErrorReporting = false;
   config.appConfig.statusCheck = false;
+  config.appConfig.faviconApi = 'local';
+  config.appConfig.enableFontAwesome = false;
+  config.appConfig.enableMaterialDesignIcons = false;
+  config.appConfig.webSearch = { ...config.appConfig.webSearch, disableWebSearch: true };
   config.appConfig.preventWriteToDisk = false;
   config.appConfig.disableUpdateChecks = true;
   config.pages = [];

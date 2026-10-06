@@ -12,7 +12,7 @@
       <path v-if="siPath" :d="siPath" />
     </svg>
     <!-- Standard image asset icon -->
-    <img v-else-if="icon" :src="iconPath" @error="onImageError" loading="lazy"
+    <img v-else-if="icon" :src="iconPath" @error="onImageError" loading="lazy" referrerpolicy="no-referrer"
       :class="`tile-icon ${size} ${broken ? 'broken' : ''}`"
     />
     <!-- Icon could not load/ broken url -->
@@ -204,6 +204,10 @@ export default {
     },
     /* Loads SVG path for simple-icons ID. Only loads SI module on first use */
     async resolveSimpleIcon() {
+      const requestedIcon = this.icon;
+      this.broken = false;
+      this.attemptedFallback = false;
+      this.siPath = '';
       if (this.iconType !== 'si' || !this.icon) {
         this.siPath = '';
         return;
@@ -215,8 +219,9 @@ export default {
         this.imageNotFound('Failed to load simple-icons module');
         return;
       }
-      const imageName = this.icon.charAt(3).toUpperCase() + this.icon.slice(4);
-      const icon = mod[`si${imageName}`];
+      if (this.icon !== requestedIcon) return;
+      const imageName = this.icon.slice(3).toLowerCase();
+      const icon = Object.values(mod).find((entry) => entry?.slug === imageName);
       if (!icon) {
         this.imageNotFound(`No icon was found for '${imageName}' in Simple Icons`);
         this.siPath = '';

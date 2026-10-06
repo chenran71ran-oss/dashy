@@ -65,6 +65,10 @@ export default {
         this.prevFocus = document.activeElement;
         this.$emit('before-open');
         this.isOpen = true;
+        if (!document.querySelector('.modal-overlay')) {
+          this.previousOverflow = document.body.style.overflow;
+          document.body.style.overflow = 'hidden';
+        }
         document.addEventListener('keydown', this.onKeyDown);
         const root = document.getElementById('dashy');
         if (root) root.setAttribute('inert', '');
@@ -83,6 +87,7 @@ export default {
     },
     teardown() {
       this.isOpen = false;
+      document.body.style.overflow = this.previousOverflow || '';
       document.removeEventListener('keydown', this.onKeyDown);
       document.getElementById('dashy')?.removeAttribute('inert');
       this.prevFocus?.focus?.();
@@ -90,6 +95,13 @@ export default {
     },
     onKeyDown(e) {
       if (e.key === 'Escape') this.close();
+      if (e.key === 'Tab') {
+        const elements = [...(this.$refs.dlg?.querySelectorAll(FOCUSABLE) || [])]
+          .filter((el) => !el.disabled && el.getClientRects().length);
+        const first = elements[0], last = elements[elements.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
     },
     onOverlayDown(e) {
       this.mouseDownTarget = e.target;
@@ -117,26 +129,26 @@ export default {
 }
 
 dialog.dashy-modal {
-  position: static;
+  position: relative;
   display: block;
   padding: 0;
   margin: 0;
-  min-width: 350px;
+  min-width: min(350px, 94vw);
   min-height: 200px;
-  max-width: 95vw;
-  max-height: 95vh;
-  max-width: 72rem;
-  max-height: 72rem;
+  max-width: min(94vw, 72rem);
+  max-height: 92dvh;
   color: inherit;
   background: var(--background-darker);
   border: none;
   border-radius: var(--curve-factor);
   box-shadow: 0 40px 70px -2px hsl(0deg 0% 0% / 60%), 1px 1px 6px var(--primary);
-  overflow: auto;
+  overflow: hidden;
+  box-sizing: border-box;
 
   &.resizable { resize: both; }
 
-  .modal-body { height: 100%; }
+  .modal-body { height: 100%; max-height: 92dvh; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+  .edit-item-inner, .interactive-editor-inner { height: auto; min-height: 100%; overflow: visible; box-sizing: border-box; padding-top: 2.8rem; }
 
   .modal-top-right {
     position: absolute;
@@ -146,7 +158,9 @@ dialog.dashy-modal {
   }
 
   .modal-close-mobile {
-    display: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     position: absolute;
     top: 0;
     right: 0;
@@ -169,10 +183,10 @@ dialog.dashy-modal {
 
   @include phone {
     width: 100vw !important;
-    height: 100vh !important;
+    height: 100dvh !important;
     min-width: 0;
     max-width: 100vw;
-    max-height: 100vh;
+    max-height: 100dvh;
     border-radius: 0;
     resize: none;
     .modal-close-mobile { display: inline-flex; align-items: center; justify-content: center; }

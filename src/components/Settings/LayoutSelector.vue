@@ -3,28 +3,28 @@
     <span class="options-label">{{ $t('settings.layout-label') }}</span>
     <div class="display-options">
       <IconDeafault
-        @click="updateDisplayLayout('auto')"
-        v-tooltip="tooltip($t('settings.layout-auto'))"
+        @click="updateDisplayLayout('auto')" @keydown.enter="updateDisplayLayout('auto')" @keydown.space.prevent="updateDisplayLayout('auto')" role="button"
+        :aria-label="$t('settings.layout-auto')" v-tooltip="tooltip($t('settings.layout-auto'))"
         :class="`layout-icon ${layout === 'auto' ? 'selected' : ''}`"
-        tabindex="-2"
+        tabindex="0"
       />
       <IconHorizontal
-        @click="updateDisplayLayout('horizontal')"
-        v-tooltip="tooltip($t('settings.layout-horizontal'))"
+        @click="updateDisplayLayout('horizontal')" @keydown.enter="updateDisplayLayout('horizontal')" @keydown.space.prevent="updateDisplayLayout('horizontal')" role="button"
+        :aria-label="$t('settings.layout-horizontal')" v-tooltip="tooltip($t('settings.layout-horizontal'))"
         :class="`layout-icon ${layout === 'horizontal' ? 'selected' : ''}`"
-        tabindex="-2"
+        tabindex="0"
       />
       <IconVertical
-        @click="updateDisplayLayout('vertical')"
-        v-tooltip="tooltip($t('settings.layout-vertical'))"
+        @click="updateDisplayLayout('vertical')" @keydown.enter="updateDisplayLayout('vertical')" @keydown.space.prevent="updateDisplayLayout('vertical')" role="button"
+        :aria-label="$t('settings.layout-vertical')" v-tooltip="tooltip($t('settings.layout-vertical'))"
         :class="`layout-icon ${layout === 'vertical' ? 'selected' : ''}`"
-        tabindex="-2"
+        tabindex="0"
       />
       <IconMasonry
-        @click="updateDisplayLayout('masonry')"
-        v-tooltip="tooltip($t('settings.layout-masonry'))"
+        @click="updateDisplayLayout('masonry')" @keydown.enter="updateDisplayLayout('masonry')" @keydown.space.prevent="updateDisplayLayout('masonry')" role="button"
+        :aria-label="$t('settings.layout-masonry')" v-tooltip="tooltip($t('settings.layout-masonry'))"
         :class="`layout-icon ${layout === 'masonry' ? 'selected' : ''}`"
-        tabindex="-2"
+        tabindex="0"
       />
     </div>
   </div>

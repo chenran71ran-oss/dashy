@@ -157,7 +157,8 @@ export default {
 
     /* Launches the first result (only used when disableWebSearch: true) */
     openFirstResult() {
-      const first = document.querySelector('.item:not(.add-new)');
+      const first = [...document.querySelectorAll('.item:not(.add-new)')]
+        .find((item) => item.getClientRects().length > 0);
       if (!first) return;
       first.click();
       this.clearFilterInput();
