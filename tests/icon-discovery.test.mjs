@@ -12,6 +12,7 @@ test('read public homepage declarations without bookmark path/query or credentia
   const site=calls.find(c=>!c.url.includes('/dns-query?'));assert.equal(site.url,'https://public.example/');
   assert.equal(site.options.credentials,'omit');assert.equal(site.options.headers.Cookie,undefined);assert.equal(site.options.headers.Authorization,undefined);
   assert.ok(calls.every(c=>!c.url.includes('secret')&&!c.url.includes('/private')));
+  assert.ok(calls.filter(c=>c.url.includes('/dns-query?')).every(c=>c.options.redirect==='manual'));
 });
 test('public redirects retain locale paths and every redirect is checked',async()=>{
   const calls=[];

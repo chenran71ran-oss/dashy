@@ -23,7 +23,8 @@ export function isPublicAddress(value) {
 async function checkDns(host, fetcher, signal, useCache) {
   if (useCache && dnsCache.get(host)>Date.now()) return;
   const results=await Promise.all(['A','AAAA'].map(async type=>{
-    const response=await fetcher(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(host)}&type=${type}`, {headers:{Accept:'application/dns-json'},redirect:'error',signal});
+    // Reject redirects via status, using the mode supported by outbound Worker requests.
+    const response=await fetcher(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(host)}&type=${type}`, {headers:{Accept:'application/dns-json'},redirect:'manual',signal});
     if(!response.ok)throw new Error('DNS unavailable');
     const data=await response.json(); if(data.Status!==0)throw new Error('DNS unavailable');
     return (data.Answer||[]).filter(a=>a.type===1 || a.type===28).map(a=>a.data);
