@@ -1,5 +1,10 @@
 // The API key stays in the Worker Secret; only public weather data is returned.
-const cities = { wuhan: { name: '武汉', lat: 30.5928, lon: 114.3055 }, qingdao: { name: '青岛', lat: 36.0671, lon: 120.3826 } };
+const cities = {
+  wuhan: { name: '武汉', lat: 30.5928, lon: 114.3055 },
+  qingdao: { name: '青岛', lat: 36.0671, lon: 120.3826 },
+  wuchang: { name: '武汉·武昌', lat: 30.5563, lon: 114.3105 },
+  huangdao: { name: '青岛·黄岛', lat: 35.9590, lon: 120.1931 },
+};
 const pending = new Map();
 const cache = new Map();
 function error(message, status = 400) { throw Object.assign(new Error(message), { status }); }

@@ -27,7 +27,7 @@
         <label>时间制式<select v-model="hourFormat" aria-label="时间制式"><option value="auto">跟随设备语言</option><option value="24">24小时</option><option value="12">12小时</option></select></label>
       </template>
       <template v-else-if="draft.type === 'weather'">
-        <label>城市<select v-model="options.city" aria-label="天气城市"><option value="wuhan">武汉</option><option value="qingdao">青岛</option></select></label>
+        <label>地区<select v-model="options.city" aria-label="天气地区"><option value="wuhan">武汉</option><option value="qingdao">青岛</option><option value="wuchang">武汉·武昌</option><option value="huangdao">青岛·黄岛</option></select></label>
         <label>单位<select v-model="options.units" aria-label="天气单位"><option value="metric">摄氏度 °C</option><option value="imperial">华氏度 °F</option></select></label>
         <label>语言<select v-model="options.lang" aria-label="天气语言"><option value="zh_cn">中文</option><option value="en">English</option></select></label>
         <label class="check"><input type="checkbox" v-model="options.hideDetails" /> 默认收起详细天气</label>
@@ -100,7 +100,7 @@ export default {
         else options.use12Hour = this.hourFormat === '12';
       }
       if (widget.type === 'weather') {
-        if (!['wuhan', 'qingdao'].includes(options.city)) { this.error = '请选择武汉或青岛。'; return; }
+        if (!['wuhan', 'qingdao', 'wuchang', 'huangdao'].includes(options.city)) { this.error = '请选择天气地区。'; return; }
         delete options.apiKey;
         widget.updateInterval = 600;
       }

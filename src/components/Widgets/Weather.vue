@@ -109,7 +109,7 @@ export default {
     /* Validate input props, and print warning if incorrect */
     checkProps() {
       const ops = this.options;
-      if (!['wuhan', 'qingdao'].includes(ops.city || 'wuhan')) this.error('请选择武汉或青岛');
+      if (!['wuhan', 'qingdao', 'wuchang', 'huangdao'].includes(ops.city || 'wuhan')) this.error('请选择天气地区');
 
       if ((!ops.lat || !ops.lon) && !ops.city && !ops.cityId) {
         this.error('A city name, city ID or lat + lon is required to fetch weather');
