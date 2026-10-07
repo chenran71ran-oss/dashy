@@ -126,7 +126,22 @@ section.portal-toolbar {
   .options-outer { flex-basis: 100%; justify-content: flex-start; min-width: 0; }
 }
 
-@media(max-width:599px) { section.portal-toolbar { gap: .35rem; padding: .35rem .5rem; } .options-outer { padding: .4rem; } }
+/* A column flex layout must not inherit desktop flex bases or end alignment. */
+@media(max-width:599px) {
+  section.portal-toolbar {
+    display: grid; grid-template-columns: minmax(0, 1fr);
+    align-items: stretch; gap: .35rem; padding: .35rem .5rem;
+    width: 100%; min-width: 0; box-sizing: border-box;
+  }
+  .options-outer {
+    width: 100%; min-width: 0; box-sizing: border-box;
+    flex: none; padding: .4rem; justify-content: flex-start;
+  }
+  section.portal-toolbar :deep(form.normal) {
+    width: 100%; max-width: none; min-width: 0; flex: none;
+    margin: 0 auto;
+  }
+}
 
 .options-trigger {
   display: inline-flex;
