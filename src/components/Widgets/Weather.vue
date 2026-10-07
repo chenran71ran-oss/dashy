@@ -7,6 +7,8 @@
   </div>
   <!-- Weather description -->
   <p class="description">{{ description }}</p>
+  <p class="description" v-if="dataTime">OpenWeather · 数据时间 {{ dataTime }}（北京时间）</p>
+  <p class="description" v-if="queryCoordinates">查询坐标 {{ queryCoordinates }}</p>
   <div class="details" v-if="showDetails && weatherDetails.length > 0">
     <div class="info-wrap" v-for="(section, indx) in weatherDetails" :key="indx">
       <p class="info-line" v-for="weather in section" :key="weather.label">
@@ -34,6 +36,8 @@ export default {
       icon: null,
       description: null,
       temp: null,
+      dataTime: null,
+      queryCoordinates: null,
       showDetails: !this.options.hideDetails,
       weatherDetails: [],
     };
@@ -64,9 +68,10 @@ export default {
     },
   },
   methods: {
-    /* Adds units symbol to temperature, depending on metric or imperial */
+    /* Truncate to one decimal as requested; do not round to an integer. */
     processTemp(temp) {
-      return `${Math.round(temp)}${this.tempDisplayUnits}`;
+      if (!Number.isFinite(temp)) return '—';
+      return `${(Math.trunc(temp * 10) / 10).toFixed(1)}${this.tempDisplayUnits}`;
     },
     fetchData() {
       this.overrideProxyChoice = false;
@@ -78,6 +83,8 @@ export default {
     },
     /* Fetches the weather from OpenWeatherMap, and processes results */
     processData(data) {
+      this.dataTime = Number.isFinite(data.dt) ? new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(data.dt * 1000)) : null;
+      this.queryCoordinates = data.coord ? `${data.coord.lat}°N, ${data.coord.lon}°E` : null;
       this.icon = data.weather[0].icon;
       this.description = data.weather[0].description;
       this.temp = this.processTemp(data.main.temp);

@@ -28,7 +28,7 @@ export async function readWeather(params, env, fetcher = fetch) {
     let raw;
     try { raw = await response.json(); } catch { error('天气服务返回无效数据', 502); }
     if (!Number.isFinite(raw.main?.temp) || !raw.weather?.[0]?.icon) error('天气服务返回不完整数据', 502);
-    const data = { name: cities[city].name, dt: raw.dt, weather: raw.weather.map(({ icon, description }) => ({ icon, description })), main: raw.main, wind: raw.wind || {}, clouds: raw.clouds || {}, visibility: raw.visibility };
+    const data = { name: cities[city].name, coord: { lat: cities[city].lat, lon: cities[city].lon }, dt: raw.dt, weather: raw.weather.map(({ icon, description }) => ({ icon, description })), main: raw.main, wind: raw.wind || {}, clouds: raw.clouds || {}, visibility: raw.visibility };
     cache.set(key, { data, expires: Date.now() + 600000 });
     return data;
   })();
