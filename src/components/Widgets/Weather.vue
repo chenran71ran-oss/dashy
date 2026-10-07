@@ -24,7 +24,7 @@
 
 <script>
 import WidgetMixin from '@/mixins/WidgetMixin';
-import { widgetApiEndpoints } from '@/utils/config/defaults';
+
 
 export default {
   mixins: [WidgetMixin],
@@ -46,17 +46,7 @@ export default {
       return this.options.units || 'metric';
     },
     endpoint() {
-      const apiKey = this.parseAsEnvVar(this.options.apiKey);
-      const { city, cityId, lat, lon } = this.options;
-      let locationParams;
-      if (lat && lon) {
-        locationParams = `lat=${lat}&lon=${lon}`;
-      } else if (cityId) {
-        locationParams = `id=${cityId}`;
-      } else {
-        locationParams = `q=${city}`;
-      }
-      return `${widgetApiEndpoints.weather}?${locationParams}&appid=${apiKey}&units=${this.units}`;
+      return '/api/weather?' + new URLSearchParams({ city: this.options.city || 'wuhan', units: this.units, lang: this.options.lang || 'zh_cn' });
     },
     tempDisplayUnits() {
       switch (this.units) {
@@ -79,7 +69,12 @@ export default {
       return `${Math.round(temp)}${this.tempDisplayUnits}`;
     },
     fetchData() {
-      this.makeRequest(this.endpoint).then(this.processData);
+      this.overrideProxyChoice = false;
+      fetch(this.endpoint, { credentials: 'same-origin' }).then(async response => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '天气暂时不可用');
+        this.processData(data);
+      }).catch(err => this.error(err.message)).finally(() => this.finishLoading());
     },
     /* Fetches the weather from OpenWeatherMap, and processes results */
     processData(data) {
@@ -94,16 +89,16 @@ export default {
     makeWeatherData(data) {
       this.weatherDetails = [
         [
-          { label: 'Min Temp', value: this.processTemp(data.main.temp_min) },
-          { label: 'Max Temp', value: this.processTemp(data.main.temp_max) },
-          { label: 'Feels Like', value: this.processTemp(data.main.feels_like) },
+          { label: '最低温度', value: this.processTemp(data.main.temp_min) },
+          { label: '最高温度', value: this.processTemp(data.main.temp_max) },
+          { label: '体感温度', value: this.processTemp(data.main.feels_like) },
         ],
         [
-          { label: 'Pressure', value: `${data.main.pressure}hPa` },
-          { label: 'Humidity', value: `${data.main.humidity}%` },
-          { label: 'visibility', value: data.visibility },
-          { label: 'wind', value: `${data.wind.speed}${this.speedDisplayUnits}` },
-          { label: 'clouds', value: `${data.clouds.all}%` },
+          { label: '气压', value: `${data.main.pressure}hPa` },
+          { label: '湿度', value: `${data.main.humidity}%` },
+          { label: '能见度', value: data.visibility },
+          { label: '风速', value: `${data.wind.speed}${this.speedDisplayUnits}` },
+          { label: '云量', value: `${data.clouds.all}%` },
         ],
       ];
     },
@@ -114,7 +109,7 @@ export default {
     /* Validate input props, and print warning if incorrect */
     checkProps() {
       const ops = this.options;
-      if (!ops.apiKey) this.error('Missing API key for OpenWeatherMap');
+      if (!['wuhan', 'qingdao'].includes(ops.city || 'wuhan')) this.error('请选择武汉或青岛');
 
       if ((!ops.lat || !ops.lon) && !ops.city && !ops.cityId) {
         this.error('A city name, city ID or lat + lon is required to fetch weather');

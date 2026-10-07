@@ -4,13 +4,14 @@
       <h3>{{ isAddNew ? '添加小组件' : '编辑小组件' }}</h3>
       <label>小组件类型<select v-model="draft.type" aria-label="小组件类型" @change="typeChanged">
         <optgroup label="当前可用">
+          <option value="weather">天气 · 武汉 / 青岛</option>
           <option value="clock">时钟 · 时间与日期</option>
           <option value="image">图片 · 图片或图表快照</option>
           <option value="iframe">嵌入网页 · 对方需允许嵌入</option>
         </optgroup>
         <option v-if="!supported" :value="draft.type">{{ draft.type }} · 尚未接入</option>
         <optgroup label="源码保留，待接入数据服务">
-          <option disabled>天气 / RSS / 日历 / 自定义 API</option>
+          <option disabled>RSS / 日历 / 自定义 API</option>
           <option disabled>CPU / 内存 / 存储 / 网络流量</option>
           <option disabled>Uptime Kuma / Pi-hole / AdGuard / Proxmox</option>
         </optgroup>
@@ -24,6 +25,13 @@
         <label class="check"><input type="checkbox" v-model="options.hideDate" /> 隐藏日期</label>
         <label class="check"><input type="checkbox" v-model="options.hideSeconds" /> 隐藏秒数</label>
         <label>时间制式<select v-model="hourFormat" aria-label="时间制式"><option value="auto">跟随设备语言</option><option value="24">24小时</option><option value="12">12小时</option></select></label>
+      </template>
+      <template v-else-if="draft.type === 'weather'">
+        <label>城市<select v-model="options.city" aria-label="天气城市"><option value="wuhan">武汉</option><option value="qingdao">青岛</option></select></label>
+        <label>单位<select v-model="options.units" aria-label="天气单位"><option value="metric">摄氏度 °C</option><option value="imperial">华氏度 °F</option></select></label>
+        <label>语言<select v-model="options.lang" aria-label="天气语言"><option value="zh_cn">中文</option><option value="en">English</option></select></label>
+        <label class="check"><input type="checkbox" v-model="options.hideDetails" /> 默认收起详细天气</label>
+        <p class="editor-hint">密钥由 Cloudflare Secret OPENWEATHER_API_KEY 提供，此处无需填写。每10分钟刷新，可分别添加武汉和青岛。</p>
       </template>
       <template v-else-if="draft.type === 'image'">
         <label>图片地址 <span class="required">*</span><input v-model="options.imagePath" aria-label="图片地址" placeholder="https://example.com/chart.png 或 /kenneth-mech.svg" /></label>
@@ -61,7 +69,7 @@ export default {
     supported() { return CLOUD_CAPABILITIES.widgets.includes(this.draft.type); },
     options() { return this.draft.options || {}; },
     description() {
-      return { clock: '直接使用设备时间，无需 API Key。可同时添加不同时区的时钟。', image: '展示图片、壁纸或监控服务导出的图表快照。远程图片由浏览器加载。', iframe: '把对方允许嵌入的页面放进分类，例如公开状态页；不需要填写 API Key。' }[this.draft.type] || '该组件的源码和配置已保留，当前 CF 版未接入所需 API 或代理服务，不会发起数据请求。';
+      return { weather: 'OpenWeatherMap 实况天气；可显示温度、体感、湿度与风速。API Key 仅保存在服务器。', clock: '直接使用设备时间，无需 API Key。可同时添加不同时区的时钟。', image: '展示图片、壁纸或监控服务导出的图表快照。远程图片由浏览器加载。', iframe: '把对方允许嵌入的页面放进分类，例如公开状态页；不需要填写 API Key。' }[this.draft.type] || '该组件的源码和配置已保留，当前 CF 版未接入所需 API 或代理服务，不会发起数据请求。';
     },
   },
   created() {
@@ -77,6 +85,7 @@ export default {
     typeChanged() {
       this.draft.options = this.typeOptions[this.draft.type] ||= {};
       this.hourFormat = typeof this.options.use12Hour === 'boolean' ? (this.options.use12Hour ? '12' : '24') : 'auto';
+      if (this.draft.type === 'weather') Object.assign(this.options, { city: this.options.city || 'wuhan', units: this.options.units || 'metric', lang: this.options.lang || 'zh_cn' });
       this.error = '';
     },
     saveWidget() {
@@ -89,6 +98,11 @@ export default {
         catch { this.error = '请填写有效时区（例如 Asia/Shanghai）和语言（例如 zh-CN）。'; return; }
         if (this.hourFormat === 'auto') delete options.use12Hour;
         else options.use12Hour = this.hourFormat === '12';
+      }
+      if (widget.type === 'weather') {
+        if (!['wuhan', 'qingdao'].includes(options.city)) { this.error = '请选择武汉或青岛。'; return; }
+        delete options.apiKey;
+        widget.updateInterval = 600;
       }
       if (widget.type === 'image') {
         options.imagePath = (options.imagePath || '').trim();

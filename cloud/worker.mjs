@@ -2,6 +2,7 @@
 // Runtime ADMIN_TOKEN only; never put the password in frontend build variables.
 import validSchema from './config-validator.cjs';
 import { CLOUD_CAPABILITIES } from './capabilities.mjs';
+import { readWeather } from './weather.mjs';
 import { discoverIcon, fetchPublicIcon, publicIconUrl } from './icon-discovery.mjs';
 const CONFIG_KEY = 'kenneth-home:dashy:v1';
 const OLD_CONFIG_KEY = 'kenneth-home:config:v1';
@@ -252,6 +253,10 @@ export default {
         const config = validateConfig(body.config || body);
         await env.HOME_KV.put(CONFIG_KEY, JSON.stringify(config));
         return json({ success: true, message: '配置已保存到云端', config });
+      }
+      if (u.pathname === '/api/weather' && method === 'GET') {
+        sameOrigin(req, u); await authorize(req, env);
+        return json(await readWeather(u.searchParams, env));
       }
       if (u.pathname.startsWith('/api/')) return json({ error: '接口或方法不存在' }, 404);
       // No unauthenticated config-file fallback through SPA/static assets.

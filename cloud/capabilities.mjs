@@ -4,5 +4,5 @@ export const CLOUD_CAPABILITIES = Object.freeze({
   statusChecks: false,
   pingChecks: false,
   localUrlChecks: false,
-  widgets: Object.freeze(['clock', 'image', 'iframe']),
+  widgets: Object.freeze(['clock', 'image', 'iframe', 'weather']),
 });
