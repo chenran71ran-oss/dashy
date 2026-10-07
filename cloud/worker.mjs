@@ -2,9 +2,10 @@
 // Runtime ADMIN_TOKEN only; never put the password in frontend build variables.
 import validSchema from './config-validator.cjs';
 import { CLOUD_CAPABILITIES } from './capabilities.mjs';
-import { discoverIcon } from './icon-discovery.mjs';
+import { discoverIcon, fetchPublicIcon, publicIconUrl } from './icon-discovery.mjs';
 const CONFIG_KEY = 'kenneth-home:dashy:v1';
 const OLD_CONFIG_KEY = 'kenneth-home:config:v1';
+const FAVORITES_KEY = 'kenneth-home:theme-favorites:v1';
 export const DEFAULT_CONFIG = {
   pageInfo: { title: 'Home Lab', description: '', logo: '/mech/blue.png' },
   appConfig: { theme: 'nord-frost', language: 'zh-CN', layout: 'auto', iconSize: 'medium',
@@ -194,6 +195,43 @@ export default {
       }
       if (u.pathname === '/api/session' && method === 'GET') {
         await authorize(req, env); return json({ authenticated: true });
+      }
+      if (u.pathname === '/api/theme-favorites' && ['GET','POST','PATCH'].includes(method)) {
+        sameOrigin(req,u);await authorize(req,env);
+        if(!env.HOME_KV)fail('HOME_KV 未绑定',503);
+        const saved=await env.HOME_KV.get(FAVORITES_KEY);
+        let favorites=saved===null?[]:JSON.parse(saved);
+        if(method!=='GET') {
+          const body=await limitedBody(req,20000);
+          if(method==='POST') {
+            if(!Array.isArray(body.favorites)||body.favorites.length>200||body.favorites.some(x=>typeof x!=='string'||!x||x.length>100))fail('收藏主题格式不正确');
+            if(saved===null)favorites=[...new Set(body.favorites)];
+          } else {
+            if(typeof body.theme!=='string'||!body.theme||body.theme.length>100||typeof body.favorite!=='boolean')fail('收藏主题格式不正确');
+            favorites=favorites.filter(x=>x!==body.theme);
+            if(body.favorite)favorites.push(body.theme);
+            if(favorites.length>200)fail('收藏主题数量过多');
+          }
+          if(method==='PATCH'||saved===null)await env.HOME_KV.put(FAVORITES_KEY,JSON.stringify(favorites));
+        }
+        return json({favorites,exists:saved!==null||method!=='GET'});
+      }
+      if(u.pathname==='/api/icon-image' && method==='GET') {
+        sameOrigin(req,u);await authorize(req,env);
+        const value=u.searchParams.get('url');
+        if(!value||value.length>4096)fail('图标地址无效');
+        const target=publicIconUrl(value);
+        const digest=await crypto.subtle.digest('SHA-256',encoder.encode(target.href));
+        const key='kenneth-home:icon:'+base64url(digest);
+        const cached=await env.HOME_KV?.get(key);let data;
+        if(cached)data=JSON.parse(cached);
+        else {
+          const {bytes,mime}=await fetchPublicIcon(target.href);
+          let binary='';for(let at=0;at<bytes.length;at+=8192)binary+=String.fromCharCode(...bytes.slice(at,at+8192));
+          data={mime,body:btoa(binary)};
+          if(env.HOME_KV)await env.HOME_KV.put(key,JSON.stringify(data),{expirationTtl:86400});
+        }
+        return new Response(Uint8Array.from(atob(data.body),c=>c.charCodeAt(0)),{headers:{...BASE_HEADERS,'content-type':data.mime,'content-security-policy':"default-src 'none'; sandbox",'x-frame-options':'DENY'}});
       }
       if (['/conf.yml', '/api/config'].includes(u.pathname) && method === 'GET') {
         await authorize(req, env);

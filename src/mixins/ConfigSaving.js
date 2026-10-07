@@ -43,6 +43,11 @@ export default {
         this.responseText = response.data.message;
         if (this.saveSuccess) {
           this.carefullyClearLocalStorage();
+          if (response.data.config) {
+            this.$store.commit(StoreKeys.SET_ROOT_CONFIG, response.data.config);
+            this.$store.commit(StoreKeys.SET_CONFIG, response.data.config);
+            this.$store.commit(StoreKeys.SET_CONFIG_SOURCE, response.data.config);
+          }
           this.showToast(this.$t('config-editor.success-msg-disk'), true);
           InfoHandler('Config has been written to disk successfully', 'Config Update');
         } else {

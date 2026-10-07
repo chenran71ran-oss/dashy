@@ -1,5 +1,5 @@
 <template>
-  <section>
+  <section class="portal-toolbar">
     <SearchBar
       v-if="searchVisible"
       ref="SearchBar"
@@ -99,10 +99,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
-section {
+section.portal-toolbar {
   position: relative;
   display: flex;
-  align-items: stretch;
+  align-items: flex-end;
   flex-wrap: wrap;
   gap: 0.5rem;
   padding: 0.5rem;
@@ -115,16 +115,18 @@ section {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  flex: 1;
-  padding: 0.25rem 0.5rem;
+  flex: 1 1 48rem;
+  padding: 0.5rem;
   gap: 0.75rem;
   background: var(--settings-background);
   border-radius: var(--curve-factor-navbar) 0 0;
 }
 .options-outer.expanded .options-trigger { display: none; }
-@media(max-width: 900px) {
+@media(max-width: 1100px) {
   .options-outer { flex-basis: 100%; justify-content: flex-start; min-width: 0; }
 }
+
+@media(max-width:599px) { section.portal-toolbar { gap: .35rem; padding: .35rem .5rem; } .options-outer { padding: .4rem; } }
 
 .options-trigger {
   display: inline-flex;

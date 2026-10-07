@@ -14,11 +14,11 @@
               <button type="button" class="theme-choice" :aria-pressed="name === selectedTheme" @click="chooseTheme(name)">
                 <span>{{ chineseLabel(name) }}<small>{{ name }}</small></span><span v-if="name === selectedTheme" class="current-label">当前</span>
               </button>
-              <button type="button" class="theme-favorite" :aria-label="(favorites.includes(name) ? '取消收藏 ' : '收藏 ') + name" :aria-pressed="favorites.includes(name)" @click="toggleFavorite(name)">{{ favorites.includes(name) ? '★' : '☆' }}</button>
+              <button type="button" class="theme-favorite" :disabled="favoritesSaving" :aria-label="(favorites.includes(name) ? '取消收藏 ' : '收藏 ') + name" :aria-pressed="favorites.includes(name)" @click="toggleFavorite(name)">{{ favorites.includes(name) ? '★' : '☆' }}</button>
             </div>
             <p v-if="!orderedThemes.length">没有匹配的主题</p>
           </div>
-          <small class="favorite-note">收藏保存在当前浏览器</small>
+          <small class="favorite-note">{{ favoritesNote }}</small>
         </div>
       </div>
     </div>
@@ -31,22 +31,31 @@ import CustomThemeMaker from '@/components/Settings/CustomThemeMaker';
 import Keys from '@/utils/StoreMutations';
 import IconPalette from '@/assets/interface-icons/config-color-palette.svg';
 import ThemingMixin from '@/mixins/ThemingMixin';
-import { themeLabel, orderThemes, readThemeFavorites, favoriteThemesKey } from '@/utils/ThemeCatalog';
+import { themeLabel, orderThemes, readThemeFavorites } from '@/utils/ThemeCatalog';
+import { loadFavoriteThemes, setFavoriteTheme } from '@/utils/ThemeFavorites';
 export default {
   name: 'ThemeSelector', mixins: [ThemingMixin], props: { hidePallete: Boolean }, components: { CustomThemeMaker, IconPalette },
-  data: () => ({ themeConfiguratorOpen: false, dropdownOpen: false, query: '', favorites: [] }),
+  data: () => ({ themeConfiguratorOpen: false, dropdownOpen: false, query: '', favorites: [], favoritesSaving: false, favoritesNote: '正在读取收藏…' }),
   computed: { orderedThemes() { return orderThemes(this.themeNames, this.selectedTheme, this.favorites, this.query); } },
-  mounted() { this.syncFavorites(); window.addEventListener('storage', this.syncFavorites); window.addEventListener('home-lab-theme-favorites', this.syncFavorites); window.addEventListener('keydown', this.closeWithEscape); },
+  mounted() { this.syncFavorites(); this.refreshFavorites(); window.addEventListener('storage', this.syncFavorites); window.addEventListener('home-lab-theme-favorites', this.syncFavorites); window.addEventListener('keydown', this.closeWithEscape); },
   beforeUnmount() { window.removeEventListener('storage', this.syncFavorites); window.removeEventListener('home-lab-theme-favorites', this.syncFavorites); window.removeEventListener('keydown', this.closeWithEscape); },
   methods: {
     chineseLabel: themeLabel,
     closeWithEscape(event) { if (event.key === 'Escape' && this.dropdownOpen) this.dropdownOpen = false; },
     syncFavorites() { try { this.favorites = readThemeFavorites(window.localStorage); } catch { this.favorites = []; } },
-    toggleFavorite(name) {
-      this.favorites = this.favorites.includes(name) ? this.favorites.filter(x => x !== name) : [...this.favorites, name];
-      try { window.localStorage.setItem(favoriteThemesKey, JSON.stringify(this.favorites)); window.dispatchEvent(new Event('home-lab-theme-favorites')); } catch { /* Session favorites still work if storage is disabled. */ }
+    async refreshFavorites() {
+      if(this.favoritesSaving)return;
+      try { this.favorites=await loadFavoriteThemes();this.favoritesNote=window.__KH_CLOUD_AUTH?'收藏已同步到云端':'收藏保存在当前浏览器'; }
+      catch { this.favoritesNote='暂未连接云端，点击星标可重试'; }
     },
-    async toggleDropdown() { this.dropdownOpen = !this.dropdownOpen; this.query = ''; if (this.dropdownOpen) { await this.$nextTick(); this.$refs.themeSearch?.focus(); } },
+    async toggleFavorite(name) {
+      if(this.favoritesSaving)return;
+      this.favoritesSaving=true;
+      try { this.favorites=await setFavoriteTheme(name,!this.favorites.includes(name));this.favoritesNote='收藏已同步到云端'; }
+      catch(error) { this.favoritesNote=error.message; }
+      finally { this.favoritesSaving=false; }
+    },
+    async toggleDropdown() { this.dropdownOpen = !this.dropdownOpen; this.query = ''; if (this.dropdownOpen) { this.refreshFavorites(); await this.$nextTick(); this.$refs.themeSearch?.focus(); } },
     focusFirstTheme() { this.$refs.themeList?.querySelector('.theme-choice')?.focus(); },
     chooseTheme(name) { this.selectedTheme = name; this.themeChangedInUI(); this.dropdownOpen = false; },
     openThemeConfigurator() { this.dropdownOpen = false; this.$store.commit(Keys.SET_MODAL_OPEN, true); this.themeConfiguratorOpen = true; },

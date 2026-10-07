@@ -32,6 +32,31 @@ async function checkDns(host, fetcher, signal, useCache) {
   const addresses=results.flat(); if(!addresses.length || addresses.some(a=>!isPublicAddress(a)))throw new Error('Non-public host');
   if(useCache){if(dnsCache.size>=64)dnsCache.delete(dnsCache.keys().next().value);dnsCache.set(host,Date.now()+60000);}
 }
+export async function fetchPublicIcon(value, fetcher=fetch) {
+  let target=publicIconUrl(value);
+  const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),6500);
+  try {
+    for(let redirects=0;redirects<=2;redirects++) {
+      await checkDns(target.hostname,fetcher,controller.signal,fetcher===fetch);
+      const response=await fetcher(target.href,{redirect:'manual',credentials:'omit',signal:controller.signal,headers:{Accept:'image/*'}});
+      if([301,302,303,307,308].includes(response.status)) {
+        const location=response.headers.get('location');await response.body?.cancel();
+        if(!location || redirects===2)throw new Error('Redirect unavailable');
+        target=publicIconUrl(location,target);continue;
+      }
+      const mime=(response.headers.get('content-type')||'').split(';')[0].toLowerCase();
+      if(!response.ok || !['image/png','image/jpeg','image/webp','image/gif','image/svg+xml','image/x-icon','image/vnd.microsoft.icon','image/avif'].includes(mime))throw new Error('Image unavailable');
+      const reader=response.body?.getReader();if(!reader)throw new Error('Empty image');
+      const chunks=[];let size=0;
+      try { while(true){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>524288)throw new Error('Image too large');chunks.push(value);} }
+      finally { await reader.cancel().catch(()=>{}); }
+      const bytes=new Uint8Array(size);let at=0;for(const chunk of chunks){bytes.set(chunk,at);at+=chunk.length;}
+      if(!size)throw new Error('Empty image');
+      return {bytes,mime};
+    }
+    throw new Error('Image unavailable');
+  } finally { clearTimeout(timer); }
+}
 const attrs = tag => Object.fromEntries([...tag.matchAll(/([\w:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g)].map(m=>[m[1].toLowerCase(),m[2]??m[3]??m[4]]));
 export function extractIconLinks(html) {
   // Node test fallback. Production uses the Worker's HTMLRewriter below.

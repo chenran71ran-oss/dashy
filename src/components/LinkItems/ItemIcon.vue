@@ -13,7 +13,7 @@
       <path v-if="siPath" :d="siPath" />
     </svg>
     <!-- Standard image asset icon -->
-    <img v-else-if="iconPath && !broken" :src="iconPath" :alt="title ? `${title} 图标` : ''" @error="onImageError" loading="lazy" referrerpolicy="no-referrer"
+    <img v-else-if="iconPath && !broken" :src="imageSource" :alt="title ? `${title} 图标` : ''" @error="onImageError" loading="lazy" referrerpolicy="no-referrer"
       :class="`tile-icon ${size} ${broken ? 'broken' : ''}`"
     />
     <!-- Icon could not load/ broken url -->
@@ -82,6 +82,10 @@ export default {
       if (this.broken) return undefined;
       if (this.attemptedFallback) return this.getFallbackIcon();
       return this.getIconPath(this.resolvedIcon, this.url);
+    },
+    imageSource() {
+      const path=this.iconPath;
+      return window.__KH_CLOUD_AUTH && /^https:\/\//i.test(path||'') ? `/api/icon-image?url=${encodeURIComponent(path)}` : path;
     },
   },
   data() {

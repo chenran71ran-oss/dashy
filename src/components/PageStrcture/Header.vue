@@ -55,7 +55,11 @@ export default {
     align-items: center;
     align-content: flex-start;
     @include phone {
-      flex-direction: column;
+      flex-direction: row;
+      justify-content: center;
+      padding: .25rem .75rem;
+      min-height: 0;
+      :deep(.page-titles) { flex: 0 1 auto; padding: 0; }
     }
   }
 </style>

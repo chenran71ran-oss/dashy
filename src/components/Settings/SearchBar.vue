@@ -265,22 +265,31 @@ export default {
     }
   }
 
-  @include tablet {
-    form.normal {
-      display: block;
-      text-align: center;
-    }
+  form.normal {
+    position: relative;
+    flex: 1 1 17rem;
+    max-width: 18rem;
+    min-width: 0;
+    align-items: flex-end;
+    gap: .5rem;
+    padding: .5rem;
+    box-sizing: border-box;
+    min-height: calc(44px + 1.35rem + 1rem);
+    label { display: inline-flex; align-items: center; min-height: 44px; flex: 0 0 auto; margin: 0; }
+    .search-wrap { flex: 1; min-width: 0; width: auto; }
+    input { width: 100%; box-sizing: border-box; height: 44px; padding: .6rem; margin: 0; font: inherit; }
+    .clear-search { flex-shrink: 0; margin: 0; }
   }
   @include phone {
     form.normal {
       flex: 1 1 100%;
-      border-radius: 0;
-      text-align: center;
-      padding: 0.25rem 0;
-      display: flex;
+      max-width: none;
+      align-items: center;
       justify-content: center;
-      .search-wrap { width: auto; }
-      input { width: clamp(8rem, 52vw, 200px); }
+      min-height: 0;
+      padding: .25rem .5rem;
+      border-radius: 0;
+      .search-wrap { flex: 0 1 23rem; }
     }
   }
 

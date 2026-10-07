@@ -56,15 +56,25 @@ export default {
 };
 </script>
 <style scoped lang="scss">
-.options-panel { position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.8rem; color: var(--settings-text-color); min-width: 0; width: 100%; padding-right: 2rem; box-sizing: border-box; }
+.options-panel { position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; gap: .65rem 1rem; color: var(--settings-text-color); min-width: 0; width: 100%; padding-right: 2.8rem; box-sizing: border-box; --toolbar-control-height: 44px; }
 .toolbar-group { flex: 0 0 auto; min-width: 0; }
-.theme-group { flex: 1 1 10rem; max-width: 15rem; }
-.options-label { display: block; font-size: 0.85rem; margin-bottom: 0.25rem; }
-.toolbar-buttons { display: flex; align-items: center; gap: 0.3rem; }
-.action-btn, .view-btn, .toolbar-close { display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0.3rem; min-width: 1.9rem; min-height: 1.9rem; box-sizing: border-box; color: var(--settings-text-color); background: transparent; border: 1px solid currentColor; border-radius: var(--curve-factor-small); cursor: pointer; text-decoration: none; font-size: 0.75rem; }
-svg { width: 1.2rem; height: 1.2rem; fill: currentColor; }
+.theme-group { flex: 1 1 11rem; max-width: 15rem; }
+.options-panel :deep(.options-label), .options-panel :deep(.theme-label) { display: block; font-size: .8rem; line-height: 1.2; height: 1rem; margin: 0 0 .35rem; }
+.toolbar-buttons, .options-panel :deep(.display-options) { display: flex; align-items: center; gap: .3rem; margin: 0; }
+.action-btn, .view-btn, .toolbar-close, .options-panel :deep(.auth-btn), .options-panel :deep(.display-options svg), .options-panel :deep(svg.color-button) { display: inline-flex; align-items: center; justify-content: center; gap: .3rem; padding: .55rem; width: 44px; height: var(--toolbar-control-height); min-width: 44px; min-height: var(--toolbar-control-height); flex: 0 0 auto; box-sizing: border-box; border-radius: var(--curve-factor-small); }
+.action-btn, .view-btn, .toolbar-close { color: var(--settings-text-color); background: transparent; border: 1px solid currentColor; cursor: pointer; text-decoration: none; font-size: .8rem; }
+.view-btn { width: auto; white-space: nowrap; }
+.options-panel :deep(.theme-trigger) { height: var(--toolbar-control-height); min-height: var(--toolbar-control-height); }
+.options-panel :deep(.theme-trigger small) { display: none; }
+svg { width: 1.25rem; height: 1.25rem; fill: currentColor; }
 .active, .action-btn:hover, .view-btn:hover { color: var(--background); background: var(--settings-text-color); }
-button:disabled { opacity: 0.4; cursor: default; }
+button:disabled { opacity: .4; cursor: default; }
 .toolbar-close { position: absolute; top: 0; right: 0; border: none; }
-@media(max-width:600px) { .options-panel { gap: 0.75rem; padding-right: 0; } .toolbar-group { flex: 1 1 auto; } .theme-group { flex-basis: 100%; max-width: none; padding-right: 2.7rem; box-sizing: border-box; } .action-btn, .view-btn, .toolbar-close { min-height: 2.5rem; min-width: 2.5rem; } }
+@media(max-width:599px) {
+ .options-panel { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 3fr); gap: .65rem .5rem; padding-right: 0; }
+ .theme-group { grid-column: 1 / -1; max-width: none; padding-right: 3rem; }
+ .toolbar-group:last-of-type { grid-column: 1 / -1; }
+ .options-panel :deep(.display-options svg) { flex: 1 1 0; min-width: 0; width: 0; }
+ .view-btn { flex: 1; min-width: 0; }
+}
 </style>

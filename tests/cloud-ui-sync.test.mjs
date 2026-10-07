@@ -1,0 +1,36 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import worker, {DEFAULT_CONFIG} from '../cloud/worker.mjs';
+import {fetchPublicIcon} from '../cloud/icon-discovery.mjs';
+const dns=()=>Response.json({Status:0,Answer:[{type:1,data:'8.8.8.8'}]});
+test('image fetching validates redirects, refuses non-images and bounds payloads',async()=>{
+ const calls=[];
+ const fetcher=async(url,options)=>{calls.push({url,options});if(url.includes('/dns-query?'))return dns();if(url.includes('start.example'))return new Response(null,{status:302,headers:{location:'https://cdn.example/icon.png'}});return new Response(new Uint8Array([1,2,3]),{headers:{'content-type':'image/png'}});};
+ const result=await fetchPublicIcon('https://start.example/icon',fetcher);assert.equal(result.mime,'image/png');assert.deepEqual([...result.bytes],[1,2,3]);
+ assert.ok(calls.every(c=>c.options.credentials!=='include'&&!c.options.headers.Cookie&&!c.options.headers.Authorization));
+ await assert.rejects(fetchPublicIcon('https://start.example/icon',async url=>url.includes('/dns-query?')?dns():new Response(null,{status:302,headers:{location:'https://127.0.0.1/icon'}})));
+ await assert.rejects(fetchPublicIcon('https://cdn.example/icon',async url=>url.includes('/dns-query?')?dns():new Response('<script>alert(1)</script>',{headers:{'content-type':'text/html'}})));
+ await assert.rejects(fetchPublicIcon('https://cdn.example/icon',async url=>url.includes('/dns-query?')?dns():new Response(new Uint8Array(524289),{headers:{'content-type':'image/png'}})));
+});
+test('favorites stay separate from bookmarks and image cache still requires authentication',async()=>{
+ const values=new Map([['kenneth-home:dashy:v1',JSON.stringify(DEFAULT_CONFIG)]]);
+ const env={ADMIN_TOKEN:'test-only',HOME_KV:{get:async k=>values.get(k)??null,put:async(k,v)=>values.set(k,v)},ASSETS:{fetch:async()=>new Response('')}};
+ const root='http://127.0.0.1';
+ const login=await worker.fetch(new Request(root+'/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:'test-only'})}),env);
+ const cookie=login.headers.get('set-cookie').split(';')[0];
+ const call=(method,body,origin=root)=>worker.fetch(new Request(root+'/api/theme-favorites',{method,headers:{cookie,origin,'content-type':'application/json'},...(body?{body:JSON.stringify(body)}:{})}),env);
+ assert.deepEqual(await (await call('GET')).json(),{favorites:[],exists:false});
+ await call('POST',{favorites:['nord','matrix-red']});await call('POST',{favorites:['glass']});
+ assert.deepEqual((await (await call('GET')).json()).favorites,['nord','matrix-red']);
+ await call('PATCH',{theme:'nord',favorite:false});await call('PATCH',{theme:'glass',favorite:true});
+ assert.deepEqual((await (await call('GET')).json()).favorites,['matrix-red','glass']);
+ assert.equal((await call('PATCH',{theme:'x',favorite:true},'https://other.example')).status,403);
+ assert.equal((await call('PATCH',{theme:'x',favorite:'true'})).status,400);
+ assert.equal(values.get('kenneth-home:dashy:v1'),JSON.stringify(DEFAULT_CONFIG));
+ const image='https://cdn.example/icon.svg';const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(image));const id=Buffer.from(digest).toString('base64url');
+ values.set('kenneth-home:icon:'+id,JSON.stringify({mime:'image/svg+xml',body:btoa('<svg xmlns="http://www.w3.org/2000/svg"/>')}));
+ const url=root+'/api/icon-image?url='+encodeURIComponent(image);
+ assert.equal((await worker.fetch(new Request(url),env)).status,401);
+ const result=await worker.fetch(new Request(url,{headers:{cookie}}),env);assert.equal(result.status,200);assert.equal(result.headers.get('content-type'),'image/svg+xml');assert.equal(result.headers.get('content-security-policy'),"default-src 'none'; sandbox");
+ assert.equal(result.headers.get('cache-control'),'no-store');
+});
