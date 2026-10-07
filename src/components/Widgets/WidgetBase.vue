@@ -1,5 +1,5 @@
 <template>
-  <div :class="`widget-base ${ loading ? 'is-loading' : '' }`">
+  <div :class="[`widget-base`, { 'is-loading': loading, 'metric-widget': ['clock', 'weather'].includes(widgetType) }]">
     <!-- Update Action Button -->
     <Button :click="update" class="action-btn update-btn" aria-label="刷新小组件" v-if="supported && !hideControls && !loading">
       <UpdateIcon />
@@ -255,6 +255,24 @@ export default {
   background: var(--widget-base-background);
   box-shadow: var(--widget-base-shadow, none);
   .widget-deferred { color: var(--widget-text-color); font-size: 0.85rem; line-height: 1.7; }
+
+  // A shared frame for the clock and weather summary; details can grow naturally.
+  &.metric-widget {
+    --metric-value-size: clamp(2rem, 7vw, 2.8rem);
+    --metric-value-height: 4rem;
+    box-sizing: border-box;
+    min-height: 11.5rem;
+    padding: 1.25rem .75rem .75rem;
+    .widget-label {
+      box-sizing: border-box;
+      min-height: 2rem;
+      padding: .3rem .5rem;
+      font-size: .85rem;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+    .widget-wrap { min-width: 0; }
+  }
 
   // Refresh and full-page action buttons
   button.action-btn {

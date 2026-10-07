@@ -87,14 +87,20 @@ export default {
 <style scoped lang="scss">
 
 .clock {
-  padding: 0.5rem 0;
+  padding: 0;
   .upper {
     display: flex;
     justify-content: space-between;
     border-radius: var(--curve-factor);
-    padding: 0.5rem;
+    box-sizing: border-box;
+    min-height: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .25rem .5rem;
+    line-height: 1.4;
+    padding: .3rem .5rem;
     opacity: 0.85;
-    font-size: 0.8rem;
+    font-size: .85rem;
     background: var(--widget-accent-color);
   }
   p {
@@ -103,8 +109,15 @@ export default {
     margin: 0;
   }
   .time {
-    font-size: clamp(2rem, 8vw, 3.2rem);
-    padding: 0.5rem;
+    font-size: var(--metric-value-size, 2.8rem);
+    min-height: var(--metric-value-height, 4rem);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    letter-spacing: 0;
+    padding: .25rem 0;
     text-align: center;
     font-variant-numeric: tabular-nums;
     font-family: Digital, var(--font-monospace);

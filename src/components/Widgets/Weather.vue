@@ -7,8 +7,8 @@
   </div>
   <!-- Weather description -->
   <p class="description">{{ description }}</p>
-  <p class="description" v-if="dataTime">OpenWeather · 数据时间 {{ dataTime }}（北京时间）</p>
-  <p class="description" v-if="queryCoordinates">查询坐标 {{ queryCoordinates }}</p>
+  <p class="source-meta" v-if="dataTime">OpenWeather · 数据时间 {{ dataTime }}（北京时间）</p>
+  <p class="source-meta" v-if="queryCoordinates">查询坐标 {{ queryCoordinates }}</p>
   <div class="details" v-if="showDetails && weatherDetails.length > 0">
     <div class="info-wrap" v-for="(section, indx) in weatherDetails" :key="indx">
       <p class="info-line" v-for="weather in section" :key="weather.label">
@@ -148,23 +148,45 @@ export default {
   .intro {
     grid-column-start: span 2;
     display: flex;
-    justify-content: space-around;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(.75rem, 3vw, 1.5rem);
+    min-height: var(--metric-value-height, 4rem);
+    min-width: 0;
+    padding: .25rem 0;
+    box-sizing: border-box;
+    line-height: 1;
     .owi {
-      font-size: 3rem;
+      font-size: var(--metric-value-size, 2.8rem);
       color: var(--widget-text-color);
       margin: 0;
+      flex: 0 0 auto;
+      line-height: 1;
     }
     .temp {
-      font-size: 3rem;
+      font-size: var(--metric-value-size, 2.8rem);
       margin: 0;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0;
+      white-space: nowrap;
     }
   }
   // Weather description
   .description {
-    grid-column-start: 2;
+    grid-column: 1 / -1;
     text-transform: capitalize;
     text-align: center;
     margin: 0;
+  }
+  .source-meta {
+    grid-column: 1 / -1;
+    margin: .15rem 0 0;
+    text-align: center;
+    font-size: .65rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    opacity: .75;
   }
   // Show more details button
   .more-details-btn {
@@ -189,7 +211,8 @@ export default {
   // More weather details table
   .details {
     grid-column-start: span 2;
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
     .info-wrap {
       display: flex;
       flex-direction: column;
