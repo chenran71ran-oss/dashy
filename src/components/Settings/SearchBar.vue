@@ -272,12 +272,15 @@ export default {
     }
   }
   @include phone {
-    form.nomral {
-      flex: 1;
+    form.normal {
+      flex: 1 1 100%;
       border-radius: 0;
       text-align: center;
       padding: 0.25rem 0;
-      display: block;
+      display: flex;
+      justify-content: center;
+      .search-wrap { width: auto; }
+      input { width: clamp(8rem, 52vw, 200px); }
     }
   }
 

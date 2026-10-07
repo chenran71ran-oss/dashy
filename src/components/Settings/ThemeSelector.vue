@@ -59,24 +59,37 @@ export default {
 @import 'vue-select/dist/vue-select.css';
 .theme-selector-section { display: flex; align-items: flex-end; gap: 0.5rem; width: 100%; color: var(--settings-text-color); }
 .theme-control { flex: 1; min-width: 0; }
-.theme-dropdown { position: relative; }
-.theme-dropdown button, .theme-dropdown input { font: inherit; color: inherit; background: var(--background); border: 1px solid var(--outline-color); }
+.theme-dropdown {
+  position: relative;
+  // A matched, opaque palette keeps the selector readable in every site theme.
+  --theme-menu-background: #f8fafc;
+  --theme-menu-color: #172033;
+  --theme-menu-highlight: #dbeafe;
+  --theme-menu-accent: #1e40af;
+  color: var(--theme-menu-color);
+}
+.theme-dropdown button, .theme-dropdown input { font: inherit; color: var(--theme-menu-color); background: var(--theme-menu-background); border: 1px solid var(--theme-menu-color); }
 .theme-trigger { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; width: 100%; min-height: 44px; padding: 0.35rem 0.6rem; border-radius: var(--curve-factor-small); text-align: left; cursor: pointer; }
 .theme-dropdown small { display: block; font-size: 0.7rem; opacity: 0.8; overflow-wrap: anywhere; }
-.theme-popover { position: absolute; inset: calc(100% + 0.35rem) auto auto 0; width: max(100%, 17rem); max-width: calc(100vw - 2rem); z-index: 50; background: var(--background); border: 1px solid var(--settings-text-color); border-radius: 10px; padding: 0.5rem; box-sizing: border-box; box-shadow: 0 8px 24px #0003; }
+.theme-popover { position: absolute; inset: calc(100% + 0.35rem) auto auto 0; width: max(100%, 17rem); max-width: calc(100vw - 2rem); z-index: 50; color: var(--theme-menu-color); background: var(--theme-menu-background); border: 1px solid var(--theme-menu-color); border-radius: 10px; padding: 0.5rem; box-sizing: border-box; box-shadow: 0 8px 24px #0003; }
+.theme-popover input::placeholder { color: var(--theme-menu-color); opacity: 0.8; }
+.theme-popover p, .theme-dropdown small { color: var(--theme-menu-color); }
+.theme-dropdown .theme-list { scrollbar-color: var(--theme-menu-color) var(--theme-menu-background); }
+.theme-dropdown .theme-list::-webkit-scrollbar-thumb { background: var(--theme-menu-color); }
+.theme-dropdown .theme-list::-webkit-scrollbar-track { background: var(--theme-menu-background); }
 .theme-popover input { padding: 0.6rem; min-height: 44px; width: 100%; box-sizing: border-box; border-radius: 6px; }
 .theme-popover p { font-size: 0.75rem; margin: 0.6rem 0.35rem; }
 .theme-list { max-height: min(320px, 45dvh); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; touch-action: pan-y; }
 .theme-row { display: flex; border-radius: 6px; }
-.theme-row.active { background: var(--primary-transparent-60); }
+.theme-row.active { background: var(--theme-menu-highlight); }
 .theme-row button { border: 0; background: transparent; min-height: 48px; cursor: pointer; }
 .theme-choice { display: flex; flex: 1; min-width: 0; align-items: center; justify-content: space-between; text-align: left; padding: 0.4rem 0.5rem; gap: 0.4rem; }
 .theme-choice > span:first-child { min-width: 0; overflow-wrap: anywhere; }
 .current-label { font-size: 0.65rem; flex-shrink: 0; opacity: 0.8; }
 .theme-favorite { flex: 0 0 44px; width: 44px; font-size: 1.4rem !important; }
-.theme-favorite[aria-pressed='true'] { color: var(--primary); }
-.theme-dropdown button:hover { background: var(--primary-transparent-60); }
-.theme-dropdown button:focus-visible, .theme-dropdown input:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.theme-dropdown .theme-favorite[aria-pressed='true'] { color: var(--theme-menu-accent); }
+.theme-dropdown button:hover { background: var(--theme-menu-highlight); }
+.theme-dropdown button:focus-visible, .theme-dropdown input:focus-visible { outline: 2px solid var(--theme-menu-accent); outline-offset: -2px; }
 .favorite-note { padding: 0.6rem 0.35rem 0; }
 svg.color-button { width: 44px; height: 44px; padding: 0.6rem; box-sizing: border-box; flex-shrink: 0; background: var(--background); border: 1px solid var(--settings-text-color); border-radius: var(--curve-factor); cursor: pointer; path { fill: var(--settings-text-color); } &:hover, &.selected { background: var(--settings-text-color); path { fill: var(--background); } } }
 </style>

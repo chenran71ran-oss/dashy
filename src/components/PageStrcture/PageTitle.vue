@@ -62,7 +62,8 @@ export default {
   text-decoration: none;
   position: relative;
   .text { min-width: 0; }
-  h1 {
+  .text h1 {
+    text-transform: none;
     color: var(--heading-text-color);
     font-size: clamp(1.4rem, 0.5rem + 3vw, 2.5rem);
     overflow-wrap: anywhere;
