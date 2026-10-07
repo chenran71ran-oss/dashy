@@ -85,7 +85,7 @@ export default {
     },
     imageSource() {
       const path=this.iconPath;
-      return window.__KH_CLOUD_AUTH && /^https:\/\//i.test(path||'') ? `/api/icon-image?url=${encodeURIComponent(path)}` : path;
+      return window.__KH_CLOUD_AUTH && !this.attemptedFallback && /^https:\/\//i.test(path||'') ? `/api/icon-image?url=${encodeURIComponent(path)}` : path;
     },
   },
   data() {
@@ -307,6 +307,9 @@ export default {
     getFallbackIcon() {
       const iconType = this.iconType || '';
       if (this.isBrand) return websiteFavicon(this.url) || undefined;
+      // A site may refuse server-side favicon requests. Prefer its bundled brand;
+      // other custom images get one direct-browser retry, preserving the saved URL.
+      if (window.__KH_CLOUD_AUTH && /^https:\/\//i.test(this.resolvedIcon)) return matchPortalIcon(this.url, this.title)?.src || this.resolvedIcon;
       if (this.icon === 'auto' && this.discoveredIcon && this.discoveredIcon !== websiteFavicon(this.url)) return websiteFavicon(this.url) || undefined;
       if (iconType.includes('favicon')) return this.getFavicon(this.url, 'local');
       if (iconType === 'generative') return this.getGenerativeIcon(this.url, iconCdns.generativeFallback);

@@ -50,7 +50,7 @@ export default {
     },
     async toggleFavorite(name) {
       if(this.favoritesSaving)return;
-      this.favoritesSaving=true;
+      this.favoritesSaving=true;this.favoritesNote='正在同步收藏…';
       try { this.favorites=await setFavoriteTheme(name,!this.favorites.includes(name));this.favoritesNote='收藏已同步到云端'; }
       catch(error) { this.favoritesNote=error.message; }
       finally { this.favoritesSaving=false; }

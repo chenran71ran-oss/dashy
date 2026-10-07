@@ -229,7 +229,8 @@ export default {
           const {bytes,mime}=await fetchPublicIcon(target.href);
           let binary='';for(let at=0;at<bytes.length;at+=8192)binary+=String.fromCharCode(...bytes.slice(at,at+8192));
           data={mime,body:btoa(binary)};
-          if(env.HOME_KV)await env.HOME_KV.put(key,JSON.stringify(data),{expirationTtl:86400});
+          // Cache contention must never turn a successfully fetched image into an error.
+          if(env.HOME_KV)try { await env.HOME_KV.put(key,JSON.stringify(data),{expirationTtl:86400}); } catch { /* Return the image even when the cache write is unavailable. */ }
         }
         return new Response(Uint8Array.from(atob(data.body),c=>c.charCodeAt(0)),{headers:{...BASE_HEADERS,'content-type':data.mime,'content-security-policy':"default-src 'none'; sandbox",'x-frame-options':'DENY'}});
       }
