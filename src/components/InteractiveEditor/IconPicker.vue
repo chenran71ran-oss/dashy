@@ -32,10 +32,13 @@
 </template>
 <script>
 import { portalIcons, websiteIcon } from '@/utils/PortalIcons';
-import { builtinIcons, iconCategories } from '@/utils/BuiltinIcons';
+import { builtinIcons, builtinIconPath, iconCategories } from '@/utils/BuiltinIcons';
 import { discoverSiteIcon } from '@/utils/SiteIcons';
 import Icon from '@/components/LinkItems/ItemIcon.vue';
-const common = [ ['🔗','链接 link'], ['🌐','网站 网络 web network'], ['🎬','媒体 电影 media movie Emby'], ['📊','监控 monitoring'], ['☁️','云 VPS cloud'], ['🖥️','服务器 server'], ['🛠️','工具 tools'], ['📚','阅读 reading'], ['💻','开发 code'], ['🎵','音乐 music'], ['🛡️','安全 security'], ['🚀','启动 rocket'] ].map(([value,title]) => ({value,title}));
+// New manual choices must not be interpreted as the legacy emoji placeholders
+// that older Home Lab configs migrate to brand icons.
+const manualCommonIcons = { '🔗': 'lucide-link', '🌐': 'lucide-globe', '☁️': 'lucide-cloud', '🖥️': 'lucide-monitor' };
+const common = [ ['🔗','链接 link'], ['🌐','网站 网络 web network'], ['🎬','媒体 电影 media movie Emby'], ['📊','监控 monitoring'], ['☁️','云 VPS cloud'], ['🖥️','服务器 server'], ['🛠️','工具 tools'], ['📚','阅读 reading'], ['💻','开发 code'], ['🎵','音乐 music'], ['🛡️','安全 security'], ['🚀','启动 rocket'] ].map(([emoji,title]) => { const value = manualCommonIcons[emoji] || emoji; return { value, title, src: builtinIconPath(value) }; });
 let library;
 export default {
   components: { Icon }, props: { modelValue: { type: String, default: '' }, label: { type: String, default: '图标' }, url: { type: String, default: '' }, siteTitle: { type: String, default: '' }, allowAuto: Boolean }, emits: ['update:modelValue'],
@@ -54,7 +57,13 @@ export default {
     matches() {
       const q = this.query.trim().toLowerCase().replace(/^si-/, '');
       const all = [...this.brandEntries.slice(0, portalIcons.length), ...builtinIcons.filter(e => e.pack === 'Fluent Emoji'), ...common.map(e => ({ ...e, category: 'tools', tags: '常用 工具' })), ...builtinIcons.filter(e => e.pack === 'Lucide'), ...this.brandEntries.slice(portalIcons.length)];
-      const filtered = all.filter(e => (this.activeCategory === 'all' || e.category === this.activeCategory) && (!q || (e.title + ' ' + (e.slug || '') + ' ' + (e.tags || '')).toLowerCase().includes(q)));
+      const seen = new Set();
+      const filtered = all.filter(e => {
+        const matches = (this.activeCategory === 'all' || e.category === this.activeCategory) && (!q || (e.title + ' ' + (e.slug || '') + ' ' + (e.tags || '')).toLowerCase().includes(q));
+        if (!matches || seen.has(e.value)) return false;
+        seen.add(e.value);
+        return true;
+      });
       if (!q) return filtered;
       const relevance = e => e.title.toLowerCase() === q || e.slug === q ? 3 : `${e.title} ${e.slug || ''}`.toLowerCase().includes(q) ? 2 : 1;
       return filtered.sort((a, b) => relevance(b) - relevance(a));
