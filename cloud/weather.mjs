@@ -21,8 +21,9 @@ export async function readWeather(params, env, fetcher = fetch) {
     const target = new URL('https://api.openweathermap.org/data/2.5/weather');
     target.search = new URLSearchParams({ lat: cities[city].lat, lon: cities[city].lon, units, lang, appid: env.OPENWEATHER_API_KEY });
     let response;
-    try { response = await fetcher(target, { signal: AbortSignal.timeout(10000), redirect: 'error' }); }
+    try { response = await fetcher(target, { signal: AbortSignal.timeout(10000), redirect: 'manual' }); }
     catch { error('天气服务暂时无法连接，请稍后重试', 502); }
+    if (response.status >= 300 && response.status < 400) error('天气服务返回了意外跳转，请稍后重试', 502);
     if (!response.ok) error(response.status === 401 ? '天气密钥尚未激活或无效' : response.status === 429 ? '天气接口调用达到限额，请稍后重试' : '天气服务暂时不可用', 502);
     let raw;
     try { raw = await response.json(); } catch { error('天气服务返回无效数据', 502); }
