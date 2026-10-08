@@ -1,9 +1,11 @@
 import entries from './builtin-icons.json';
-export const builtinIcons = entries;
-const paths = new Map(entries.map(entry => [entry.value, entry.src]));
+import colorEntries from './flat-color-icons.json';
+export const builtinIcons = [...colorEntries, ...entries];
+export function isColoredIcon(entry) { return ['Fluent Emoji', 'Icons8 Flat Color'].includes(entry.pack); }
+const paths = new Map(builtinIcons.map(entry => [entry.value, entry.src]));
 export function builtinIconPath(value) { return paths.get(value) || ''; }
 export const iconCategories = [
-  { id: 'all', label: '全部' }, { id: 'brand', label: 'QX 与品牌' },
+  { id: 'all', label: '全部' }, { id: 'color', label: '彩色图标' }, { id: 'brand', label: 'QX 与品牌' },
   { id: 'infra', label: '服务器与网络' }, { id: 'security', label: '安全与隐私' },
   { id: 'dev', label: '开发与代码' }, { id: 'media', label: '影音与游戏' },
   { id: 'productivity', label: '办公与阅读' }, { id: 'mood', label: '心情与表情' },

@@ -15,7 +15,7 @@
     <div v-if="open" class="icon-library">
       <input v-model="query" aria-label="搜索图标" placeholder="搜索名称，如 GitHub、cloud、媒体、工具" />
       <nav class="icon-categories" aria-label="图标分类"><button v-for="category in categories" :key="category.id" type="button" :aria-pressed="category.id === activeCategory" @click="activeCategory = category.id">{{ category.label }}</button></nav>
-      <p class="picker-hint">{{ matches.length }} 个结果 · {{ builtinCount }} 个用途与兴趣图标 + {{ brandCount }} 个品牌图标。可搜索中文分类、名称或英文关键词。</p>
+      <p class="picker-hint">{{ matches.length }} 个结果 · {{ colorCount }} 个彩色图标 + {{ builtinCount - colorCount }} 个线条图标 + {{ brandCount }} 个品牌图标。可搜索中文分类、名称或英文关键词。</p>
       <div class="icon-grid">
         <button v-for="entry in matches.slice(0, visibleCount)" :key="entry.value" type="button" @click="choose(entry.value)" :title="entry.title + (entry.slug ? ' / ' + entry.slug : '')" :aria-label="entry.title">
           <Icon v-if="entry.src" :icon="entry.value" size="small" />
@@ -32,7 +32,7 @@
 </template>
 <script>
 import { portalIcons, websiteIcon } from '@/utils/PortalIcons';
-import { builtinIcons, builtinIconPath, iconCategories } from '@/utils/BuiltinIcons';
+import { builtinIcons, builtinIconPath, iconCategories, isColoredIcon } from '@/utils/BuiltinIcons';
 import { discoverSiteIcon } from '@/utils/SiteIcons';
 import Icon from '@/components/LinkItems/ItemIcon.vue';
 // New manual choices must not be interpreted as the legacy emoji placeholders
@@ -48,6 +48,7 @@ export default {
   computed: {
     usesAutomaticIcon() { const resolved = websiteIcon({ icon: this.modelValue, url: this.url, title: this.siteTitle }); return this.modelValue === 'auto' || resolved !== this.modelValue; },
     builtinCount() { return builtinIcons.length; },
+    colorCount() { return builtinIcons.filter(isColoredIcon).length; },
     brandCount() { return this.brandEntries.length; },
     brandEntries() {
       const brands = portalIcons.map(e => ({...e, value: 'portal-' + e.id, slug: e.id, category: 'brand', tags: '品牌 QX ' + (e.tags || '')}));
@@ -56,10 +57,11 @@ export default {
     },
     matches() {
       const q = this.query.trim().toLowerCase().replace(/^si-/, '');
-      const all = [...this.brandEntries.slice(0, portalIcons.length), ...builtinIcons.filter(e => e.pack === 'Fluent Emoji'), ...common.map(e => ({ ...e, category: 'tools', tags: '常用 工具' })), ...builtinIcons.filter(e => e.pack === 'Lucide'), ...this.brandEntries.slice(portalIcons.length)];
+      const all = [...this.brandEntries.slice(0, portalIcons.length), ...builtinIcons.filter(isColoredIcon), ...common.map(e => ({ ...e, category: 'tools', tags: '常用 工具' })), ...builtinIcons.filter(e => !isColoredIcon(e)), ...this.brandEntries.slice(portalIcons.length)];
       const seen = new Set();
       const filtered = all.filter(e => {
-        const matches = (this.activeCategory === 'all' || e.category === this.activeCategory) && (!q || (e.title + ' ' + (e.slug || '') + ' ' + (e.tags || '')).toLowerCase().includes(q));
+        const matchesCategory = this.activeCategory === 'all' || (this.activeCategory === 'color' ? isColoredIcon(e) : e.category === this.activeCategory);
+        const matches = matchesCategory && (!q || (e.title + ' ' + (e.slug || '') + ' ' + (e.tags || '')).toLowerCase().includes(q));
         if (!matches || seen.has(e.value)) return false;
         seen.add(e.value);
         return true;

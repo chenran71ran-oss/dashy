@@ -289,6 +289,10 @@ export default {
   --metric-value-size: var(--widget-value-max);
   --metric-value-height: calc(var(--metric-value-size) + .5rem);
   --metric-gap: .75rem;
+  --metric-body-columns: minmax(0, 1fr);
+  --metric-body-gap: .25rem;
+  --metric-meta-align: center;
+  --metric-meta-justify: center;
   --widget-controls-space: calc(var(--widget-action-count, 0) * (var(--widget-action-size) + .25rem));
   --widget-controls-row: 0px;
   container: widget-frame / inline-size;
@@ -342,6 +346,24 @@ export default {
   // Shared value sizing, with content-driven height instead of an empty fixed frame.
   &.metric-widget {
     align-self: start;
+    --widget-heading-size: .9rem;
+    --widget-meta-size: .8rem;
+    &[data-widget-size='small'] { --widget-heading-size: .85rem; --widget-meta-size: .75rem; }
+    &[data-widget-size='large'] { --widget-heading-size: 1rem; --widget-meta-size: .85rem; }
+    .widget-label { padding: .125rem var(--widget-controls-space) .125rem 0; }
+    :deep(.metric-body) {
+      display: grid;
+      grid-template-columns: var(--metric-body-columns);
+      gap: var(--metric-body-gap);
+      align-items: center;
+      width: var(--metric-body-width, 100%);
+      max-width: min(40rem, 100%);
+      min-width: 0;
+      margin-inline: auto;
+    }
+    :deep(.metric-value), :deep(.metric-meta) { min-width: 0; max-width: 100%; }
+    :deep(.metric-value:only-child) { grid-column: 1 / -1; }
+    :deep(.metric-meta) { text-align: var(--metric-meta-align); overflow-wrap: anywhere; }
   }
 
   .widget-actions {
@@ -401,6 +423,27 @@ export default {
     .widget-wrap {
       --metric-value-size: clamp(1.35rem, calc(var(--widget-value-scale) * 1cqi), min(var(--widget-value-max), 2.2rem));
       --metric-gap: .5rem;
+    }
+  }
+
+  // Wide small/medium widgets use a value + information row, rather than
+  // scattering a small reading and its metadata across a full-width section.
+  @container widget-frame (min-width: 28rem) {
+    &[data-widget-size='small'] .widget-wrap {
+      --metric-body-columns: max-content minmax(0, 1fr);
+      --metric-body-width: fit-content;
+      --metric-body-gap: 1rem;
+      --metric-meta-align: left;
+      --metric-meta-justify: flex-start;
+    }
+  }
+  @container widget-frame (min-width: 40rem) {
+    &[data-widget-size='medium'] .widget-wrap {
+      --metric-body-columns: max-content minmax(0, 1fr);
+      --metric-body-width: fit-content;
+      --metric-body-gap: 1.25rem;
+      --metric-meta-align: left;
+      --metric-meta-justify: flex-start;
     }
   }
 

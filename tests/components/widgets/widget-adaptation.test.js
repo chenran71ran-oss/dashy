@@ -59,6 +59,36 @@ describe('widget preference changes', () => {
     wrapper.unmount();
   });
 
+  it('keeps the clock date with its reading, including long labels, 12-hour time and edit controls', async () => {
+    const store = makeStore();
+    const clockWidget = { type: 'clock', options: { timeZone: 'Asia/Shanghai', format: 'en-US', use12Hour: true, customCityName: 'Wuhan · Wuchang district' } };
+    const wrapper = mount(WidgetBase, { props: { widget: clockWidget, index: 0 }, global: globalOptions(store) });
+    try {
+      await vi.waitFor(() => expect(wrapper.find('.time').exists()).toBe(true));
+      const time = wrapper.get('.time').element;
+      const date = wrapper.get('.date').text();
+      expect(wrapper.get('.upper').text()).toBe(clockWidget.options.customCityName);
+      expect(wrapper.get('.metric-meta').text()).toBe(date);
+      expect(wrapper.get('.time').text()).toMatch(/\d+:\d+:\d+\s*[AP]M/);
+      for (const layout of ['auto', 'horizontal', 'vertical', 'masonry']) {
+        for (const size of ['small', 'medium', 'large']) {
+          store.getters.layout = layout;
+          store.getters.iconSize = size;
+          await nextTick();
+          expect(wrapper.get('.time').element).toBe(time);
+          expect(wrapper.get('.metric-meta .date').text()).toBe(date);
+        }
+      }
+      store.state.editMode = true;
+      await nextTick();
+      expect(wrapper.findAll('.widget-actions button')).toHaveLength(3);
+      await wrapper.setProps({ widget: { ...clockWidget, options: { ...clockWidget.options, hideDate: true } } });
+      expect(wrapper.find('.upper').exists()).toBe(false);
+      expect(wrapper.find('.metric-meta').exists()).toBe(false);
+      expect(wrapper.get('.time').element).toBe(time);
+    } finally { wrapper.unmount(); }
+  });
+
   it('keeps weather readings and the detail toggle when display preferences change', async () => {
     const fetcher = vi.spyOn(globalThis, 'fetch').mockResolvedValue(Response.json({
       dt: 1791431580,

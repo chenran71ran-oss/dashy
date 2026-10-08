@@ -2,9 +2,13 @@
 <div class="clock" :class="{ 'date-hidden': options.hideDate }">
   <div class="upper" v-if="!options.hideDate">
     <p class="city">{{ cityName }}</p>
-    <p class="date">{{ date }}</p>
   </div>
-  <p class="time">{{ time }}</p>
+  <div class="metric-body">
+    <p class="time metric-value">{{ time }}</p>
+    <div class="metric-meta" v-if="!options.hideDate">
+      <p class="date">{{ date }}</p>
+    </div>
+  </div>
 </div>
 </template>
 
@@ -91,18 +95,14 @@ export default {
   &.date-hidden { padding-top: var(--widget-controls-row, 0px); }
   .upper {
     display: flex;
-    justify-content: space-between;
-    border-radius: var(--curve-factor);
     box-sizing: border-box;
     min-height: var(--widget-action-size, 1.75rem);
     align-items: center;
-    flex-wrap: wrap;
-    gap: .25rem .5rem;
     line-height: 1.4;
-    padding: .25rem calc(var(--widget-controls-space, 0px) + .5rem) .25rem .5rem;
+    padding: .125rem var(--widget-controls-space, 0px) .125rem 0;
     font-size: var(--widget-heading-size, .85rem);
-    background: color-mix(in srgb, currentColor 6%, transparent);
-    .date { margin-left: auto; text-align: right; }
+    background: transparent;
+    .city { min-width: 0; overflow-wrap: anywhere; }
   }
   p {
     color: inherit;
@@ -123,16 +123,11 @@ export default {
     font-variant-numeric: tabular-nums;
     font-family: Digital, var(--font-monospace);
   }
-  @container widget-frame (max-width: 18rem) {
-    .upper {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) var(--widget-controls-space, 0px);
-      grid-template-rows: minmax(var(--widget-controls-row, 0px), auto) auto;
-      padding: .125rem .5rem;
-      gap: .125rem .25rem;
-      .city { grid-column: 1; grid-row: 1; }
-      .date { grid-column: 1 / -1; grid-row: 2; margin-left: 0; text-align: left; }
-    }
+  .date {
+    font-size: var(--widget-meta-size, .8rem);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    opacity: .85;
   }
 }
 

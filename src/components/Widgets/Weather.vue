@@ -1,14 +1,18 @@
 <template>
 <div class="weather">
-  <!-- Icon + Temperature -->
-  <div class="intro">
-    <p class="temp">{{ temp }}</p>
-    <i :class="`owi owi-${icon}`"></i>
+  <div class="metric-body">
+    <!-- Icon + Temperature -->
+    <div class="intro metric-value">
+      <p class="temp">{{ temp }}</p>
+      <i :class="`owi owi-${icon}`"></i>
+    </div>
+    <!-- Weather description and data provenance stay together. -->
+    <div class="metric-meta">
+      <p class="description" v-if="description">{{ description }}</p>
+      <p class="source-meta" v-if="dataTime"><span>OpenWeather ·</span><span>数据时间 {{ dataTime }}（北京时间）</span></p>
+      <p class="source-meta" v-if="queryCoordinates"><span>查询坐标</span><span>{{ queryCoordinates }}</span></p>
+    </div>
   </div>
-  <!-- Weather description -->
-  <p class="description">{{ description }}</p>
-  <p class="source-meta" v-if="dataTime">OpenWeather · 数据时间 {{ dataTime }}（北京时间）</p>
-  <p class="source-meta" v-if="queryCoordinates">查询坐标 {{ queryCoordinates }}</p>
   <div class="details" v-if="showDetails && weatherDetails.length > 0">
     <div class="info-wrap" v-for="(section, indx) in weatherDetails" :key="indx">
       <p class="info-line" v-for="weather in section" :key="weather.label">
@@ -143,10 +147,9 @@ export default {
 
 .weather {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   // Weather symbol and temperature
   .intro {
-    grid-column-start: span 2;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -175,25 +178,27 @@ export default {
   }
   // Weather description
   .description {
-    grid-column: 1 / -1;
     text-transform: capitalize;
-    text-align: center;
+    text-align: inherit;
     margin: 0;
     font-size: var(--widget-detail-size, .85rem);
     line-height: 1.4;
   }
   .source-meta {
-    grid-column: 1 / -1;
+    display: flex;
+    justify-content: var(--metric-meta-justify, center);
+    flex-wrap: wrap;
+    column-gap: .3rem;
     margin: .15rem 0 0;
-    text-align: center;
-    font-size: var(--widget-meta-size, .65rem);
-    line-height: 1.4;
+    text-align: inherit;
+    font-size: var(--widget-meta-size, .8rem);
+    line-height: 1.5;
     overflow-wrap: anywhere;
     opacity: .85;
   }
   // Show more details button
   .more-details-btn {
-    grid-column-start: span 2;
+    grid-column: 1 / -1;
     cursor: pointer;
     font-size: var(--widget-detail-size, .85rem);
     text-align: center;
@@ -213,7 +218,7 @@ export default {
   }
   // More weather details table
   .details {
-    grid-column-start: span 2;
+    grid-column: 1 / -1;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
     gap: .375rem;
