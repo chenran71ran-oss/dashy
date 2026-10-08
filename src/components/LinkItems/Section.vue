@@ -49,8 +49,8 @@
         <AddIcon aria-hidden="true" /><span>添加网站</span>
       </button>
     </div>
-    <div v-if="hasWidgets || isEditMode" class="widget-list" v-drag-sort="widgetDragConfig">
-      <WidgetBase v-for="(widget, widgetIndex) in widgets" :key="`${widgetIndex}-${widget.type}`" :widget="widget" :index="widgetIndex" @editWidget="openEditWidget(widgetIndex)" @removeWidget="confirmRemoveWidget(widgetIndex)" />
+    <div v-if="hasWidgets || isEditMode" class="widget-list" :data-widget-size="itemSize" :data-widget-layout="$store.getters.layout" v-drag-sort="widgetDragConfig">
+      <WidgetBase v-for="(widget, widgetIndex) in widgets" :key="`${widgetIndex}-${widget.type}`" :widget="widget" :index="widgetIndex" :item-size="itemSize" @editWidget="openEditWidget(widgetIndex)" @removeWidget="confirmRemoveWidget(widgetIndex)" />
       <button v-if="isEditMode" type="button" class="add-widget-launcher" @click="openAddWidget"><AddIcon /> 添加小组件</button>
     </div>
     <!-- Modal for opening in modal view -->
@@ -442,22 +442,23 @@ export default {
 }
 
 .widget-list {
+  --widget-column-min: 260px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--widget-column-min), 100%), 1fr));
+  align-items: start;
   gap: 0.75rem;
   margin-top: 0.75rem;
   min-width: 0;
-  .widget-base { min-width: 0; }
-  &.wide {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-around;
-    .widget-base  {
-      min-width: 10rem;
-      width: stretch;
-      width: -webkit-fill-available;
-      width: -moz-available;
-    }
+  &[data-widget-size='small'] { --widget-column-min: 220px; gap: .5rem; }
+  &[data-widget-size='large'] { --widget-column-min: 320px; }
+  &[data-widget-layout='vertical'], &[data-widget-layout='masonry'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  // Theme-specific margins and fixed widths must not distort widget grid cells.
+  :deep(.widget-base) { min-width: 0; width: 100%; max-width: 100%; margin: 0; }
+  @include phone {
+    grid-template-columns: minmax(0, 1fr);
+    gap: .5rem;
   }
   .add-widget-launcher {
     display: inline-flex;

@@ -100,13 +100,12 @@ export default {
     gap: .25rem .5rem;
     line-height: 1.4;
     padding: .25rem calc(var(--widget-controls-space, 0px) + .5rem) .25rem .5rem;
-    opacity: 0.85;
-    font-size: .85rem;
-    background: var(--widget-accent-color);
+    font-size: var(--widget-heading-size, .85rem);
+    background: color-mix(in srgb, currentColor 6%, transparent);
     .date { margin-left: auto; text-align: right; }
   }
   p {
-    color: var(--widget-text-color);
+    color: inherit;
     cursor: default;
     margin: 0;
   }
@@ -123,6 +122,17 @@ export default {
     text-align: center;
     font-variant-numeric: tabular-nums;
     font-family: Digital, var(--font-monospace);
+  }
+  @container widget-frame (max-width: 18rem) {
+    .upper {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) var(--widget-controls-space, 0px);
+      grid-template-rows: minmax(var(--widget-controls-row, 0px), auto) auto;
+      padding: .125rem .5rem;
+      gap: .125rem .25rem;
+      .city { grid-column: 1; grid-row: 1; }
+      .date { grid-column: 1 / -1; grid-row: 2; margin-left: 0; text-align: left; }
+    }
   }
 }
 

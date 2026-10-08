@@ -7,6 +7,8 @@
       'has-widget-actions': visibleControlCount > 0,
     }]"
     :style="{ '--widget-action-count': visibleControlCount }"
+    :data-widget-size="widgetSize"
+    :data-widget-layout="widgetLayout"
   >
     <!-- Keep widget controls together, inside the frame. -->
     <div class="widget-actions" v-if="visibleControlCount > 0">
@@ -171,6 +173,7 @@ export default {
   props: {
     widget: { type: Object, required: true },
     index: { type: Number, required: true },
+    itemSize: { type: String, default: '' },
   },
   emits: ['editWidget', 'removeWidget'],
   data: () => ({
@@ -182,6 +185,14 @@ export default {
     supported() { return CLOUD_CAPABILITIES.widgets.includes(this.widgetType); },
     appConfig() {
       return this.$store.getters.appConfig;
+    },
+    widgetSize() {
+      const size = this.itemSize || this.$store.getters.iconSize;
+      return ['small', 'medium', 'large'].includes(size) ? size : 'medium';
+    },
+    widgetLayout() {
+      const layout = this.$store.getters.layout;
+      return ['auto', 'horizontal', 'vertical', 'masonry'].includes(layout) ? layout : 'auto';
     },
     isEditMode() {
       return this.$store.state.editMode;
@@ -259,22 +270,68 @@ export default {
 @import "@/styles/media-queries.scss";
 
 .widget-base {
-  --widget-action-size: 1.75rem;
-  --widget-controls-space: calc(var(--widget-action-count, 0) * (var(--widget-action-size) + .25rem));
-  --widget-controls-row: 0px;
-  box-sizing: border-box;
-  min-width: 0;
-  overflow-wrap: anywhere;
-  position: relative;
-  padding: .5rem .75rem;
   background: var(--widget-base-background);
   box-shadow: var(--widget-base-shadow, none);
+  border-radius: var(--curve-factor);
+}
+
+// Keep theme colors and decoration, while one frame controls geometry for every theme.
+.widget-base[data-widget-size] {
+  --widget-action-size: 1.75rem;
+  --widget-pad-block: .5rem;
+  --widget-pad-inline: .75rem;
+  --widget-heading-size: .85rem;
+  --widget-meta-size: .65rem;
+  --widget-detail-size: .85rem;
+  --widget-value-min: 1.85rem;
+  --widget-value-max: 2.8rem;
+  --widget-value-scale: 11;
+  --metric-value-size: var(--widget-value-max);
+  --metric-value-height: calc(var(--metric-value-size) + .5rem);
+  --metric-gap: .75rem;
+  --widget-controls-space: calc(var(--widget-action-count, 0) * (var(--widget-action-size) + .25rem));
+  --widget-controls-row: 0px;
+  container: widget-frame / inline-size;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  overflow-wrap: anywhere;
+  position: relative;
+  padding: var(--widget-pad-block) var(--widget-pad-inline);
+  color: var(--widget-text-color, var(--foreground));
   .widget-deferred { color: var(--widget-text-color); font-size: 0.85rem; line-height: 1.7; }
+
+  &[data-widget-size='small'] {
+    --widget-pad-block: .375rem;
+    --widget-pad-inline: .5rem;
+    --widget-heading-size: .8rem;
+    --widget-detail-size: .8rem;
+    --widget-value-min: 1.5rem;
+    --widget-value-max: 2rem;
+    --widget-value-scale: 9;
+    --metric-gap: .5rem;
+  }
+  &[data-widget-size='large'] {
+    --widget-pad-block: .65rem;
+    --widget-pad-inline: .85rem;
+    --widget-action-size: 2rem;
+    --widget-heading-size: .95rem;
+    --widget-meta-size: .75rem;
+    --widget-detail-size: .95rem;
+    --widget-value-min: 2.1rem;
+    --widget-value-max: 3.4rem;
+    --widget-value-scale: 13;
+    --metric-gap: 1rem;
+  }
+  @supports (font-size: 1cqi) {
+    --metric-value-size: clamp(var(--widget-value-min), calc(var(--widget-value-scale) * 1cqi), var(--widget-value-max));
+  }
 
   &.has-widget-actions {
     --widget-controls-row: var(--widget-action-size);
     &:not(.has-widget-label):not(.widget-clock) {
-      padding-top: calc(var(--widget-action-size) + .75rem);
+      padding-top: calc(var(--widget-action-size) + var(--widget-pad-block) + .25rem);
     }
   }
   &.has-widget-label .widget-wrap {
@@ -284,18 +341,13 @@ export default {
 
   // Shared value sizing, with content-driven height instead of an empty fixed frame.
   &.metric-widget {
-    --metric-value-size: clamp(2rem, 7vw, 2.8rem);
-    --metric-value-height: 3.25rem;
-    min-height: 0;
     align-self: start;
-    padding: .5rem .75rem;
-    .widget-wrap { min-width: 0; padding: 0; }
   }
 
   .widget-actions {
     position: absolute;
-    top: .5rem;
-    right: .5rem;
+    top: var(--widget-pad-block);
+    right: var(--widget-pad-inline);
     display: flex;
     align-items: center;
     gap: .25rem;
@@ -310,44 +362,52 @@ export default {
     padding: .375rem;
     position: static;
     border: none;
-    opacity: var(--dimming-factor);
-    color: var(--widget-text-color);
-    background: var(--widget-accent-color);
+    opacity: .85;
+    color: inherit;
+    background: transparent;
+    border-radius: var(--curve-factor-small, var(--curve-factor));
     svg { width: 1rem; height: 1rem; flex-shrink: 0; }
 
     &:hover:not(:disabled) {
       opacity: 1;
-      color: var(--widget-text-color);
-      background: var(--widget-accent-color);
+      color: inherit;
+      background: color-mix(in srgb, currentColor 10%, transparent);
     }
     &:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
   }
 
   // Optional widget label
   .widget-label {
-    color: var(--widget-text-color);
+    color: inherit;
     box-sizing: border-box;
     display: flex;
     align-items: center;
     min-height: var(--widget-action-size);
     padding: .125rem calc(var(--widget-controls-space) + .5rem) .125rem .5rem;
-    font-size: .85rem;
+    font-size: var(--widget-heading-size);
     line-height: 1.4;
     overflow-wrap: anywhere;
   }
 
   @include phone {
     --widget-action-size: 2rem;
-    padding: .375rem .5rem;
-    .widget-actions { top: .375rem; right: .375rem; }
-    &.metric-widget {
-      --metric-value-height: 3rem;
-      padding: .375rem .5rem;
+    --widget-pad-block: .375rem;
+    --widget-pad-inline: .5rem;
+    &[data-widget-size='large'] { --widget-pad-block: .5rem; --widget-pad-inline: .65rem; }
+  }
+
+  // A narrow desktop column needs the same protection as a narrow phone card.
+  @container widget-frame (max-width: 18rem) {
+    .widget-wrap {
+      --metric-value-size: clamp(1.35rem, calc(var(--widget-value-scale) * 1cqi), min(var(--widget-value-max), 2.2rem));
+      --metric-gap: .5rem;
     }
   }
 
   // Actual widget container
   .widget-wrap {
+    min-width: 0;
+    padding: 0;
     &.has-error {
       cursor: not-allowed;
       opacity: 0.5;
@@ -399,5 +459,11 @@ export default {
       display: none;
     }
   }
+}
+
+// This theme explicitly supplies a light widget surface and dark widget text.
+:global(html[data-theme='brutalist'] .widget-base[data-widget-size]) {
+  background: var(--widget-background-color);
+  border: 2px solid var(--widget-text-color);
 }
 </style>

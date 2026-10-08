@@ -138,7 +138,7 @@ export default {
   display: flex;
 }
   p {
-    color: var(--widget-text-color);
+    color: inherit;
   }
 
 .weather {
@@ -150,7 +150,8 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: clamp(.75rem, 3vw, 1.5rem);
+    gap: var(--metric-gap, .75rem);
+    flex-wrap: wrap;
     min-height: var(--metric-value-height, 3.25rem);
     min-width: 0;
     padding: .25rem 0;
@@ -158,7 +159,7 @@ export default {
     line-height: 1;
     .owi {
       font-size: var(--metric-value-size, 2.8rem);
-      color: var(--widget-text-color);
+      color: inherit;
       margin: 0;
       flex: 0 0 auto;
       line-height: 1;
@@ -178,27 +179,29 @@ export default {
     text-transform: capitalize;
     text-align: center;
     margin: 0;
+    font-size: var(--widget-detail-size, .85rem);
+    line-height: 1.4;
   }
   .source-meta {
     grid-column: 1 / -1;
     margin: .15rem 0 0;
     text-align: center;
-    font-size: .65rem;
+    font-size: var(--widget-meta-size, .65rem);
     line-height: 1.4;
     overflow-wrap: anywhere;
-    opacity: .75;
+    opacity: .85;
   }
   // Show more details button
   .more-details-btn {
     grid-column-start: span 2;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: var(--widget-detail-size, .85rem);
     text-align: center;
     width: fit-content;
     margin: 0.25rem auto;
     padding: 0.1rem 0.25rem;
     border: 1px solid transparent;
-    opacity: var(--dimming-factor);
+    opacity: .85;
     border-radius: var(--curve-factor);
     &:hover {
       border: 1px solid var(--widget-text-color);
@@ -213,17 +216,21 @@ export default {
     grid-column-start: span 2;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+    gap: .375rem;
+    font-size: var(--widget-detail-size, .85rem);
     .info-wrap {
       display: flex;
       flex-direction: column;
       width: 100%;
-      opacity: var(--dimming-factor);
+      min-width: 0;
       p.info-line {
         display: flex;
+        flex-wrap: wrap;
+        gap: .25rem;
         justify-content: space-between;
         margin: 0.1rem 0.5rem;
         padding: 0.1rem 0;
-        color: var(--widget-text-color);
+        color: inherit;
         &:not(:last-child) {
           border-bottom: 1px dashed var(--widget-text-color);
         }
