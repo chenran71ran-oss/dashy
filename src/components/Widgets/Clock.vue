@@ -1,5 +1,5 @@
 <template>
-<div class="clock">
+<div class="clock" :class="{ 'date-hidden': options.hideDate }">
   <div class="upper" v-if="!options.hideDate">
     <p class="city">{{ cityName }}</p>
     <p class="date">{{ date }}</p>
@@ -88,20 +88,22 @@ export default {
 
 .clock {
   padding: 0;
+  &.date-hidden { padding-top: var(--widget-controls-row, 0px); }
   .upper {
     display: flex;
     justify-content: space-between;
     border-radius: var(--curve-factor);
     box-sizing: border-box;
-    min-height: 2rem;
+    min-height: var(--widget-action-size, 1.75rem);
     align-items: center;
     flex-wrap: wrap;
     gap: .25rem .5rem;
     line-height: 1.4;
-    padding: .3rem .5rem;
+    padding: .25rem calc(var(--widget-controls-space, 0px) + .5rem) .25rem .5rem;
     opacity: 0.85;
     font-size: .85rem;
     background: var(--widget-accent-color);
+    .date { margin-left: auto; text-align: right; }
   }
   p {
     color: var(--widget-text-color);
@@ -110,7 +112,7 @@ export default {
   }
   .time {
     font-size: var(--metric-value-size, 2.8rem);
-    min-height: var(--metric-value-height, 4rem);
+    min-height: var(--metric-value-height, 3.25rem);
     box-sizing: border-box;
     display: flex;
     align-items: center;

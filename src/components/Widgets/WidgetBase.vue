@@ -1,17 +1,25 @@
 <template>
-  <div :class="[`widget-base`, { 'is-loading': loading, 'metric-widget': ['clock', 'weather'].includes(widgetType) }]">
-    <!-- Update Action Button -->
-    <Button :click="update" class="action-btn update-btn" aria-label="刷新小组件" v-if="supported && !hideControls && !loading">
-      <UpdateIcon />
-    </Button>
-    <!-- Edit Action Button (visible in edit mode) -->
-    <Button :click="emitEdit" class="action-btn edit-btn" aria-label="编辑小组件" v-if="isEditMode">
-      <EditIcon />
-    </Button>
-    <!-- Remove Action Button (visible in edit mode) -->
-    <Button :click="emitRemove" class="action-btn remove-btn" aria-label="删除小组件" v-if="isEditMode">
-      <BinIcon />
-    </Button>
+  <div
+    :class="['widget-base', `widget-${widgetType}`, {
+      'is-loading': loading,
+      'metric-widget': ['clock', 'weather'].includes(widgetType),
+      'has-widget-label': !!widgetOptions.label,
+      'has-widget-actions': visibleControlCount > 0,
+    }]"
+    :style="{ '--widget-action-count': visibleControlCount }"
+  >
+    <!-- Keep widget controls together, inside the frame. -->
+    <div class="widget-actions" v-if="visibleControlCount > 0">
+      <Button :click="update" :disabled="loading" :aria-busy="loading" class="action-btn update-btn" aria-label="刷新小组件" tooltip="刷新小组件" v-if="supported && !hideControls">
+        <UpdateIcon />
+      </Button>
+      <Button :click="emitEdit" class="action-btn edit-btn" aria-label="编辑小组件" tooltip="编辑小组件" v-if="isEditMode">
+        <EditIcon />
+      </Button>
+      <Button :click="emitRemove" class="action-btn remove-btn" aria-label="删除小组件" tooltip="删除小组件" v-if="isEditMode">
+        <BinIcon />
+      </Button>
+    </div>
     <!-- Loading Spinner -->
     <div v-if="loading" class="loading">
       <LoadingAnimation v-if="loading" class="loader" />
@@ -207,6 +215,9 @@ export default {
     hideControls() {
       return this.widget.hideControls;
     },
+    visibleControlCount() {
+      return (this.supported && !this.hideControls ? 1 : 0) + (this.isEditMode ? 2 : 0);
+    },
     component() {
       if (!this.supported) return null;
       const type = COMPAT[this.widgetType] || this.widget.type;
@@ -248,59 +259,91 @@ export default {
 @import "@/styles/media-queries.scss";
 
 .widget-base {
+  --widget-action-size: 1.75rem;
+  --widget-controls-space: calc(var(--widget-action-count, 0) * (var(--widget-action-size) + .25rem));
+  --widget-controls-row: 0px;
+  box-sizing: border-box;
   min-width: 0;
   overflow-wrap: anywhere;
   position: relative;
-  padding: 0.75rem 0.5rem 0.5rem 0.5rem;
+  padding: .5rem .75rem;
   background: var(--widget-base-background);
   box-shadow: var(--widget-base-shadow, none);
   .widget-deferred { color: var(--widget-text-color); font-size: 0.85rem; line-height: 1.7; }
 
-  // A shared frame for the clock and weather summary; details can grow naturally.
-  &.metric-widget {
-    --metric-value-size: clamp(2rem, 7vw, 2.8rem);
-    --metric-value-height: 4rem;
-    box-sizing: border-box;
-    min-height: 11.5rem;
-    padding: 1.25rem .75rem .75rem;
-    .widget-label {
-      box-sizing: border-box;
-      min-height: 2rem;
-      padding: .3rem .5rem;
-      font-size: .85rem;
-      line-height: 1.4;
-      overflow-wrap: anywhere;
+  &.has-widget-actions {
+    --widget-controls-row: var(--widget-action-size);
+    &:not(.has-widget-label):not(.widget-clock) {
+      padding-top: calc(var(--widget-action-size) + .75rem);
     }
-    .widget-wrap { min-width: 0; }
+  }
+  &.has-widget-label .widget-wrap {
+    --widget-controls-space: 0px;
+    --widget-controls-row: 0px;
   }
 
-  // Refresh and full-page action buttons
-  button.action-btn {
-    height: 1rem;
-    min-width: auto;
-    width: 1.25rem;
-    margin: 0;
-    padding: 0.25rem;
+  // Shared value sizing, with content-driven height instead of an empty fixed frame.
+  &.metric-widget {
+    --metric-value-size: clamp(2rem, 7vw, 2.8rem);
+    --metric-value-height: 3.25rem;
+    min-height: 0;
+    align-self: start;
+    padding: .5rem .75rem;
+    .widget-wrap { min-width: 0; padding: 0; }
+  }
+
+  .widget-actions {
     position: absolute;
-    top: 0;
+    top: .5rem;
+    right: .5rem;
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    z-index: 1;
+  }
+  .widget-actions button.action-btn {
+    box-sizing: border-box;
+    height: var(--widget-action-size);
+    min-width: auto;
+    width: var(--widget-action-size);
+    margin: 0;
+    padding: .375rem;
+    position: static;
     border: none;
     opacity: var(--dimming-factor);
     color: var(--widget-text-color);
-    svg { width: 0.75rem; height: 0.75rem; }
+    background: var(--widget-accent-color);
+    svg { width: 1rem; height: 1rem; flex-shrink: 0; }
 
-    &:hover {
+    &:hover:not(:disabled) {
       opacity: 1;
-      color: var(--widget-background-color);
+      color: var(--widget-text-color);
+      background: var(--widget-accent-color);
     }
-
-    &.update-btn { right: -0.25rem; }
-    &.edit-btn { right: 1rem; }
-    &.remove-btn { right: 2.25rem; }
+    &:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
   }
 
   // Optional widget label
   .widget-label {
     color: var(--widget-text-color);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    min-height: var(--widget-action-size);
+    padding: .125rem calc(var(--widget-controls-space) + .5rem) .125rem .5rem;
+    font-size: .85rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  @include phone {
+    --widget-action-size: 2rem;
+    padding: .375rem .5rem;
+    .widget-actions { top: .375rem; right: .375rem; }
+    &.metric-widget {
+      --metric-value-height: 3rem;
+      padding: .375rem .5rem;
+    }
   }
 
   // Actual widget container

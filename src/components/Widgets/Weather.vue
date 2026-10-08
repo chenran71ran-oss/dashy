@@ -151,7 +151,7 @@ export default {
     align-items: center;
     justify-content: center;
     gap: clamp(.75rem, 3vw, 1.5rem);
-    min-height: var(--metric-value-height, 4rem);
+    min-height: var(--metric-value-height, 3.25rem);
     min-width: 0;
     padding: .25rem 0;
     box-sizing: border-box;
