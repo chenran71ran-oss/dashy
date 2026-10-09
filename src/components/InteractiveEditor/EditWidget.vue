@@ -9,12 +9,13 @@
           <option value="image">图片 · 图片或图表快照</option>
           <option value="iframe">嵌入网页 · 对方需允许嵌入</option>
         </optgroup>
-        <optgroup label="全部 Dashy 小组件">
-          <option v-for="entry in widgetCatalog.filter(e => !['clock', 'weather', 'image', 'iframe'].includes(e.type))" :key="entry.type" :value="entry.type">{{ entry.label }} · {{ entry.type }}</option>
+        <optgroup v-for="category in widgetCategories" :key="category" :label="category">
+          <option v-for="entry in widgetCatalog.filter(e => e.category === category && !['clock', 'weather', 'image', 'iframe'].includes(e.type))" :key="entry.type" :value="entry.type">{{ entry.label }} · {{ entry.type }}</option>
         </optgroup>
         <option v-if="!widgetCatalog.some(e => e.type === draft.type)" :value="draft.type">{{ draft.type }} · {{ supported ? '原版别名' : '自定义类型' }}</option>
       </select></label>
       <p class="editor-note">{{ description }}</p>
+      <p v-if="widgetHelp" class="editor-hint"><strong>使用条件：</strong>{{ widgetHelp.requirements }}</p>
       <label>显示名称<input v-model="draft.label" aria-label="小组件名称" placeholder="可选，例如 北京时间" maxlength="120" /></label>
       <template v-if="draft.type === 'clock'">
         <label>时区<input v-model="options.timeZone" aria-label="时区" placeholder="留空跟随设备，例如 Asia/Shanghai" /></label>
@@ -48,7 +49,7 @@
       </template>
       <label v-if="!simpleType">组件参数（JSON）<textarea v-model="optionsText" aria-label="组件参数 JSON" rows="9" spellcheck="false" placeholder='{"hostname":"https://your-service.example"}' /></label>
       <p v-if="!simpleType" class="editor-hint">按原版文档填写该组件所需的 API 地址、密钥占位符和其他参数。需要服务端密钥时开启代理，并在 CF Secrets 设置 DASHY_ 开头的变量。</p>
-      <a href="https://dashy.to/docs/widgets/" target="_blank" rel="noopener noreferrer">查看原版小组件参数文档</a>
+      <a :href="documentationUrl" target="_blank" rel="noopener noreferrer">查看原版小组件参数文档</a>
       <details><summary>原版通用选项</summary>
         <label>自动刷新间隔（秒）<input type="number" min="0" max="7200" v-model.number="draft.updateInterval" aria-label="通用刷新间隔" /></label>
         <label>请求超时（毫秒）<input type="number" min="0" v-model.number="draft.timeout" aria-label="请求超时" /></label>
@@ -81,8 +82,11 @@ export default {
     supported() { return !!WIDGET_COMPONENTS[this.draft.type] || WIDGET_CATALOG.some(e => e.type === this.draft.type); },
     simpleType() { return ['clock', 'weather', 'image', 'iframe'].includes(this.draft.type); },
     options() { return this.draft.options || {}; },
+    widgetCategories() { return [...new Set(this.widgetCatalog.map(e => e.category))]; },
+    widgetHelp() { const component = WIDGET_COMPONENTS[this.draft.type]; return this.widgetCatalog.find(e => e.type === this.draft.type || e.component === component); },
+    documentationUrl() { return 'https://dashy.to/docs/widgets/'; },
     description() {
-      return { weather: 'OpenWeatherMap 实况天气；可显示温度、体感、湿度与风速。默认使用 CF Secret，也支持密钥占位符。', clock: '直接使用设备时间，无需 API Key。可同时添加不同时区的时钟。', image: '展示图片、壁纸或监控服务导出的图表快照。远程图片由浏览器加载。', iframe: '把对方允许嵌入的页面放进分类，例如公开状态页；不需要填写 API Key。' }[this.draft.type] || '原版小组件已恢复；填写数据服务参数后运行。主机监控需要相应监控服务，公共 API 组件按提供方要求配置。';
+      return this.widgetHelp?.description || '自定义小组件：请参考其数据源说明配置参数。';
     },
   },
   watch: {

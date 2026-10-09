@@ -23,17 +23,10 @@
         />
       </template>
     </div>
-    <div v-if="widgets && (selected && !showAll)" class="minimal-widget-wrap">
-      <WidgetBase
-        v-for="(widget, widgetIndx) in widgets"
-        :key="widgetIndx"
-        :widget="widget"
-        :index="widgetIndx"
-        :itemSize="itemSize"
-        @navigateToSection="navigateToSection"
-      />
+    <div v-if="widgets.length && (selected && !showAll)" class="minimal-widget-wrap">
+      <WidgetGrid :widgets="widgets" :item-size="itemSize" @navigateToSection="navigateToSection" />
     </div>
-    <div v-if="selected && !showAll && !widgets && items.length < 1" class="empty-section">
+    <div v-if="selected && !showAll && !widgets.length && items.length < 1" class="empty-section">
       <p>{{ $t('home.no-items-section') }}</p>
     </div>
     <IframeModal
@@ -47,7 +40,7 @@
 <script>
 import router from '@/router';
 import Item from '@/components/LinkItems/Item.vue';
-import WidgetBase from '@/components/Widgets/WidgetBase';
+import WidgetGrid from '@/components/WidgetLayout/WidgetGrid.vue';
 import SubItemGroup from '@/components/LinkItems/SubItemGroup.vue';
 import IframeModal from '@/components/LinkItems/IframeModal.vue';
 import sortItems from '@/utils/SortItems';
@@ -102,7 +95,7 @@ export default {
   },
   components: {
     Item,
-    WidgetBase,
+    WidgetGrid,
     SubItemGroup,
     IframeModal,
   },
@@ -155,14 +148,14 @@ export default {
 @import '@/styles/style-helpers.scss';
 
 .minimal-section-inner {
-  height: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: column;
+  height: auto;
+  min-width: 0;
+  display: block;
   background: var(--minimal-view-group-background);
   border-radius: 0 0 var(--curve-factor) var(--curve-factor);
   .section-items {
     display: grid;
+    align-content: start; align-items: start; grid-auto-rows: max-content;
     @include phone { --minimal-col-count: 1; }
     @include tablet { --minimal-col-count: 2; }
     @include laptop { --minimal-col-count: 3; }
@@ -172,7 +165,9 @@ export default {
     grid-template-columns: repeat(var(--minimal-col-count, 1), minmax(0, 1fr));
   }
   .minimal-widget-wrap {
-    padding: 1rem;
+    padding: .75rem;
+    min-width: 0;
+    box-sizing: border-box;
   }
   .empty-section {
     padding: 1rem;
@@ -184,7 +179,6 @@ export default {
   }
   &.selected {
     border: 1px solid var(--minimal-view-group-color);
-    &:not(.show-all) { min-height: 300px; }
   }
   &.show-all {
     border: none;

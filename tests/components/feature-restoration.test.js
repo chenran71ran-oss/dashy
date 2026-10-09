@@ -8,6 +8,8 @@ import EditWidget from '@/components/InteractiveEditor/EditWidget.vue';
 import EditItem from '@/components/InteractiveEditor/EditItem.vue';
 import SubItemsEditor from '@/components/InteractiveEditor/SubItemsEditor.vue';
 import WidgetBase from '@/components/Widgets/WidgetBase.vue';
+import SettingsContainer from '@/components/Settings/SettingsContainer.vue';
+import WidgetGrid from '@/components/WidgetLayout/WidgetGrid.vue';
 import ItemMixin from '@/mixins/ItemMixin';
 import { WIDGET_CATALOG } from '@/utils/WidgetCatalog';
 import { readdirSync } from 'node:fs';
@@ -35,6 +37,63 @@ describe('restored views and editor capabilities preserve the current UI', () =>
   it('the selector covers every upstream widget component, including integrations', () => {
     const source = readdirSync('src/components/Widgets/').filter(file => file.endsWith('.vue') && !['WidgetBase.vue', 'Blank.vue'].includes(file)).map(file => file.replace('.vue', '')).sort();
     expect(WIDGET_CATALOG.map(entry => entry.component).sort()).toEqual(source);
+  });
+  it('all supported widgets have Chinese names, specific explanations and prerequisites', () => {
+    expect(WIDGET_CATALOG).toHaveLength(94);
+    for (const widget of WIDGET_CATALOG) {
+      expect(widget.label).toMatch(/[\u4e00-\u9fff]/u);
+      expect(widget.description.length).toBeGreaterThan(8);
+      expect(widget.requirements.length).toBeGreaterThan(8);
+      expect(widget.category).toBeTruthy();
+    }
+  });
+  it('widget aliases display their matching Chinese help and switching types updates the prerequisites', async () => {
+    const store = makeStore();
+    store.getters.getSectionByName = () => ({ widgets: [{ type: 'customapi', options: {} }] });
+    const wrapper = shallowMount(EditWidget, { props: { sectionName: 'AI', widgetIndex: 0 }, global: options(store) });
+    expect(wrapper.text()).toContain('JSON');
+    expect(wrapper.text()).toContain('endpoint');
+    await wrapper.get('select[aria-label="小组件类型"]').setValue('gl-current-cpu');
+    expect(wrapper.text()).toContain('Glances Web API');
+    await wrapper.get('select[aria-label="小组件类型"]').setValue('system-info');
+    expect(wrapper.text()).toContain('CF Workers 不提供真实主机指标');
+    wrapper.unmount();
+  });
+  it('Focus uses one search/config toolbar and shows no empty widget frame', () => {
+    const wrapper = shallowMount(Minimal, { global: options(makeStore()) });
+    const toolbar = wrapper.findComponent(SettingsContainer);
+    expect(toolbar.props('forceSearch')).toBe(true);
+    expect(toolbar.props('minimalSearch')).toBe(true);
+    expect(wrapper.findAllComponents(SettingsContainer)).toHaveLength(1);
+    wrapper.unmount();
+    const category = shallowMount(MinimalSection, { props: { groupId: 'empty', index: 0, selected: true, displayData: {} }, global: options(makeStore()) });
+    expect(category.find('.minimal-widget-wrap').exists()).toBe(false);
+    expect(category.find('.empty-section').exists()).toBe(true);
+    category.unmount();
+  });
+  it('widget grids propagate section size overrides while following the selected layout', async () => {
+    const store = makeStore();
+    const wrapper = shallowMount(WidgetGrid, { props: { widgets: [{ type: 'clock' }, { type: 'weather' }] }, global: options(store) });
+    expect(wrapper.attributes('data-widget-size')).toBe('medium');
+    store.getters.iconSize = 'large'; store.getters.layout = 'vertical'; await nextTick();
+    expect(wrapper.attributes('data-widget-layout')).toBe('vertical');
+    expect(wrapper.findAllComponents(WidgetBase).map(w => w.props('itemSize'))).toEqual(['large', 'large']);
+    await wrapper.setProps({ itemSize: 'small' });
+    expect(wrapper.attributes('data-widget-size')).toBe('small');
+    wrapper.unmount();
+  });
+  it('Workspace keeps configuration accessible in empty, widget and embedded-web states', async () => {
+    const opened = vi.spyOn(window, 'open').mockImplementation(() => null);
+    const wrapper = shallowMount(Workspace, { global: options(makeStore()) });
+    expect(wrapper.findAllComponents(SettingsContainer)).toHaveLength(1);
+    wrapper.vm.launchWidget([{ type: 'clock' }], { name: 'AI', displayData: { itemSize: 'large' } }); await nextTick();
+    expect(wrapper.findComponent({ name: 'WidgetView' }).props()).toMatchObject({ title: 'AI', itemSize: 'large' });
+    expect(wrapper.findAllComponents(SettingsContainer)).toHaveLength(1);
+    wrapper.vm.launchApp({ target: 'newtab', url: 'https://example.com' }); await nextTick();
+    expect(wrapper.findComponent({ name: 'WidgetView' }).exists()).toBe(true);
+    wrapper.vm.launchApp({ target: 'workspace', url: 'https://example.com' }); await nextTick();
+    expect(wrapper.findAllComponents(SettingsContainer)).toHaveLength(1);
+    wrapper.unmount(); opened.mockRestore();
   });
   it('Minimal uses category tabs, shows the selected category widgets and searches across categories', async () => {
     const wrapper = shallowMount(Minimal, { global: options(makeStore()) });

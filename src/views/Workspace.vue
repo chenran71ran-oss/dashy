@@ -7,12 +7,12 @@
       :initUrl="getInitialUrl()"
     />
     <main class="workspace-main">
+      <SettingsContainer class="workspace-toolbar" compact hideSearch />
       <div v-if="!url && !widgets" class="workspace-empty">
         <h2>工作台</h2><p>从左侧选择网站或小组件，在这里打开。</p>
         <p>网站设为“工作台内打开”后可嵌入当前窗口；设为“新标签页”时会按你的设置跳转。</p>
-        <SettingsContainer compact hideSearch />
       </div>
-      <WidgetView v-if="widgets" :widgets="widgets" />
+      <WidgetView v-if="widgets?.length" :widgets="widgets" :title="widgetSection.name || ''" :item-size="widgetSection.displayData?.itemSize" />
       <WebContent v-else-if="url && !isMultiTaskingEnabled" :url="url" />
       <MultiTaskingWebComtent v-else-if="isMultiTaskingEnabled" :url="url || ''" />
     </main>
@@ -36,6 +36,7 @@ export default {
   data: () => ({
     url: '',
     widgets: null,
+    widgetSection: {},
   }),
   computed: {
     sections() {
@@ -59,9 +60,11 @@ export default {
     launchApp(options) {
       if (options.target === 'newtab') {
         window.open(options.url, '_blank', 'noopener,noreferrer');
+        return;
       } else if (options.target === 'newwindow') {
         const { width, height } = window.screen;
         window.open(options.url, '_blank', `width=${width},height=${height},noopener,noreferrer`);
+        return;
       } else if (options.target === 'clipboard') {
         if (navigator.clipboard) {
           navigator.clipboard.writeText(options.url);
@@ -76,9 +79,10 @@ export default {
       }
       this.widgets = null;
     },
-    launchWidget(widgets) {
+    launchWidget(widgets, section = {}) {
       this.url = '';
-      this.widgets = widgets;
+      this.widgets = widgets?.length ? widgets : null;
+      this.widgetSection = section;
     },
     initiateFontAwesome() {
       const fontAwesomeScript = document.createElement('script');
@@ -108,10 +112,11 @@ export default {
 
 <style scoped lang="scss">
 .work-space { min-height: calc(100dvh - var(--header-height)); }
-.workspace-main { margin-left: var(--side-bar-width); min-width: 0; position: relative; min-height: calc(100dvh - var(--header-height)); }
+.workspace-main { margin-left: var(--side-bar-width); min-width: 0; position: relative; min-height: calc(100dvh - var(--header-height)); padding: .5rem; box-sizing: border-box; }
+.workspace-toolbar { margin-bottom: .5rem; }
 .workspace-empty { text-align: center; padding: clamp(1rem, 5vw, 3rem); color: var(--primary); }
 .workspace-empty p { line-height: 1.6; }
 .workspace-empty :deep(.portal-toolbar) { justify-content: center; }
-.workspace-main :deep(.web-content iframe) { position: relative; left: auto; width: 100%; height: calc(100dvh - var(--header-height)); }
-.workspace-main :deep(.workspace-widget-view) { position: relative; left: auto; width: 100%; height: auto; min-height: 0; padding: .75rem; box-sizing: border-box; }
+.workspace-main :deep(.web-content iframe) { position: relative; left: auto; width: 100%; height: calc(100dvh - var(--header-height) - 4rem); }
+@media(max-width:599px) { .workspace-main { padding: .25rem; } }
 </style>

@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><title>Home Lab responsive verification</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0;background:#e8edf2;color:#172330;font:14px system-ui}header{display:flex;gap:1rem;align-items:center;padding:.6rem;flex-wrap:wrap}select{padding:.3rem}iframe{display:block;height:900px;background:white;border:1px solid #6c829b;margin:0 auto}main{overflow:auto;padding:.5rem}h1{font-size:16px;margin:0}</style>
+<header><h1>布局验证</h1><label>宽度 <select id="width"><option>375</option><option selected>390</option><option>768</option><option>1366</option><option>1920</option></select></label><label>视图 <select id="view"><option value="/home">总站</option><option value="/minimal" selected>专注</option><option value="/workspace">工作台</option></select></label></header>
+<main><iframe title="Home Lab 布局预览" src="/minimal" width="390"></iframe></main>
+<script>const frame=document.querySelector('iframe');document.querySelector('#width').addEventListener('change',e=>{frame.width=e.target.value});document.querySelector('#view').addEventListener('change',e=>{frame.src=e.target.value});</script></html>

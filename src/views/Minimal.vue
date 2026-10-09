@@ -1,13 +1,9 @@
 <template>
   <div class="minimal-home focus-home" :style="getBackgroundImage()">
-    <!-- Buttons for config and home page -->
-    <div class="minimal-buttons">
-      <SettingsContainer compact hideSearch />
-    </div>
     <!-- Page title and search bar -->
     <div class="title-and-search">
       <PageTitle :title="pageInfo.title" :logo="pageInfo.logo" class="minimal-title" />
-      <MinimalSearch
+      <SettingsContainer compact forceSearch minimalSearch
         @user-is-searchin="(s) => { searchValue = s; }"
         :active="!modalOpen" ref="filterComp" />
     </div>
@@ -72,7 +68,6 @@
 import HomeMixin from '@/mixins/HomeMixin';
 import MinimalSection from '@/components/MinimalView/MinimalSection.vue';
 import MinimalHeading from '@/components/MinimalView/MinimalHeading.vue';
-import MinimalSearch from '@/components/MinimalView/MinimalSearch.vue';
 import SettingsContainer from '@/components/Settings/SettingsContainer.vue';
 import PageTitle from '@/components/PageStrcture/PageTitle.vue';
 import EditModeSaveMenu from '@/components/InteractiveEditor/EditModeSaveMenu.vue';
@@ -86,7 +81,6 @@ export default {
   components: {
     MinimalSection,
     MinimalHeading,
-    MinimalSearch,
     SettingsContainer,
     PageTitle,
     EditModeSaveMenu,
@@ -142,7 +136,7 @@ export default {
     },
     /* Clears input field, once a searched item is opened */
     finishedSearching() {
-      if (this.$refs.filterComp) this.$refs.filterComp.clearMinFilterInput();
+      if (this.$refs.filterComp) this.$refs.filterComp.clearFilterInput();
     },
     /* Make CSS styles to apply the users custom background image */
     getBackgroundImage() {
@@ -193,11 +187,10 @@ export default {
 
 .minimal-home {
   --minimal-card-min: 9.5rem;
-  display: flex;
-  flex-direction: column;
+  display: block;
   margin: 1rem auto;
   padding-bottom: 1px;
-  padding-top: 10vh;
+  padding-top: clamp(1rem, 4vh, 3rem);
   min-height: calc(99vh - var(--footer-height));
   width: 90%;
   max-width: 1000px;
@@ -206,6 +199,7 @@ export default {
 }
 
 .title-and-search {
+  width: 90%; margin-inline: auto; min-width: 0;
   .minimal-title { justify-content: center; margin: 0 auto 1rem; }
   text-align: center;
   h1 {
@@ -220,9 +214,8 @@ export default {
 
 /* Outside container wrapping the item groups*/
 .item-group-container {
-  display: flex;
-  flex-direction: column;
-  margin: 3rem auto;
+  display: block;
+  margin: 1.25rem auto;
   width: 90%;
   @extend .scroll-bar;
 
@@ -293,12 +286,14 @@ export default {
 .focus-category :deep(.section-items) {
   grid-template-columns: repeat(auto-fit, minmax(min(var(--minimal-card-min), 100%), 1fr));
   gap: .75rem; padding: .75rem; box-sizing: border-box;
+  align-items: start; align-content: start; grid-auto-rows: max-content;
 }
 .focus-home:has(.item.size-small) { --minimal-card-min: 8rem; }
 .focus-home:has(.item.size-large) { --minimal-card-min: 14rem; }
 .focus-category { min-height: 0 !important; height: auto !important; }
 @media (max-width: 600px) {
   .minimal-home { width: calc(100% - 1rem); padding-top: 2rem; }
+  .title-and-search { width: 100%; }
   .item-group-container { width: 100%; margin: 1.5rem auto; }
   .minimal-buttons { top: 0; right: 0; }
 }

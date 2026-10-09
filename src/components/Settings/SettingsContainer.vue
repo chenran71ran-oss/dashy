@@ -1,8 +1,9 @@
 <template>
-  <section class="portal-toolbar" :class="{ compact }">
+  <section class="portal-toolbar" :class="{ compact, 'has-search': searchVisible }">
     <SearchBar
       v-if="searchVisible"
       ref="SearchBar"
+      :minimal-search="minimalSearch"
       @user-is-searchin="userIsTypingSomething"
     />
     <div class="options-outer" :class="{ expanded: panelOpen }">
@@ -67,7 +68,7 @@ export default {
     LanguageSwitcher,
     IconOptions,
   },
-  props: { forceSearch: Boolean, compact: Boolean, hideSearch: Boolean },
+  props: { forceSearch: Boolean, compact: Boolean, hideSearch: Boolean, minimalSearch: Boolean },
   emits: ['user-is-searchin'],
   data() { return { panelOpen: !this.compact, modalNames }; },
   computed: {
@@ -124,8 +125,14 @@ section.portal-toolbar {
 .options-outer.expanded .options-trigger { display: none; }
 .portal-toolbar.compact {
   background: transparent; box-shadow: none; padding: 0;
-  .options-outer { flex: none; background: transparent; padding: 0; }
-  .options-outer.expanded { position: absolute; right: 0; top: 0; z-index: 8; width: min(42rem, calc(100vw - 2rem)); padding: .8rem; background: var(--settings-background); border-radius: var(--curve-factor); max-height: 85dvh; overflow: auto; box-sizing: border-box; }
+  display: grid; grid-template-columns: minmax(0, 1fr) 44px;
+  width: 100%; min-width: 0; box-sizing: border-box; align-items: center;
+  .options-outer { display: contents; }
+  .options-trigger { grid-column: 2; grid-row: 1; }
+  .options-outer.expanded .options-trigger { display: inline-flex; }
+  :deep(form) { grid-column: 1; grid-row: 1; width: 100%; max-width: none; min-width: 0; margin: 0; box-sizing: border-box; }
+  :deep(.options-panel) { grid-column: 1 / -1; grid-row: 2; padding: .8rem 3.2rem .8rem .8rem; background: var(--settings-background); border-radius: var(--curve-factor); }
+  :deep(.toolbar-close) { top: .8rem; right: .5rem; }
   .options-trigger { width: 44px; height: 44px; }
 }
 @media(max-width: 1100px) {
@@ -135,15 +142,20 @@ section.portal-toolbar {
 /* A column flex layout must not inherit desktop flex bases or end alignment. */
 @media(max-width:599px) {
   section.portal-toolbar {
-    display: grid; grid-template-columns: minmax(0, 1fr);
+    display: grid; grid-template-columns: minmax(0, 1fr) 44px;
     align-items: stretch; gap: .35rem; padding: .35rem .5rem;
     width: 100%; min-width: 0; box-sizing: border-box;
   }
   .options-outer {
-    width: 100%; min-width: 0; box-sizing: border-box;
-    flex: none; padding: .4rem; justify-content: flex-start;
+    display: contents;
   }
+  .options-trigger { grid-column: 2; grid-row: 1; width: 44px; height: 44px; }
+  .options-outer.expanded .options-trigger { display: inline-flex; }
+  section.portal-toolbar :deep(.options-panel) { grid-column: 1 / -1; grid-row: 2; padding: .4rem; background: var(--settings-background); }
+  section.portal-toolbar.compact :deep(.options-panel) { padding: .75rem; }
+  section.portal-toolbar.compact :deep(.theme-group) { padding-right: 3rem; }
   section.portal-toolbar :deep(form.normal) {
+    grid-column: 1; grid-row: 1;
     width: 100%; max-width: none; min-width: 0; flex: none;
     margin: 0 auto;
   }

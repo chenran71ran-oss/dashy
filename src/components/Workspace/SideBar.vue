@@ -2,13 +2,13 @@
   <nav class="side-bar">
     <div v-for="(section, index) in filteredSections" :key="index" class="side-bar-section">
       <!-- Section button -->
-      <div @click="openSection(index)" class="side-bar-item-container">
+      <button type="button" @click="openSection(index)" class="side-bar-item-container" :aria-label="section.name" :aria-expanded="!!isOpen[index]">
         <SideBarItem
           class="item"
           :icon="section.icon"
           :title="section.name"
         />
-      </div>
+      </button>
       <!-- Section inner -->
       <transition name="slide">
         <SideBarSection
@@ -80,7 +80,8 @@ export default {
     /* Toggles the section clicked, and closes all other sections */
     openSection(index) {
       this.isOpen = this.isOpen.map((val, ind) => (ind !== index ? false : !val));
-      if (this.filteredSections[index].widgets) this.$emit('launch-widget', this.filteredSections[index].widgets);
+      const section = this.filteredSections[index];
+      if (section.widgets?.length && this.isOpen[index]) this.$emit('launch-widget', section.widgets, section);
     },
     /* When item clicked, emit a launch event */
     launchApp(options) {
@@ -137,13 +138,14 @@ nav.side-bar {
   flex-direction: column;
   background: var(--side-bar-background);
   color: var(--side-bar-color);
-  height: 100%;
+  height: calc(100dvh - var(--header-height));
   width: var(--side-bar-width);
   text-align: center;
   overflow: auto;
   @extend .scroll-bar;
   .side-bar-item-container {
     z-index: 5;
+    display: block; width: 100%; padding: 0; border: none; background: transparent; color: inherit; cursor: pointer;
   }
   .item:not(:last-child) {
     border-bottom: 1px dashed var(--side-bar-color);

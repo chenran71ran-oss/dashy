@@ -1,39 +1,30 @@
 <template>
-  <div class="workspace-widget-view" v-if="widgets">
-    <WidgetBase
-      v-for="(widget, widgetIndx) in widgets"
-      :key="widgetIndx"
-      :widget="widget"
-      :index="widgetIndx"
-      class="workspace-widget"
-    />
-  </div>
+  <section class="workspace-widget-view" v-if="widgets.length" :aria-label="`${title || '工作台'}小组件`">
+    <h2 v-if="title">{{ title }}</h2>
+    <WidgetGrid :widgets="widgets" :item-size="itemSize" />
+  </section>
 </template>
 
 <script>
-import WidgetBase from '@/components/Widgets/WidgetBase';
+import WidgetGrid from '@/components/WidgetLayout/WidgetGrid.vue';
 
 export default {
   components: {
-    WidgetBase,
+    WidgetGrid,
   },
   props: {
     widgets: { type: Array, default: () => [] },
+    title: { type: String, default: '' },
+    itemSize: String,
   },
 };
 </script>
 
 <style lang="scss" scoped>
 .workspace-widget-view {
-  padding: 1rem 0;
-  background: var(--background);
-  position: absolute;
-  left: var(--side-bar-width);
-  height: calc(100% - var(--header-height) - 1rem);
-  width: calc(100% - var(--side-bar-width));
-  .workspace-widget {
-    max-width: 800px;
-    margin: 0.5rem auto 1rem auto;
-  }
+  padding: .75rem; margin: .75rem auto; max-width: 1200px;
+  background: var(--minimal-view-group-background); color: var(--minimal-view-group-color);
+  border-radius: var(--curve-factor); box-sizing: border-box; min-width: 0;
+  h2 { font-size: 1.1rem; margin: 0 0 .75rem; color: inherit; overflow-wrap: anywhere; }
 }
 </style>

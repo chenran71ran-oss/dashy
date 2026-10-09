@@ -1,4 +1,5 @@
 // Canonical upstream widget types; aliases remain accepted by the renderer.
+import { WIDGET_HELP } from './WidgetHelp.js';
 export const WIDGET_COMPONENTS = {
   'adguard-dns-info': 'AdGuardDnsInfo',
   'adguard-filter-status': 'AdGuardFilterStatus',
@@ -568,4 +569,4 @@ export const WIDGET_CATALOG = [
     "component": "GlCompactMetrics",
     "label": "Gl Compact Metrics"
   }
-];
+].map(entry => ({ ...entry, ...WIDGET_HELP[entry.type] }));
