@@ -1,63 +1,317 @@
 <template>
-  <div class="focus-home" :style="getBackgroundImage()">
-    <div class="focus-heading"><PageTitle v-if="showHeadingTitle" :title="pageInfo.title" :logo="pageInfo.logo" /><span v-else>工作台 · 快速访问</span><router-link to="/" class="return-home">返回总站</router-link></div>
-    <Home v-if="isEditMode" />
-    <template v-else>
-      <SettingsContainer @user-is-searchin="searching" :forceSearch="true" />
-      <main class="focus-content">
-        <div class="focus-status"><span>快速访问</span><span>{{ websiteCount }} 个网站 · {{ sections.length }} 个分类</span></div>
-        <p class="focus-help">简化导航视图：保留搜索、分类与网站入口，减少小组件干扰。</p>
-        <nav class="focus-tabs" aria-label="分类筛选" v-if="sections.length">
-          <button type="button" :class="{active: selectedSection === -1}" @click="selectedSection = -1">全部</button>
-          <button v-for="(section,index) in sections" :key="section.name" type="button" :class="{active: selectedSection === index}" @click="selectedSection = index">{{ section.name }} <span>{{ (section.items || []).length }}</span></button>
-        </nav>
-        <section v-for="(section,index) in filteredSections" :key="section.name" v-show="(selectedSection === -1 || selectedSection === index || searchValue) && (!searchValue || section.filteredItems.length)" class="focus-category">
-          <h2>{{ section.name }}</h2>
-          <MinimalSection :index="index" :title="section.name" :groupId="makeSectionId(section)" :items="section.filteredItems" :displayData="section.displayData || {}" :selected="true" :showAll="true" @change-modal-visibility="updateModalVisibility" />
-        </section>
-        <div v-if="checkIfResults(filteredSections)" class="focus-empty"><p>{{ searchValue ? '没有匹配的网站，换个关键词试试。' : '还没有网站，先在总站添加你的常用入口。' }}</p><router-link v-if="!searchValue" to="/">添加网站</router-link></div>
-      </main>
-    </template>
+  <div class="minimal-home focus-home" :style="getBackgroundImage()">
+    <!-- Buttons for config and home page -->
+    <div class="minimal-buttons">
+      <SettingsContainer compact hideSearch />
+    </div>
+    <!-- Page title and search bar -->
+    <div class="title-and-search">
+      <PageTitle :title="pageInfo.title" :logo="pageInfo.logo" class="minimal-title" />
+      <MinimalSearch
+        @user-is-searchin="(s) => { searchValue = s; }"
+        :active="!modalOpen" ref="filterComp" />
+    </div>
+    <div v-if="checkTheresData(sections)"
+      :class="`item-group-container ${!tabbedView ? 'showing-all' : ''}`">
+      <!-- Section heading tabs. Equal-width, scroll horizontally with arrows when they overflow -->
+      <div class="minimal-headings-wrap">
+        <button v-if="canScrollTabs" class="tab-scroll-btn"
+          :disabled="!canScrollLeft" @click="scrollTabs(-1)" aria-label="Previous tabs">‹</button>
+        <div ref="tabsStrip" class="minimal-headings-row" @scroll="updateTabScroll">
+          <MinimalHeading
+            v-for="(section, index) in sections"
+            :key="`heading-${index}`"
+            :index="index"
+            :title="section.name"
+            :icon="section.icon"
+            :selected="selectedSection === index"
+            @sectionSelected="sectionSelected"
+            class="headings"
+            :hideTitleText="sections.length > 8"
+          />
+        </div>
+        <button v-if="canScrollTabs" class="tab-scroll-btn"
+          :disabled="!canScrollRight" @click="scrollTabs(1)" aria-label="Next tabs">›</button>
+      </div>
+      <!-- Section item groups -->
+      <MinimalSection
+        v-for="(section, index) in filteredSections"
+        :key="makeSectionId(section)"
+        :index="index"
+        :title="section.name"
+        :icon="section.icon || undefined"
+        :groupId="makeSectionId(section)"
+        :items="section.filteredItems"
+        :widgets="section.widgets"
+        :displayData="section.displayData || {}"
+        :selected="selectedSection === index"
+        :showAll="!tabbedView"
+        class="focus-category"
+        @sectionSelected="sectionSelected"
+        @itemClicked="finishedSearching()"
+        @change-modal-visibility="updateModalVisibility"
+      />
+      <div v-if="searchValue && checkIfResults(filteredSections)" class="no-data">
+        {{searchValue ? $t('home.no-results') : $t('home.no-data')}}
+      </div>
+    </div>
+    <div v-else class="no-data">
+      <template v-if="isBootstrap">
+        {{ $t('home.session-expired-line1') }}
+        <p class="hint">{{ $t('home.session-expired-line2') }}</p>
+        <Button :click="reAuth">{{ $t('home.sign-in-again') }}</Button>
+      </template>
+      <template v-else>{{ $t('home.no-data') }}</template>
+    </div>
   </div>
+  <!-- Interactive editor save options bottom banner  -->
+  <EditModeSaveMenu v-if="isEditMode" />
 </template>
+
 <script>
 import HomeMixin from '@/mixins/HomeMixin';
 import MinimalSection from '@/components/MinimalView/MinimalSection.vue';
+import MinimalHeading from '@/components/MinimalView/MinimalHeading.vue';
+import MinimalSearch from '@/components/MinimalView/MinimalSearch.vue';
 import SettingsContainer from '@/components/Settings/SettingsContainer.vue';
 import PageTitle from '@/components/PageStrcture/PageTitle.vue';
-import { shouldBeVisible } from '@/utils/config/SectionHelpers';
-import Home from './Home.vue';
-import { resolveRouteIntent, makePageName } from '@/utils/config/ConfigHelpers';
+import EditModeSaveMenu from '@/components/InteractiveEditor/EditModeSaveMenu.vue';
+import Button from '@/components/FormElements/Button';
+import { makePageName, resolveRouteIntent } from '@/utils/config/ConfigHelpers';
+import ErrorHandler from '@/utils/logging/ErrorHandler';
+
 export default {
-  mixins: [HomeMixin], components: { MinimalSection, SettingsContainer, PageTitle, Home },
-  data: () => ({ selectedSection: -1 }),
-  computed: {
-    showHeadingTitle() { return !shouldBeVisible(this.$route.name); },
-    filteredSections() { return (this.sections || []).map(section => ({...section, filteredItems: this.filterTiles(section.items, section.name, {showHidden: !!this.searchValue})})); },
-    websiteCount() { const count = items => (items || []).reduce((n,item) => n + (item.subItems ? count(item.subItems) : 1),0); return this.sections.reduce((n,section) => n + count(section.items),0); },
+  name: 'Minimal',
+  mixins: [HomeMixin],
+  components: {
+    MinimalSection,
+    MinimalHeading,
+    MinimalSearch,
+    SettingsContainer,
+    PageTitle,
+    EditModeSaveMenu,
+    Button,
   },
-  watch: { '$route.params.section': {immediate:true,handler() { const {sectionSlug} = resolveRouteIntent(this.$route, this.$store); this.selectedSection = sectionSlug ? this.sections.findIndex(s => makePageName(s.name) === sectionSlug) : -1; }} },
+  data: () => ({
+    layout: '',
+    selectedSection: 0, // The index of currently selected section
+    tabbedView: true, // By default use tabs, when searching then show all instead
+    canScrollTabs: false, // Tabs strip is wider than its container
+    canScrollLeft: false,
+    canScrollRight: false,
+    tabResizeObserver: null,
+  }),
+  computed: {
+    /* Just the items to display, filtered by search term */
+    filteredSections() {
+      const showHidden = this.isEditMode || !!this.searchValue;
+      return (this.sections || []).map((section) => ({
+        ...section,
+        filteredItems: this.filterTiles(section.items, section.name, { showHidden }),
+      }));
+    },
+  },
+  watch: {
+    searchValue() {
+      this.tabbedView = !this.searchValue || this.searchValue.length === 0;
+    },
+    /* Keep the selected section in sync with the URL (/minimal/:page/:section) */
+    '$route.params.section': {
+      handler() { this.syncSelectedFromRoute(); },
+      immediate: true,
+    },
+    sections() { this.syncSelectedFromRoute(); },
+  },
+  methods: {
+    sectionSelected(index) {
+      this.selectedSection = index;
+      try { localStorage.setItem(`minimal-category:${this.pageId || 'home'}`, this.sections[index].name); } catch { /* storage optional */ }
+    },
+    /* If section slug present in the URL, then auto-select it if it exists */
+    syncSelectedFromRoute() {
+      if (!this.sections || !this.sections.length) return;
+      const { sectionSlug } = resolveRouteIntent(this.$route, this.$store);
+      if (!sectionSlug) {
+        const saved = localStorage.getItem(`minimal-category:${this.pageId || 'home'}`);
+        const index = this.sections.findIndex(s => s.name === saved);
+        this.selectedSection = index >= 0 ? index : 0; return;
+      }
+      const idx = this.sections.findIndex((s) => makePageName(s.name || '') === sectionSlug);
+      if (idx >= 0) { this.selectedSection = idx; return; }
+      ErrorHandler(`No section named '${sectionSlug}' was found in the current config`);
+    },
+    /* Clears input field, once a searched item is opened */
+    finishedSearching() {
+      if (this.$refs.filterComp) this.$refs.filterComp.clearMinFilterInput();
+    },
+    /* Make CSS styles to apply the users custom background image */
+    getBackgroundImage() {
+      if (this.appConfig && this.appConfig.backgroundImg) {
+        return `background: url('${this.appConfig.backgroundImg}') no-repeat center fixed;background-size:cover;`;
+      }
+      return '';
+    },
+    /* Scroll the tab strip by ~one visible page; leaves a small overlap so
+     * the user can see where they came from */
+    scrollTabs(direction) {
+      const strip = this.$refs.tabsStrip;
+      if (!strip) return;
+      const amount = Math.max(strip.clientWidth - 64, 120);
+      strip.scrollBy({ left: amount * direction, behavior: 'smooth' });
+    },
+    updateTabScroll() {
+      const strip = this.$refs.tabsStrip;
+      if (!strip) return;
+      this.canScrollTabs = strip.scrollWidth > strip.clientWidth + 1;
+      this.canScrollLeft = strip.scrollLeft > 0;
+      this.canScrollRight = strip.scrollLeft + strip.clientWidth < strip.scrollWidth - 1;
+    },
+  },
+  mounted() {
+    this.initiateFontAwesome();
+    this.initiateMaterialDesignIcons();
+    this.$nextTick(() => {
+      this.updateTabScroll();
+      if (typeof ResizeObserver !== 'undefined' && this.$refs.tabsStrip) {
+        this.tabResizeObserver = new ResizeObserver(this.updateTabScroll);
+        this.tabResizeObserver.observe(this.$refs.tabsStrip);
+      }
+    });
+  },
+  beforeUnmount() {
+    if (this.tabResizeObserver) {
+      this.tabResizeObserver.disconnect();
+      this.tabResizeObserver = null;
+    }
+  },
 };
 </script>
-<style scoped lang="scss">
-.focus-home { min-height: 100dvh; background: var(--background); color: var(--primary); }
-.focus-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding: 0.75rem clamp(1rem,4vw,3rem); background: var(--background-darker); }
-.focus-help { font-size: 0.85rem; line-height: 1.6; opacity: 0.8; }
-.return-home { color: inherit; text-decoration: none; font-size: 0.85rem; flex-shrink: 0; border: 1px solid currentColor; padding: 0.55rem 0.7rem; border-radius: var(--curve-factor-small); }
-.focus-content { max-width: 1280px; margin: 0 auto; padding: 1.5rem clamp(1rem,4vw,2rem); }
-.focus-status { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; font-size: 0.8rem; margin-bottom: 1rem; opacity: 0.85; }
-.focus-status span:first-child { font-size: 1.2rem; font-weight: 600; }
-.focus-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
-.focus-tabs button { border: 1px solid var(--outline-color); padding: 0.65rem 0.9rem; color: var(--primary); background: var(--background-darker); cursor: pointer; border-radius: var(--curve-factor); font-size: 0.85rem; }
-.focus-tabs button.active { color: var(--background); background: var(--primary); }
-.focus-tabs span { opacity: 0.7; margin-left: 0.4rem; }
-.focus-category { margin: 1rem 0 1.5rem; }
-.focus-category h2 { margin: 0 0 0.75rem; font-size: 1.2rem; }
-.focus-category :deep(.minimal-section-inner) { display: block; height: auto; min-height: 0; padding: 0.5rem; background: var(--item-group-background); border: 1px solid var(--outline-color); border-radius: var(--curve-factor); }
-.focus-category :deep(.section-items) { grid-template-columns: repeat(auto-fill,minmax(min(160px,100%),1fr)); grid-auto-rows: max-content; align-items: start; min-height: 0; gap: 0.6rem; }
-.focus-category :deep(.item) { margin: 0; }
-.focus-category :deep(.sub-items-group) { grid-column: span 2; padding: 0.5rem; }
-.focus-empty { text-align: center; padding: 2rem 1rem; border: 1px dashed var(--outline-color); }
-.focus-empty a { color: inherit; }
-@media(max-width:600px) { .focus-heading { padding: 1rem; align-items: flex-start; } .return-home { font-size: 0.75rem; } .focus-status { flex-wrap: wrap; } .focus-category :deep(.section-items) { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+
+<style lang="scss" scoped>
+@import '@/styles/media-queries.scss';
+@import '@/styles/style-helpers.scss';
+
+.minimal-home {
+  --minimal-card-min: 9.5rem;
+  display: flex;
+  flex-direction: column;
+  margin: 1rem auto;
+  padding-bottom: 1px;
+  padding-top: 10vh;
+  min-height: calc(99vh - var(--footer-height));
+  width: 90%;
+  max-width: 1000px;
+  position: relative;
+  background: var(--minimal-view-background-color);
+}
+
+.title-and-search {
+  .minimal-title { justify-content: center; margin: 0 auto 1rem; }
+  text-align: center;
+  h1 {
+    color: var(--minimal-view-title-color);
+    margin: 0;
+    font-size: 3rem;
+  }
+  a {
+    text-decoration: none;
+  }
+}
+
+/* Outside container wrapping the item groups*/
+.item-group-container {
+  display: flex;
+  flex-direction: column;
+  margin: 3rem auto;
+  width: 90%;
+  @extend .scroll-bar;
+
+  &.showing-all .minimal-headings-wrap {
+    display: none;
+  }
+}
+
+.minimal-headings-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+.minimal-headings-row {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+  .headings {
+    flex: 1 0 8rem;
+    max-width: 14rem;
+    min-width: 0;
+    &.center {
+      flex: 1 0 3rem;
+      max-width: 4rem;
+    }
+  }
+}
+.tab-scroll-btn {
+  flex: 0 0 auto;
+  padding: 0 0.5rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  background: var(--minimal-view-section-heading-background);
+  color: var(--minimal-view-section-heading-color);
+  border: 1px solid var(--minimal-view-section-heading-color);
+  border-radius: var(--curve-factor);
+  &:disabled { opacity: 0.3; cursor: default; }
+}
+
+.no-data {
+    font-size: 2rem;
+    color: var(--minimal-view-background-color);
+    background: #ffffffeb;
+    width: fit-content;
+    margin: 2rem auto;
+    padding: 0.5rem 1rem;
+    border-radius: var(--curve-factor);
+}
+
+.minimal-buttons {
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    display: flex;
+    .home-page-icon {
+      color: var(--minimal-view-settings-color);
+      width: 1.5rem;
+      height: 1.5rem;
+      @extend .svg-button;
+    }
+}
+.focus-category { min-width: 0; }
+.focus-category :deep(.section-items) {
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--minimal-card-min), 100%), 1fr));
+  gap: .75rem; padding: .75rem; box-sizing: border-box;
+}
+.focus-home:has(.item.size-small) { --minimal-card-min: 8rem; }
+.focus-home:has(.item.size-large) { --minimal-card-min: 14rem; }
+.focus-category { min-height: 0 !important; height: auto !important; }
+@media (max-width: 600px) {
+  .minimal-home { width: calc(100% - 1rem); padding-top: 2rem; }
+  .item-group-container { width: 100%; margin: 1.5rem auto; }
+  .minimal-buttons { top: 0; right: 0; }
+}
+</style>
+
+<style lang="scss">
+.minimal-home .minimal-buttons {
+  .config-launcher span.config-label { display: none; }
+  svg { opacity: var(--dimming-factor); border: none; }
+  &:hover svg { opacity: 1; }
+  .view-switcher {
+    margin-top: 2rem;
+    right: 0;
+  }
+}
 </style>

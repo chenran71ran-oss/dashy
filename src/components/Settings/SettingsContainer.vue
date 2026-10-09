@@ -1,5 +1,5 @@
 <template>
-  <section class="portal-toolbar">
+  <section class="portal-toolbar" :class="{ compact }">
     <SearchBar
       v-if="searchVisible"
       ref="SearchBar"
@@ -67,12 +67,12 @@ export default {
     LanguageSwitcher,
     IconOptions,
   },
-  props: { forceSearch: Boolean },
+  props: { forceSearch: Boolean, compact: Boolean, hideSearch: Boolean },
   emits: ['user-is-searchin'],
-  data: () => ({ panelOpen: true, modalNames }),
+  data() { return { panelOpen: !this.compact, modalNames }; },
   computed: {
     searchVisible() {
-      return this.forceSearch || this.$store.getters.visibleComponents.searchBar;
+      return !this.hideSearch && (this.forceSearch || this.$store.getters.visibleComponents.searchBar);
     },
     combinedConfig() {
       const app = this.$store.getters.appConfig;
@@ -122,6 +122,12 @@ section.portal-toolbar {
   border-radius: var(--curve-factor-navbar) 0 0;
 }
 .options-outer.expanded .options-trigger { display: none; }
+.portal-toolbar.compact {
+  background: transparent; box-shadow: none; padding: 0;
+  .options-outer { flex: none; background: transparent; padding: 0; }
+  .options-outer.expanded { position: absolute; right: 0; top: 0; z-index: 8; width: min(42rem, calc(100vw - 2rem)); padding: .8rem; background: var(--settings-background); border-radius: var(--curve-factor); max-height: 85dvh; overflow: auto; box-sizing: border-box; }
+  .options-trigger { width: 44px; height: 44px; }
+}
 @media(max-width: 1100px) {
   .options-outer { flex-basis: 100%; justify-content: flex-start; min-width: 0; }
 }

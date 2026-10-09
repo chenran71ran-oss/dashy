@@ -1,20 +1,26 @@
 <template>
-  <div class="work-space" :class="{ 'showing-landing': !url && !widgets }">
+  <div class="work-space">
     <SideBar
       :sections="sections"
       @launch-app="launchApp"
       @launch-widget="launchWidget"
       :initUrl="getInitialUrl()"
     />
-    <Minimal v-if="!url && !widgets" class="workspace-landing" />
-    <WebContent :url="url" v-else-if="!isMultiTaskingEnabled" />
-    <MultiTaskingWebComtent :url="url" v-else />
-    <WidgetView :widgets="widgets" v-if="widgets" />
+    <main class="workspace-main">
+      <div v-if="!url && !widgets" class="workspace-empty">
+        <h2>工作台</h2><p>从左侧选择网站或小组件，在这里打开。</p>
+        <p>网站设为“工作台内打开”后可嵌入当前窗口；设为“新标签页”时会按你的设置跳转。</p>
+        <SettingsContainer compact hideSearch />
+      </div>
+      <WidgetView v-if="widgets" :widgets="widgets" />
+      <WebContent v-else-if="url && !isMultiTaskingEnabled" :url="url" />
+      <MultiTaskingWebComtent v-else-if="isMultiTaskingEnabled" :url="url || ''" />
+    </main>
   </div>
 </template>
 
 <script>
-import Minimal from './Minimal.vue';
+import SettingsContainer from '@/components/Settings/SettingsContainer.vue';
 import HomeMixin from '@/mixins/HomeMixin';
 import SideBar from '@/components/Workspace/SideBar';
 import WebContent from '@/components/Workspace/WebContent';
@@ -43,7 +49,7 @@ export default {
     },
   },
   components: {
-    Minimal,
+    SettingsContainer,
     SideBar,
     WebContent,
     WidgetView,
@@ -101,12 +107,11 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.workspace-landing { margin-left: var(--side-bar-width); }
-@media(max-width:600px) {
-  .workspace-landing { margin-left: 0; }
-  .showing-landing :deep(.side-bar) { display: none; }
-}
-.work-space {
-  min-height: fit-content;
-}
+.work-space { min-height: calc(100dvh - var(--header-height)); }
+.workspace-main { margin-left: var(--side-bar-width); min-width: 0; position: relative; min-height: calc(100dvh - var(--header-height)); }
+.workspace-empty { text-align: center; padding: clamp(1rem, 5vw, 3rem); color: var(--primary); }
+.workspace-empty p { line-height: 1.6; }
+.workspace-empty :deep(.portal-toolbar) { justify-content: center; }
+.workspace-main :deep(.web-content iframe) { position: relative; left: auto; width: 100%; height: calc(100dvh - var(--header-height)); }
+.workspace-main :deep(.workspace-widget-view) { position: relative; left: auto; width: 100%; height: auto; min-height: 0; padding: .75rem; box-sizing: border-box; }
 </style>

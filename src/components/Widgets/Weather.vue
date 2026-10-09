@@ -54,7 +54,9 @@ export default {
       return this.options.units || 'metric';
     },
     endpoint() {
-      return '/api/weather?' + new URLSearchParams({ city: this.options.city || 'wuhan', units: this.units, lang: this.options.lang || 'zh_cn' });
+      const params = { city: this.options.city || 'wuhan', units: this.units, lang: this.options.lang || 'zh_cn' };
+      for (const field of ['cityId', 'lat', 'lon', 'apiKey']) if (this.options[field] !== undefined && this.options[field] !== '') params[field] = this.options[field];
+      return '/api/weather?' + new URLSearchParams(params);
     },
     tempDisplayUnits() {
       switch (this.units) {
@@ -88,7 +90,7 @@ export default {
     /* Fetches the weather from OpenWeatherMap, and processes results */
     processData(data) {
       this.dataTime = Number.isFinite(data.dt) ? new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(data.dt * 1000)) : null;
-      this.queryCoordinates = data.coord ? `${data.coord.lat}°N, ${data.coord.lon}°E` : null;
+      this.queryCoordinates = data.coord ? `${Math.abs(data.coord.lat)}°${data.coord.lat < 0 ? 'S' : 'N'}, ${Math.abs(data.coord.lon)}°${data.coord.lon < 0 ? 'W' : 'E'}` : null;
       this.icon = data.weather[0].icon;
       this.description = data.weather[0].description;
       this.temp = this.processTemp(data.main.temp);
@@ -120,13 +122,13 @@ export default {
     /* Validate input props, and print warning if incorrect */
     checkProps() {
       const ops = this.options;
-      if (!['wuhan', 'qingdao', 'wuchang', 'huangdao'].includes(ops.city || 'wuhan')) this.error('请选择天气地区');
 
-      if ((!ops.lat || !ops.lon) && !ops.city && !ops.cityId) {
+
+      if ((ops.lat === undefined || ops.lon === undefined) && !ops.city && !ops.cityId) {
         this.error('A city name, city ID or lat + lon is required to fetch weather');
       }
 
-      if (ops.units && ops.units !== 'metric' && ops.units !== 'imperial') {
+      if (ops.units && ops.units !== 'metric' && ops.units !== 'imperial' && ops.units !== 'standard') {
         this.error('Invalid units specified, must be either \'metric\' or \'imperial\'');
       }
     },

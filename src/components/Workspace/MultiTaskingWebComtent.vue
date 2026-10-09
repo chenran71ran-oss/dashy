@@ -20,17 +20,20 @@ export default {
     /* Update the currently open app, when URL changes */
     url() { this.launchApp(); },
   },
+  mounted() { if (this.url) this.launchApp(); },
   beforeUnmount() {
     this.appInstances.forEach(instance => instance.unmount());
   },
   methods: {
     /* Check if app already open or not, and call appropriate opener */
     launchApp() {
+      if (!this.url || !this.$refs.container) return;
       if (this.openApps.includes(this.url)) {
         this.openExistingApp();
       } else {
         this.openApps.push(this.url);
         this.appendNewApp();
+        this.openExistingApp();
       }
     },
     /* Opens a new app */
@@ -39,17 +42,17 @@ export default {
       this.$refs.container.appendChild(wrapper);
       const appUrl = this.url;
       const instance = createApp({
-        render() { return h(WebContent, { url: appUrl, id: btoa(appUrl) }); },
+        render() { return h(WebContent, { url: appUrl, id: encodeURIComponent(appUrl) }); },
       });
       instance.mount(wrapper);
       this.appInstances.push(instance);
     },
     /* Switches visibility to an already open app */
     openExistingApp() {
-      Array.from(document.getElementsByClassName('web-content')).forEach((frame) => {
+      Array.from(this.$refs.container.getElementsByClassName('web-content')).forEach((frame) => {
         frame.classList.add('hide');
       });
-      const el = document.getElementById(btoa(this.url));
+      const el = document.getElementById(encodeURIComponent(this.url));
       if (el) el.classList.remove('hide');
     },
   },

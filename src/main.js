@@ -12,6 +12,7 @@ import VModal from '@/plugins/modal';   // $modal.show()/hide() plugin
 import store from '@/store';            // Store, for local state management
 import router from '@/router';          // Router, for navigation
 import i18n from '@/utils/i18n';                      // i18n instance (exported so non-component callers can t())
+import serviceWorker from '@/utils/InitServiceWorker';
 import ErrorReporting from '@/utils/logging/ErrorReporting';  // Error reporting initializer (off)
 import clickOutside from '@/directives/ClickOutside'; // Directive for closing popups, modals, etc
 import tooltip from '@/directives/Tooltip';           // Custom tooltip directive
@@ -52,7 +53,7 @@ window.addEventListener('unhandledrejection', (event) => {
 const isDevMode = import.meta.env.DEV;
 app.config.performance = isDevMode;
 
-// Cloud portal: do not cache private configuration in a service worker.
+serviceWorker();
 
 // Checks if user enabled error reporting, and if so will initialize it
 ErrorReporting(app, router);

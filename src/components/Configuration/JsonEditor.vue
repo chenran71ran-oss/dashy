@@ -57,6 +57,7 @@
           <PreviewIcon />
         </Button>
 
+        <Button :click="onSaveLocally" :disallow="!isValid || !permissions.allowSaveLocally">{{ $t('interactive-editor.menu.save-locally-btn') }}<SaveLocallyIcon /></Button>
       </div>
       <Button
         class="primary-action"

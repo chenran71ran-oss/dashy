@@ -1,10 +1,12 @@
 // Kenneth portal · original Dashy frontend + Cloudflare Assets + KV.
 // Runtime ADMIN_TOKEN only; never put the password in frontend build variables.
 import validSchema from './config-validator.cjs';
-import { CLOUD_CAPABILITIES } from './capabilities.mjs';
+import configSchema from '../src/utils/config/ConfigSchema.json' with { type: 'json' };
+import { parse as parseYaml } from 'yaml';
 import { readWeather } from './weather.mjs';
 import { discoverIcon, fetchPublicIcon, publicIconUrl } from './icon-discovery.mjs';
-const CONFIG_KEY = 'kenneth-home:dashy:v1';
+import { CONFIG_KEY, configPath, configKey, saveConfig, listHistory, readHistory } from './config-storage.mjs';
+import { statusCheck, pingCheck, corsProxy, backendService } from './services.mjs';
 const OLD_CONFIG_KEY = 'kenneth-home:config:v1';
 const FAVORITES_KEY = 'kenneth-home:theme-favorites:v1';
 export const DEFAULT_CONFIG = {
@@ -78,32 +80,23 @@ function validateUrl(value) {
   try { parsed = new URL(value); } catch { fail('请填写完整的 HTTP/HTTPS 网址'); }
   if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password) fail('网站仅支持不含账号密码的 HTTP/HTTPS 地址');
 }
-function validateConfig(raw) {
+export function validateConfig(raw, isRoot = true) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) fail('配置格式不正确');
-  // Cloud adapter deliberately has one homepage and one administrator password.
-  if (raw.pages?.length) fail('此版本使用首页分类和小分类，请勿添加独立 YAML 子页面');
+  // Keep the explicitly requested single CF password; other Dashy options are not rewritten.
   if (raw.appConfig?.auth?.users?.length || raw.appConfig?.auth?.enableKeycloak || raw.appConfig?.auth?.enableOidc) fail('登录统一使用 Cloudflare 的 ADMIN_TOKEN，无需设置第二套账户');
   if (!validSchema(raw)) fail('配置校验失败：' + (validSchema.errors?.[0]?.instancePath || '/') + ' ' + (validSchema.errors?.[0]?.message || '格式不正确'));
   const config = structuredClone(raw);
   config.pageInfo ||= {};
-  if (!config.pageInfo.title || /^Kenneth\s*的/.test(config.pageInfo.title)) config.pageInfo.title = 'Home Lab';
-  config.pageInfo.logo ||= '/kenneth-mech.svg';
+  if (isRoot && (!config.pageInfo.title || /^Kenneth\s*的/.test(config.pageInfo.title))) config.pageInfo.title = 'Home Lab';
+  if (isRoot) config.pageInfo.logo ||= '/kenneth-mech.svg';
   config.appConfig ||= {};
   delete config.appConfig.auth;
-  config.appConfig.enableServiceWorker = false;
-  config.appConfig.enableErrorReporting = false;
-  config.appConfig.faviconApi = 'local';
-  config.appConfig.enableFontAwesome = false;
-  config.appConfig.enableMaterialDesignIcons = false;
-  config.appConfig.webSearch = { ...config.appConfig.webSearch, disableWebSearch: true };
-  config.appConfig.preventWriteToDisk = false;
-  config.appConfig.disableUpdateChecks = true;
-  config.pages = [];
-  let count = 0;
+  for (const page of config.pages || []) {
+    if (/^https?:\/\//i.test(page.path)) validateUrl(page.path);
+    else configPath(page.path);
+  }
   function items(list, depth = 0) {
-    if (depth > 4) fail('小分类最多嵌套四层');
     for (const item of list || []) {
-      if (++count > 200) fail('最多保存200个网站和小分类');
       if (item.url) validateUrl(item.url);
       if (item.statusCheckUrl) validateUrl(item.statusCheckUrl);
       if (item.localUrl) validateUrl(item.localUrl);
@@ -111,14 +104,9 @@ function validateConfig(raw) {
       if (item.subItems) items(item.subItems, depth + 1);
     }
   }
-  if ((config.sections || []).length > 60) fail('最多60个分类');
-  let widgetCount = 0;
   for (const section of config.sections || []) {
     for (const widget of section.widgets || []) {
-      if (++widgetCount > 100) fail('最多保存100个小组件');
       const type = widget.type?.toLowerCase();
-      // Unsupported upstream widgets remain in KV; the UI shows a deferred card.
-      if (!CLOUD_CAPABILITIES.widgets.includes(type)) continue;
       const options = widget.options || {};
       if (type === 'clock') {
         try { new Intl.DateTimeFormat(options.format || 'zh-CN', { timeZone: options.timeZone || 'UTC' }).format(); }
@@ -197,6 +185,27 @@ export default {
       if (u.pathname === '/api/session' && method === 'GET') {
         await authorize(req, env); return json({ authenticated: true });
       }
+      const servicePath = u.pathname.replace(/\/$/, '');
+      if (['/status-check', '/ping-check', '/system-info', '/cors-proxy', '/get-user'].includes(servicePath)) {
+        sameOrigin(req, u); await authorize(req, env);
+        if (servicePath === '/cors-proxy') return await corsProxy(req, env);
+        if (method !== 'GET') return json({ error: '请求方法不支持' }, 405);
+        if (servicePath === '/status-check') return json(await statusCheck(u.searchParams, env));
+        if (servicePath === '/ping-check') return json(await pingCheck(u.searchParams, env));
+        if (servicePath === '/get-user') return json({ user: 'admin', username: 'admin', isLoggedIn: true, isAdmin: true });
+        const data = await backendService('/system-info', u.searchParams, env);
+        if (!data) return json({ success: false, message: '主机系统信息需要在 CF 设置 DASHY_BACKEND_URL，Worker 不提供主机 CPU/内存数据。' }, 503);
+        return json(data);
+      }
+      if (u.pathname === '/api/config-backups' && method === 'GET') {
+        sameOrigin(req, u); await authorize(req, env);
+        const path = configPath(u.searchParams.get('filename') || '/conf.yml');
+        const id = u.searchParams.get('id');
+        if (!id) return json({ backups: await listHistory(env, path) });
+        const raw = await readHistory(env, path, id);
+        if (raw === null) return json({ error: '备份已过期或不存在' }, 404);
+        return json({ config: JSON.parse(raw), filename: path });
+      }
       if (u.pathname === '/api/theme-favorites' && ['GET','POST','PATCH'].includes(method)) {
         sameOrigin(req,u);await authorize(req,env);
         if(!env.HOME_KV)fail('HOME_KV 未绑定',503);
@@ -246,22 +255,37 @@ export default {
         try { return json(await discoverIcon(body.origin)); }
         catch (error) { return json({ icon: '', source: 'unavailable', reason: ['dns','request','html','timeout'].includes(error.iconReason)?error.iconReason:'public-site-required' }); }
       }
-      if (u.pathname === '/api/config' && ['POST', 'PUT'].includes(method)) {
+      if (['/api/config', '/config-manager/save'].includes(u.pathname) && ['POST', 'PUT'].includes(method)) {
         sameOrigin(req, u); await authorize(req, env);
         if (!env.HOME_KV) fail('HOME_KV 未绑定，修改尚未保存', 503);
         const body = await limitedBody(req);
-        const config = validateConfig(body.config || body);
-        await env.HOME_KV.put(CONFIG_KEY, JSON.stringify(config));
-        return json({ success: true, message: '配置已保存到云端', config });
+        const path = configPath(body.filename || '/conf.yml');
+        let raw = body.config || body;
+        if (typeof raw === 'string') { try { raw = parseYaml(raw, { maxAliasCount: 100 }); } catch { fail('YAML 配置格式不正确'); } }
+        const config = validateConfig(raw, path === '/conf.yml');
+        await saveConfig(env, path, config);
+        for (const page of config.pages || []) {
+          if (/^https?:\/\//i.test(page.path)) continue;
+          const key = configKey(page.path);
+          if (await env.HOME_KV.get(key) === null) await env.HOME_KV.put(key, JSON.stringify({ pageInfo: { title: page.name }, sections: [] }));
+        }
+        return json({ success: true, message: '配置已保存到云端，上一版本已自动备份', config, filename: path });
       }
       if (u.pathname === '/api/weather' && method === 'GET') {
         sameOrigin(req, u); await authorize(req, env);
         return json(await readWeather(u.searchParams, env));
       }
       if (u.pathname.startsWith('/api/')) return json({ error: '接口或方法不存在' }, 404);
-      // No unauthenticated config-file fallback through SPA/static assets.
-      if (/\.ya?ml$/i.test(u.pathname) || /^\/(?:config-manager|status-check|ping-check|system-info|cors-proxy|schema|get-user)(?:\/|$)/.test(u.pathname)) {
-        await authorize(req, env); return json({ error: '此服务不在基础导航站范围内' }, 404);
+      if (/\.ya?ml$/i.test(u.pathname)) {
+        await authorize(req, env);
+        const path = configPath(decodeURIComponent(u.pathname));
+        const raw = await env.HOME_KV.get(configKey(path));
+        if (raw !== null) return json(validateConfig(JSON.parse(raw), path === '/conf.yml'));
+        return json({ error: '配置文件不存在，请先保存页面列表或导入子页面配置' }, 404);
+      }
+      if (u.pathname === '/schema.json' && method === 'GET') { await authorize(req, env); return json(configSchema); }
+      if (/^\/(?:config-manager|schema)(?:\/|$)/.test(u.pathname)) {
+        await authorize(req, env); return json({ error: 'CF 配置通过 /api/config 保存，配置历史通过 /api/config-backups 读取' }, 404);
       }
       if (!['GET', 'HEAD'].includes(method)) return json({ error: '请求方法不支持' }, 405);
       const response = await env.ASSETS.fetch(req);

@@ -35,18 +35,18 @@ export default {
         sections: (base.sections || []).map(({ filteredItems: _filteredItems, ...s }) => s),
       };
       const endpoint = '/api/config';
-      const body = { config: jsonConfig };
+      const body = { config: jsonConfig, ...(isSubPag ? { filename: state.currentConfigInfo.confPath } : {}) };
       const saveRequest = request.post(endpoint, body);
       this.progress.start();
-      return saveRequest.then((response) => {
+      return saveRequest.then(async (response) => {
         this.saveSuccess = response.data.success || false;
         this.responseText = response.data.message;
         if (this.saveSuccess) {
           this.carefullyClearLocalStorage();
           if (response.data.config) {
-            this.$store.commit(StoreKeys.SET_ROOT_CONFIG, response.data.config);
-            this.$store.commit(StoreKeys.SET_CONFIG, response.data.config);
+            if (!isSubPag) this.$store.commit(StoreKeys.SET_ROOT_CONFIG, response.data.config);
             this.$store.commit(StoreKeys.SET_CONFIG_SOURCE, response.data.config);
+            await this.$store.dispatch(StoreKeys.APPLY_EDITED_CONFIG, response.data.config);
           }
           this.showToast(this.$t('config-editor.success-msg-disk'), true);
           InfoHandler('Config has been written to disk successfully', 'Config Update');

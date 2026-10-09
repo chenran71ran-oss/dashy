@@ -29,6 +29,7 @@
         :key="widgetIndx"
         :widget="widget"
         :index="widgetIndx"
+        :itemSize="itemSize"
         @navigateToSection="navigateToSection"
       />
     </div>

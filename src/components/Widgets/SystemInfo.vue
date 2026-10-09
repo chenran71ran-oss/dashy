@@ -55,11 +55,11 @@ export default {
     fetchData() {
       request.get(this.endpoint)
         .then((response) => {
-          if (!response.data.success) this.error('Error generating backend data');
+          if (!response.data.success) { this.error(response.data.message || 'Error generating backend data'); return; }
           this.processData(response.data);
         })
         .catch((dataFetchError) => {
-          this.error('Unable to fetch system info', dataFetchError);
+          this.error(dataFetchError.response?.data?.message || 'Unable to fetch system info', dataFetchError);
         })
         .finally(() => {
           this.finishLoading();

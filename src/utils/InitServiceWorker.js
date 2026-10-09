@@ -14,7 +14,7 @@ const AUTH_PROXY_RELOAD_KEY = 'dashy-auth-proxy-reloaded'; // one reload per tab
 const loadAppConfig = async () => {
   try {
     const { data } = await request.get('/conf.yml');
-    return yamlLoad(data) || null;
+    return (typeof data === 'string' ? yamlLoad(data) : data) || null;
   } catch (e) {
     statusErrorMsg(SW_LABEL, 'Failed to load config for SW check', e);
     return null;

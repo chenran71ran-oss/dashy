@@ -36,17 +36,12 @@ export default {
     },
   },
   methods: {
+    clearMinFilterInput() { this.$refs.MinimalSearchBar?.clearFilterInput(); },
     /* Emmits users's search term up to parent */
     userIsTypingSomething(searchValue) {
       this.input = searchValue;
       this.$emit('user-is-searchin', searchValue);
     },
-  },
-  mounted() {
-    window.addEventListener('keydown', this.startFiltering);
-  },
-  beforeUnmount() {
-    window.removeEventListener('keydown', this.startFiltering);
   },
 };
 </script>

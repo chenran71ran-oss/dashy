@@ -1,8 +1,8 @@
 // One capability list for the Worker adapter and the browser UI.
-// Keep upstream settings and components, but do not execute unconnected services.
+// Feature choices belong to the user's Dashy config. Data services report their own errors.
 export const CLOUD_CAPABILITIES = Object.freeze({
-  statusChecks: false,
-  pingChecks: false,
-  localUrlChecks: false,
-  widgets: Object.freeze(['clock', 'image', 'iframe', 'weather']),
+  statusChecks: true,
+  pingChecks: true,
+  localUrlChecks: true,
+  widgets: 'all',
 });

@@ -1,4 +1,5 @@
 <template>
+  <KvConfigHistory v-if="isCloud" />
   <div class="cloud-backup-restore-wrapper">
     <!-- Intro text -->
     <div class="section intro">
@@ -58,6 +59,7 @@
 </template>
 
 <script>
+import KvConfigHistory from './KvConfigHistory.vue';
 // Import libraries
 import sha256 from 'crypto-js/sha256';
 import { Progress } from 'rsup-progress';
@@ -77,6 +79,7 @@ import IconRestore from '@/assets/interface-icons/config-restore.svg';
 export default {
   name: 'CloudBackupRestore',
   computed: {
+    isCloud() { return !!window.__KH_CLOUD_AUTH; },
     // Back up the active page's OWN config (partial for sub-pages, full for root)
     // so a restored sub-page file doesn't pin root's inherited values.
     config() {
@@ -93,6 +96,7 @@ export default {
     };
   },
   components: { // UI components / icons
+    KvConfigHistory,
     Button,
     Input,
     IconBackup,

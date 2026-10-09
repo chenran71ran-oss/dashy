@@ -36,7 +36,7 @@
     <div class="widget-label" v-if="widgetOptions.label">{{ widgetOptions.label }}</div>
     <!-- Widget -->
     <div :class="`widget-wrap ${ error ? 'has-error' : '' }`">
-      <p v-if="!supported" class="widget-deferred">{{ widgetType }}：源码与配置已保留，当前 CF 版尚未接入所需数据服务。</p>
+      <p v-if="!supported" class="widget-deferred">未知小组件类型：{{ widgetType }}。请检查类型名称或选择内置组件。</p>
       <component v-else
         v-bind:is="component"
         :options="widgetOptions"
@@ -50,7 +50,7 @@
 
 <script>
 import { defineAsyncComponent } from 'vue';
-import { CLOUD_CAPABILITIES } from '../../../cloud/capabilities.mjs';
+import { WIDGET_COMPONENTS as COMPAT } from '@/utils/WidgetCatalog';
 // Import form elements, icons and utils
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import Button from '@/components/FormElements/Button';
@@ -61,104 +61,7 @@ import LoadingAnimation from '@/assets/interface-icons/loader.svg';
 
 const widgetModules = import.meta.glob('./*.vue');
 
-const COMPAT = {
-  'adguard-dns-info': 'AdGuardDnsInfo',
-  'adguard-filter-status': 'AdGuardFilterStatus',
-  'adguard-stats': 'AdGuardStats',
-  'adguard-top-domains': 'AdGuardTopDomains',
-  addy: 'AnonAddy',
-  anonaddy: 'AnonAddy',
-  apod: 'Apod',
-  'blacklist-check': 'BlacklistCheck',
-  calendar: 'Calendar',
-  chucknorris: 'ChuckNorris',
-  clock: 'Clock',
-  'code-stats': 'CodeStats',
-  'covid-stats': 'CovidStats',
-  'crypto-price-chart': 'CryptoPriceChart',
-  'crypto-watch-list': 'CryptoWatchList',
-  'custom-search': 'CustomSearch',
-  'custom-list': 'CustomList',
-  customapi: 'CustomApi',
-  'custom-api': 'CustomApi',
-  'cve-vulnerabilities': 'CveVulnerabilities',
-  'domain-monitor': 'DomainMonitor',
-  'drone-ci': 'DroneCi',
-  embed: 'EmbedWidget',
-  'eth-gas-prices': 'EthGasPrices',
-  'exchange-rates': 'ExchangeRates',
-  filebrowser: 'Filebrowser',
-  'flight-data': 'Flights',
-  'github-profile-stats': 'GitHubProfile',
-  'github-trending-repos': 'GitHubTrending',
-  'gl-alerts': 'GlAlerts',
-  'gl-current-cores': 'GlCpuCores',
-  'gl-current-cpu': 'GlCpuGauge',
-  'gl-cpu-speedometer': 'GlCpuSpeedometer',
-  'gl-cpu-history': 'GlCpuHistory',
-  'gl-disk-io': 'GlDiskIo',
-  'gl-disk-space': 'GlDiskSpace',
-  'gl-ip-address': 'GlIpAddress',
-  'gl-load-history': 'GlLoadHistory',
-  'gl-current-mem': 'GlMemGauge',
-  'gl-mem-speedometer': 'GlMemSpeedometer',
-  'gl-mem-history': 'GlMemHistory',
-  'gl-network-interfaces': 'GlNetworkInterfaces',
-  'gl-network-traffic': 'GlNetworkTraffic',
-  'gl-system-load': 'GlSystemLoad',
-  'gl-uptime': 'GlancesUptime',
-  'gl-cpu-temp': 'GlCpuTemp',
-  'gl-gpu': 'GlGpu',
-  'gluetun-status': 'GluetunStatus',
-  'health-checks': 'HealthChecks',
-  'hackernews-trending': 'HackernewsTrending',
-  iframe: 'IframeWidget',
-  image: 'ImageWidget',
-  joke: 'Jokes',
-  linkding: 'Linkding',
-  'live-tennis': 'LiveTennis',
-  'minecraft-status': 'MinecraftStatus',
-  'mullvad-status': 'MullvadStatus',
-  mvg: 'Mvg',
-  'mvg-connection': 'MvgConnection',
-  'nd-cpu-history': 'NdCpuHistory',
-  'nd-load-history': 'NdLoadHistory',
-  'nd-ram-history': 'NdRamHistory',
-  'news-headlines': 'NewsHeadlines',
-  'nextcloud-notifications': 'NextcloudNotifications',
-  'nextcloud-php-opcache': 'NextcloudPhpOpcache',
-  'nextcloud-stats': 'NextcloudStats',
-  'nextcloud-system': 'NextcloudSystem',
-  'nextcloud-user': 'NextcloudUser',
-  'nextcloud-user-status': 'NextcloudUserStatus',
-  'ntfy-stream': 'NtfyStream',
-  'pi-hole-stats': 'PiHoleStats',
-  'pi-hole-stats-v6': 'PiHoleStatsV6',
-  'pi-hole-top-queries': 'PiHoleTopQueries',
-  'pi-hole-top-queries-v6': 'PiHoleTopQueriesV6',
-  'pi-hole-traffic': 'PiHoleTraffic',
-  'pi-hole-traffic-v6': 'PiHoleTrafficV6',
-  'proxmox-lists': 'Proxmox',
-  'public-holidays': 'PublicHolidays',
-  'public-ip': 'PublicIp',
-  'rescue-time': 'RescueTime',
-  'rss-feed': 'RssFeed',
-  sabnzbd: 'Sabnzbd',
-  'sports-scores': 'SportsScores',
-  'stat-ping': 'StatPing',
-  'stock-price-chart': 'StockPriceChart',
-  'synology-download': 'SynologyDownload',
-  'system-info': 'SystemInfo',
-  'tfl-status': 'TflStatus',
-  trmm: 'TacticalRMM',
-  'uptime-kuma': 'UptimeKuma',
-  'uptime-kuma-status-page': 'UptimeKumaStatusPage',
-  'wallet-balance': 'WalletBalance',
-  weather: 'Weather',
-  'weather-forecast': 'WeatherForecast',
-  'xkcd-comic': 'XkcdComic',
-  'gl-compact-metrics': 'GlCompactMetrics',
-};
+
 
 export default {
   name: 'Widget',
@@ -182,7 +85,7 @@ export default {
     errorMsg: null,
   }),
   computed: {
-    supported() { return CLOUD_CAPABILITIES.widgets.includes(this.widgetType); },
+    supported() { return !!widgetModules[`./${COMPAT[this.widgetType] || this.widget.type}.vue`]; },
     appConfig() {
       return this.$store.getters.appConfig;
     },
