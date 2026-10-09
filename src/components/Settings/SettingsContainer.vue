@@ -1,5 +1,5 @@
 <template>
-  <section class="portal-toolbar" :class="{ compact, 'has-search': searchVisible }">
+  <section class="portal-toolbar" :class="{ compact, 'has-search': searchVisible }" :style="themeContrastStyles">
     <SearchBar
       v-if="searchVisible"
       ref="SearchBar"
@@ -17,7 +17,7 @@
         :aria-expanded="panelOpen"
         tabindex="0"
       >
-        <IconOptions />
+        <IconOptions aria-hidden="true" />
       </button>
       <transition name="panel-fade">
         <OptionsPanel v-if="panelOpen" @close="closePanel" />
@@ -57,9 +57,12 @@ import LanguageSwitcher from '@/components/Settings/LanguageSwitcher';
 import Keys from '@/utils/StoreMutations';
 import { topLevelConfKeys, localStorageKeys, modalNames } from '@/utils/config/defaults';
 import IconOptions from '@/assets/interface-icons/config-open-settings.svg';
+import ThemeContrastMixin from '@/mixins/ThemeContrastMixin';
+import { cssColor, readThemeColor, readableColor, themeSurface } from '@/utils/ThemeContrast';
 
 export default {
   name: 'SettingsContainer',
+  mixins: [ThemeContrastMixin],
   components: {
     SearchBar,
     OptionsPanel,
@@ -88,6 +91,20 @@ export default {
     },
   },
   methods: {
+    getThemeContrastStyles() {
+      const preferred = [readThemeColor('--settings-text-color'), readThemeColor('--foreground')];
+      const background = themeSurface('--settings-background');
+      const active = themeSurface('--primary');
+      return {
+        '--trigger-background': cssColor(background),
+        '--trigger-color': cssColor(readableColor(background, preferred)),
+        '--panel-control-color': cssColor(readableColor(background, preferred)),
+        '--trigger-active-background': cssColor(active),
+        '--trigger-active-color': cssColor(readableColor(active, preferred)),
+        '--mobile-search-label-color': cssColor(readableColor(themeSurface('--search-container-background'), preferred)),
+        '--mobile-search-field-color': cssColor(readableColor(themeSurface(this.minimalSearch ? '--minimal-view-search-background' : '--search-field-background'), preferred)),
+      };
+    },
     userIsTypingSomething(q) { this.$emit('user-is-searchin', q); },
     clearFilterInput() {
       if (this.$refs.SearchBar) this.$refs.SearchBar.clearFilterInput();
@@ -143,13 +160,13 @@ section.portal-toolbar {
 @media(max-width:599px) {
   section.portal-toolbar {
     display: grid; grid-template-columns: minmax(0, 1fr) 44px;
-    align-items: stretch; gap: .35rem; padding: .35rem .5rem;
+    align-items: start; gap: .4rem; padding: .35rem .5rem;
     width: 100%; min-width: 0; box-sizing: border-box;
   }
   .options-outer {
     display: contents;
   }
-  section.portal-toolbar .options-trigger { grid-column: 2; grid-row: 1; width: 44px; height: 44px; }
+  section.portal-toolbar .options-trigger { grid-column: 2; grid-row: 1; width: 44px; height: 44px; align-self: start; }
   .options-outer.expanded .options-trigger { display: inline-flex; }
   section.portal-toolbar :deep(.options-panel) { grid-column: 1 / -1; grid-row: 2; padding: .4rem; background: var(--settings-background); }
   section.portal-toolbar.compact :deep(.options-panel) { padding: .75rem; }
@@ -167,26 +184,28 @@ section.portal-toolbar {
   justify-content: center;
   width: 2rem;
   height: 2rem;
+  box-sizing: border-box;
+  flex-shrink: 0;
   padding: 0.3rem;
-  background: var(--background-darker);
-  border: 1px solid transparent;
+  background: var(--trigger-background, var(--settings-background));
+  border: 1px solid currentColor;
   border-radius: var(--curve-factor);
-  color: var(--settings-text-color);
+  color: var(--trigger-color, var(--settings-text-color));
   cursor: pointer;
-  opacity: var(--dimming-factor);
+  opacity: 1;
 
   svg {
-    width: 100%;
-    height: 100%;
+    width: 24px;
+    height: 24px;
     fill: currentColor;
   }
 
   &:hover, &.open, &:focus-visible {
     opacity: 1;
-    background: var(--primary);
-    color: var(--background);
-    outline: none;
+    background: var(--trigger-active-background, var(--primary));
+    color: var(--trigger-active-color, var(--background));
   }
+  &:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 }
 
 .panel-fade-enter-active,

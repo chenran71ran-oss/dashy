@@ -87,6 +87,8 @@ export default {
   }
   &.dot-green {
     background-color: var(--success);
+    > span { animation: pulse 2.4s ease-out infinite; }
+    > span > span { display: none; }
     span, span:after {
       background-color: var(--success);
       opacity: 0.4;
@@ -127,6 +129,12 @@ export default {
       clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
     }
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator { transition: none; }
+  .dot, .dot > span, .dot > span span, .dot > span span:after { animation: none !important; }
+  .dot > span { display: none; }
 }
 
 </style>

@@ -57,7 +57,7 @@ export default {
     @include phone {
       flex-direction: row;
       justify-content: center;
-      padding: .25rem .75rem;
+      padding: .5rem .75rem;
       min-height: 0;
       :deep(.page-titles) { flex: 0 1 auto; padding: 0; }
     }

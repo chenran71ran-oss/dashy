@@ -56,10 +56,10 @@ export default {
 };
 </script>
 <style scoped lang="scss">
-.options-panel { position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; gap: .65rem 1rem; color: var(--settings-text-color); min-width: 0; width: 100%; padding-right: 2.8rem; box-sizing: border-box; --toolbar-control-height: 44px; }
+.options-panel { position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; gap: .65rem 1rem; color: var(--panel-control-color, var(--settings-text-color)); --settings-text-color: var(--panel-control-color); min-width: 0; width: 100%; padding-right: 2.8rem; box-sizing: border-box; --toolbar-control-height: 44px; }
 .toolbar-group { flex: 0 0 auto; min-width: 0; }
 .theme-group { flex: 1 1 11rem; max-width: 15rem; }
-.options-panel :deep(.options-label), .options-panel :deep(.theme-label) { display: block; font-size: .8rem; line-height: 1.2; height: 1rem; margin: 0 0 .35rem; }
+.options-panel :deep(.options-label), .options-panel :deep(.theme-label) { display: block; font-size: .8rem; line-height: 1.2; height: 1rem; margin: 0 0 .35rem; color: var(--settings-text-color); opacity: 1; }
 .toolbar-buttons, .options-panel :deep(.display-options) { display: flex; align-items: center; gap: .3rem; margin: 0; }
 .action-btn, .view-btn, .toolbar-close, .options-panel :deep(.auth-btn), .options-panel :deep(.display-options svg), .options-panel :deep(svg.color-button) { display: inline-flex; align-items: center; justify-content: center; gap: .3rem; padding: .55rem; width: 44px; height: var(--toolbar-control-height); min-width: 44px; min-height: var(--toolbar-control-height); flex: 0 0 auto; box-sizing: border-box; border-radius: var(--curve-factor-small); }
 .action-btn, .view-btn, .toolbar-close { color: var(--settings-text-color); background: transparent; border: 1px solid currentColor; cursor: pointer; text-decoration: none; font-size: .8rem; }

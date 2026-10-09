@@ -1,5 +1,5 @@
 <template>
-  <router-link to="/" class="page-titles" :disabled="isEditMode">
+  <router-link to="/" class="page-titles" :disabled="isEditMode" :style="themeContrastStyles">
     <!-- Optional page logo image -->
     <MechLogo v-if="!logo || /kenneth-mech|\/mech\//.test(logo)" class="site-logo" :alt="`${title} 标识`" syncFavicon />
     <img v-else-if="logo" :src="logo" class="site-logo" :alt="`${title} 标识`" />
@@ -17,13 +17,17 @@ import MechLogo from './MechLogo.vue';
 import EditModeIcon from '@/assets/interface-icons/interactive-editor-edit-mode.svg';
 import StoreKeys from '@/utils/StoreMutations';
 import { modalNames } from '@/utils/config/defaults';
+import ThemeContrastMixin from '@/mixins/ThemeContrastMixin';
+import { cssColor, readThemeColor, readableColor, themeSurface } from '@/utils/ThemeContrast';
 
 export default {
   name: 'PageTitle',
+  mixins: [ThemeContrastMixin],
   props: {
     title: { type: String, default: '' },
     description: { type: String, default: '' },
     logo: { type: String, default: '' },
+    minimal: Boolean,
   },
   components: {
     EditModeIcon,
@@ -35,6 +39,11 @@ export default {
     },
   },
   methods: {
+    getThemeContrastStyles() {
+      if (!this.minimal) return {};
+      const preferred = ['--minimal-view-title-color', '--foreground', '--settings-text-color'].map(variable => readThemeColor(variable));
+      return { '--page-title-color': cssColor(readableColor(themeSurface('--minimal-view-background-color'), preferred)) };
+    },
     /* On edit button click, open the edit pageInfo modal */
     editTitle() {
       this.$modal.show(modalNames.EDIT_PAGE_INFO);
@@ -64,7 +73,7 @@ export default {
   .text { min-width: 0; }
   .text h1 {
     text-transform: none;
-    color: var(--heading-text-color);
+    color: var(--page-title-color, var(--heading-text-color));
     font-size: clamp(1.4rem, 0.5rem + 3vw, 2.5rem);
     overflow-wrap: anywhere;
     line-height: 1.15;
@@ -81,6 +90,9 @@ export default {
     flex-direction: row;
     text-align: left;
     padding: 0.25rem 0;
+    gap: .5rem;
+    .text h1 { font-size: 1.5rem; line-height: 1.2; }
+    .site-logo { width: 2rem; height: 2rem; }
   }
   &[disabled] {
     cursor: default;

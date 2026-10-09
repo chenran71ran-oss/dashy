@@ -2,7 +2,7 @@
   <div class="minimal-home focus-home" :style="getBackgroundImage()">
     <!-- Page title and search bar -->
     <div class="title-and-search">
-      <PageTitle :title="pageInfo.title" :logo="pageInfo.logo" class="minimal-title" />
+      <PageTitle :title="pageInfo.title" :logo="pageInfo.logo" class="minimal-title" minimal />
       <SettingsContainer compact forceSearch minimalSearch
         @user-is-searchin="(s) => { searchValue = s; }"
         :active="!modalOpen" ref="filterComp" />
@@ -292,9 +292,10 @@ export default {
 .focus-home:has(.item.size-large) { --minimal-card-min: 14rem; }
 .focus-category { min-height: 0 !important; height: auto !important; }
 @media (max-width: 600px) {
-  .minimal-home { width: calc(100% - 1rem); padding-top: 2rem; }
+  .minimal-home { width: calc(100% - 1rem); margin: .5rem auto; padding-top: .5rem; }
   .title-and-search { width: 100%; }
-  .item-group-container { width: 100%; margin: 1.5rem auto; }
+  .title-and-search .minimal-title { margin-bottom: .5rem; }
+  .item-group-container { width: 100%; margin: .75rem auto; }
   .minimal-buttons { top: 0; right: 0; }
 }
 </style>

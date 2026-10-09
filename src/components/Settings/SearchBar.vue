@@ -344,4 +344,21 @@ export default {
       }
     }
   }
+
+  @include phone {
+    form.normal, form.minimal {
+      position: relative; min-height: 44px; padding: 0; margin: 0;
+      align-items: flex-start; gap: .4rem; box-sizing: border-box;
+      label { min-height: 44px; margin: 0; padding: 0 .35rem; font-size: .85rem; color: var(--mobile-search-label-color, var(--search-label-color)); }
+      .search-wrap { flex: 1 1 auto; width: auto; min-width: 0; align-items: stretch; }
+      input {
+        width: 100%; max-width: none; height: 44px; min-height: 44px;
+        margin: 0; padding: .5rem .7rem; box-sizing: border-box;
+        font-size: 16px; line-height: 1.25; color: var(--mobile-search-field-color, var(--settings-text-color));
+      }
+      .web-search-note { font-size: .72rem !important; line-height: 1.35; padding: .2rem 0 0; }
+      .clear-search { position: absolute; top: 22px; right: .4rem; transform: translateY(-50%); margin: 0; }
+      &:has(.clear-search) input { padding-right: 2.2rem; }
+    }
+  }
 </style>
