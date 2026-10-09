@@ -149,7 +149,7 @@ section.portal-toolbar {
   .options-outer {
     display: contents;
   }
-  .options-trigger { grid-column: 2; grid-row: 1; width: 44px; height: 44px; }
+  section.portal-toolbar .options-trigger { grid-column: 2; grid-row: 1; width: 44px; height: 44px; }
   .options-outer.expanded .options-trigger { display: inline-flex; }
   section.portal-toolbar :deep(.options-panel) { grid-column: 1 / -1; grid-row: 2; padding: .4rem; background: var(--settings-background); }
   section.portal-toolbar.compact :deep(.options-panel) { padding: .75rem; }
