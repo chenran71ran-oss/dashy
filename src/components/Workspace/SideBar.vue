@@ -7,6 +7,7 @@
           class="item"
           :icon="section.icon"
           :title="section.name"
+          presentation
         />
       </button>
       <!-- Section inner -->

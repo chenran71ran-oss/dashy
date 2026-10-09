@@ -1,5 +1,5 @@
 <template>
-  <div @click="itemClicked()" @keydown.enter="itemClicked()" @keydown.space.prevent="itemClicked()" role="button" tabindex="0" :aria-label="title"
+  <div @click="itemClicked()" @keydown.enter="itemClicked()" @keydown.space.prevent="itemClicked()" :role="presentation ? undefined : 'button'" :tabindex="presentation ? undefined : 0" :aria-label="presentation ? undefined : title"
     :class="`side-bar-item ${icon ? 'w-icon' : 'text-only'}`" v-tooltip="tooltip">
     <Icon v-if="icon || url" :icon="icon" size="small" :url="url" :title="title" />
     <p class="small-title" v-else>{{ title }}</p>
@@ -17,6 +17,7 @@ export default {
     title: { type: String, default: '' },
     url: { type: String, default: '' },
     target: { type: String, default: '' },
+    presentation: Boolean,
     click: { type: Function, default: () => {} },
   },
   emits: ['launch-app'],

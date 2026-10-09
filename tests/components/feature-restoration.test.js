@@ -10,6 +10,8 @@ import SubItemsEditor from '@/components/InteractiveEditor/SubItemsEditor.vue';
 import WidgetBase from '@/components/Widgets/WidgetBase.vue';
 import SettingsContainer from '@/components/Settings/SettingsContainer.vue';
 import WidgetGrid from '@/components/WidgetLayout/WidgetGrid.vue';
+import SideBar from '@/components/Workspace/SideBar.vue';
+import SideBarItem from '@/components/Workspace/SideBarItem.vue';
 import ItemMixin from '@/mixins/ItemMixin';
 import { WIDGET_CATALOG } from '@/utils/WidgetCatalog';
 import { readdirSync } from 'node:fs';
@@ -19,7 +21,7 @@ vi.mock('@/mixins/HomeMixin', () => ({ default: {
   computed: { sections() { return this.$store.getters.sections; }, pageInfo() { return this.$store.getters.pageInfo; }, appConfig() { return this.$store.getters.appConfig; }, isEditMode() { return this.$store.state.editMode; }, modalOpen: () => false, isBootstrap: () => false, pageId: () => 'home' },
   methods: { getBackgroundImage: () => '', checkTheresData: s => s?.length, makeSectionId: s => s.name, checkIfResults: s => !s.some(c => c.filteredItems.length), filterTiles(items) { return (items || []).filter(i => !this.searchValue || i.title.toLowerCase().includes(this.searchValue.toLowerCase())); }, initiateFontAwesome() {}, initiateMaterialDesignIcons() {}, updateModalVisibility() {} },
 } }));
-vi.mock('@/utils/config/ConfigHelpers', () => ({ resolveRouteIntent: () => ({ sectionSlug: null }), makePageName: s => s.toLowerCase() }));
+vi.mock('@/utils/config/ConfigHelpers', () => ({ resolveRouteIntent: () => ({ sectionSlug: null }), makePageName: s => s.toLowerCase(), makeRoutePath: view => `/${view}` }));
 vi.mock('@/assets/interface-icons/widget-update.svg', () => ({ default: { template: '<svg />' } }));
 vi.mock('@/assets/interface-icons/config-edit-json.svg', () => ({ default: { template: '<svg />' } }));
 vi.mock('@/assets/interface-icons/interactive-editor-remove.svg', () => ({ default: { template: '<svg />' } }));
@@ -94,6 +96,24 @@ describe('restored views and editor capabilities preserve the current UI', () =>
     wrapper.vm.launchApp({ target: 'workspace', url: 'https://example.com' }); await nextTick();
     expect(wrapper.findAllComponents(SettingsContainer)).toHaveLength(1);
     wrapper.unmount(); opened.mockRestore();
+  });
+  it('Workspace category headings have one keyboard target and still launch their widgets', async () => {
+    const wrapper = mount(SideBar, { props: { sections }, global: { ...options(makeStore()), stubs: { routerLink: true, SideBarSection: true, Icon: true } } });
+    const category = wrapper.get('button[aria-label="AI"]');
+    expect(category.find('[role="button"], [tabindex]').exists()).toBe(false);
+    expect(category.attributes('aria-expanded')).toBe('false');
+    await category.trigger('click');
+    expect(category.attributes('aria-expanded')).toBe('true');
+    expect(wrapper.emitted('launch-widget')[0]).toEqual([sections[0].widgets, sections[0]]);
+    wrapper.unmount();
+  });
+  it('Workspace website entries remain keyboard accessible and retain their opening method', async () => {
+    const wrapper = shallowMount(SideBarItem, { props: { title: 'Example', url: 'https://example.com', target: 'newtab' }, global: options(makeStore()) });
+    expect(wrapper.attributes('role')).toBe('button');
+    expect(wrapper.attributes('tabindex')).toBe('0');
+    await wrapper.trigger('keydown', { key: 'Enter' });
+    expect(wrapper.emitted('launch-app')[0][0]).toEqual({ url: 'https://example.com', target: 'newtab' });
+    wrapper.unmount();
   });
   it('Minimal uses category tabs, shows the selected category widgets and searches across categories', async () => {
     const wrapper = shallowMount(Minimal, { global: options(makeStore()) });
