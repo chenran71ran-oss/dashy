@@ -1,66 +1,22 @@
-name: Question 🤷‍♂️
-description: Got a question about Dashy, deployment, development or usage?
-title: '[QUESTION] <title>'
-labels: ['🤷‍♂️ Question']
-assignees:
-  - Lissy93
-
+name: Home Lab 使用问题
+description: Cloudflare 部署、配置和使用咨询
+title: "[Question] "
 body:
-  # Filed 1 - Intro Text
   - type: markdown
     attributes:
-      value: >
-        Thanks for using Dashy! Questions are welcome, but in the future will be moving over to
-        [Discussions](https://github.com/Lissy93/dashy/discussions) page.
-        Quick questions should be asked [here](https://github.com/Lissy93/dashy/discussions/148) instead.
-    validations:
-      required: false
-
-  # Field 2 - The actual question
+      value: "请先阅读项目 README 与 docs/home-lab/。此处讨论本 fork，不是 Dashy 官方支持渠道。"
   - type: textarea
     id: question
     attributes:
-      label: Question
-      description: Outline your question in a clear and concise manner
+      label: 问题与已经尝试的步骤
     validations:
       required: true
-
-  # Field 3 - Category
-  - type: dropdown
-    id: category
+  - type: input
+    id: environment
     attributes:
-      label: Category
-      description: What part of the application does this relate to?
-      options:
-        - Setup and Deployment
-        - Configuration
-        - App Usage
-        - Development
-        - Documentation
-        - Alternate Views
-        - Authentication
-        - Using Icons
-        - Widgets
-        - Actions
-        - Language Support
-        - Search & Shortcuts
-        - Status Checking
-        - Theming & Layout
-    validations:
-      required: true
-
-  # Field 4 - User has RTFM first, and agrees to code of conduct, etc
-  - type: checkboxes
-    id: idiot-check
+      label: 部署方式与浏览器
+  - type: textarea
+    id: evidence
     attributes:
-      label: Please tick the boxes
-      description: Before submitting, please ensure that
-      options:
-        - label: You are using a [supported](https://github.com/Lissy93/dashy/blob/master/.github/SECURITY.md#supported-versions) version of Dashy (check the first two digits of the version number)
-          required: true
-        - label: You've checked that this [question hasn't already been raised](https://github.com/Lissy93/dashy/issues?q=is%3Aissue)
-          required: true
-        - label: You've checked the [docs](https://github.com/Lissy93/dashy/tree/master/docs#readme) and [troubleshooting](https://github.com/Lissy93/dashy/blob/master/docs/troubleshooting.md#troubleshooting) guide
-          required: true
-        - label: You agree to the [code of conduct](https://github.com/Lissy93/dashy/blob/master/.github/CODE_OF_CONDUCT.md#contributor-covenant-code-of-conduct)
-          required: true
+      label: 脱敏截图或错误信息
+      description: 不要粘贴真实密码、Cookie、订阅 Token 或 API Key

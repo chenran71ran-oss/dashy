@@ -1,79 +1,35 @@
-name: Bug Report 🐛
-description: Report something that's not working the way it's (probably) intended to
-title: '[BUG] <title>'
-labels: ['🐛 Bug']
-assignees:
-  - Lissy93
+name: Home Lab 问题报告
+description: 报告此 fork 的界面、Cloudflare 适配或功能问题
+title: "[Bug] "
 body:
-  - type: dropdown
-    id: environment
+  - type: markdown
     attributes:
-      label: Environment
-      description: Where are you running Dashy?
-      options:
-        - Self-Hosted (Docker)
-        - Self-Hosted (Bare Metal)
-        - Cloud Service (Static)
-        - Other (Specify below)
-    validations:
-      required: true
-  - type: input
-    id: system
-    attributes:
-      label: System
-      description: >-
-        For deployment issues, specify your [distro or OS](https://whatsmyos.com/) and/ or Docker version.
-        For client-side issues, include your [browser version](https://www.whatsmybrowser.org/)
-      placeholder: e.g. Firefox 101, Manjaro Linux 21.3.0, Docker 20.10.16
-    validations:
-      required: false
+      value: "请先阅读 docs/home-lab/faq.md。配置、截图与日志需要脱敏，勿提交 Cookie、Token 或 API Key。"
   - type: input
     id: version
     attributes:
-      label: Version
-      description: What version of Dashy are you running?
-      placeholder: 4.2.0 ← should look like this (check config menu)
+      label: 版本或 Commit
     validations:
-      required: false
-  - type: textarea
-    id: repro
+      required: true
+  - type: input
+    id: environment
     attributes:
-      label: Describe the problem
-      description: Please describe exactly what is not working, include the steps to reproduce, actual result and expected result
-      placeholder: When doing ABC then DEF, I expect to see XYZ, but I actually see ZYX
+      label: 系统与浏览器
+      description: 例如 Windows / Chrome，iOS / Safari
     validations:
       required: true
   - type: textarea
-    id: logs
+    id: settings
     attributes:
-      label: Additional info
-      description: Logs? Screenshots? Yes, please.
-      placeholder: If the issue happens during build-time, include terminal logs. For run-time errors, include browser logs which you can view in the Dev Tools (F12), under the Console tab. Take care to blank out any personal info.
+      label: 视图与显示设置
+      description: 总站/专注/工作台，主题、布局、尺寸；部署方式与相关组件类型
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤、实际表现与期望结果
     validations:
-      required: false
-  - type: checkboxes
-    id: idiot-check
+      required: true
+  - type: textarea
+    id: evidence
     attributes:
-      label: Please tick the boxes
-      description: Before submitting, please ensure that
-      options:
-        - label: You have explained the issue clearly, and included all relevant info
-          required: true
-        - label: You are using a [supported](https://github.com/Lissy93/dashy/blob/master/.github/SECURITY.md#supported-versions) version of Dashy
-          required: true
-        - label: You've checked that this [issue hasn't already been raised](https://github.com/Lissy93/dashy/issues?q=is%3Aissue)
-          required: true
-        - label: You've checked the [docs](https://github.com/Lissy93/dashy/tree/master/docs#readme) and [troubleshooting](https://github.com/Lissy93/dashy/blob/master/docs/troubleshooting.md#troubleshooting) guide ![important](https://img.shields.io/badge/Important!-F6094E)
-          required: true
-        - label: You agree to the [code of conduct](https://github.com/Lissy93/dashy/blob/master/.github/CODE_OF_CONDUCT.md#contributor-covenant-code-of-conduct)
-          required: true
-  - type: markdown
-    attributes:
-      value: |-
-        ## Thanks 🙏
-        <img align="left" width="160" src="https://i.ibb.co/S5vCnhL/gh-thanks.gif" alt="🐙" />
-        Thank you for raising this ticket - in doing so you are helping to make the app better for everyone 💪<br>
-        You should expect a reply within the next 48 hours :)<br>
-        ⭐️ Consider dropping the repo a star if you're enjoying Dashy!<br>
-    validations:
-      required: false
+      label: 脱敏截图或日志

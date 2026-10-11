@@ -1,39 +1,37 @@
-# ![Dashy Docs](https://i.ibb.co/4mdNf7M/heading-docs.png)
+# Home Lab 文档
 
-## Running Dashy
+[项目首页](../README.md) · [English](../README.EN.md)
 
-- [Quick Start](/docs/quick-start.md) - TLDR guide on getting Dashy up and running
-- [Deployment](/docs/deployment.md) - Full guide on deploying Dashy either locally or online
-- [Configuring](/docs/configuring.md) - Complete list of all available options in the config file
-- [App Management](/docs/management.md) - Managing your app, updating, security, web server configuration, etc
-- [Troubleshooting](/docs/troubleshooting.md) - Common errors and problems, and how to fix them
+## 当前 fork 的指南
 
-## Development and Contributing
+| 文档 | 内容 |
+| --- | --- |
+| [部署](home-lab/deployment.md) | Cloudflare 云端构建、KV、Secrets 与域名 |
+| [使用](home-lab/usage.md) | 网站、三视图、图标、主题、小组件与保存 |
+| [功能边界](home-lab/features.md) | 原生可用能力、数据源与后端要求 |
+| [架构](home-lab/architecture.md) | 前后端、数据流与目录职责 |
+| [FAQ](home-lab/faq.md) | 保存、图标、嵌入、天气与隐私 |
+| [贡献](../CONTRIBUTING.md) | 开发、验证与提交 |
 
-- [Developing](/docs/developing.md) - Running Dashy development server locally, and general workflow
-- [Development Guides](/docs/development-guides.md) - Common development tasks, to help new contributors
-- [Contributing](/docs/contributing.md) - How you can help keep Dashy alive
-- [Showcase](/docs/showcase.md) - See how others are using Dashy, and share your dashboard
-- [Credits](/docs/credits.md) - List of people and projects that have made Dashy possible
-- [Release Workflow](/docs/release-workflow.md) - Info about releases, CI and automated tasks
+## 专项技术说明
 
-## Feature Docs
+- [功能恢复与后端接入](home-lab-feature-restoration.md)
+- [图标与主题](home-lab-icons-and-themes.md)
+- [图标资源许可](../public/portal-icons/SOURCES.md)
 
-- [Authentication](/docs/authentication.md) - Guide to setting up authentication to protect your dashboard
-- [Alternate Views](/docs/alternate-views.md) - Outline of available pages / views and item opening methods
-- [Backup & Restore](/docs/backup-restore.md) - Guide to backing up config with Dashy's cloud sync feature
-- [Icons](/docs/icons.md) - Outline of all available icon types for sections and items, with examples
-- [Language Switching](/docs/multi-language-support.md) - Details on how to switch language, or add a new locale
-- [Pages and Sections](/docs/pages-and-sections.md) - Multi-page support, sections, items and sub-items
-- [REST API](/docs/api.md) - Programmatically read and update your config over HTTP
-- [Status Indicators](/docs/status-indicators.md) - Using Dashy to monitor uptime and status of your apps/services and hosts
-- [Searching  & Shortcuts](/docs/searching.md) - Searching, launching methods + keyboard shortcuts
-- [Theming](/docs/theming.md) - Complete guide to applying, writing and modifying themes + styles
-- [Widgets](/docs/widgets.md) - List of all dynamic content widgets, with usage guides and examples
+## Dashy 上游参考
 
-## Misc
+以下文档保留上游说明，适合查询字段、组件和原版行为。Docker、Node、认证和云备份等内容可能与当前 Worker 部署不同，部署时以本 fork 指南为准。
 
-- [Privacy](/docs/privacy.md) - List of all network requests and data storage
-- [Security](/docs/security.md) - Security features, threat model, and hardening resources
-- [License](/LICENSE) - Copy of the MIT License
-- [Code of Conduct](/.github/CODE_OF_CONDUCT.md) - Contributor Covenant Code of Conduct
+| 主题 | 文档 |
+| --- | --- |
+| 配置 | [配置字段](configuring.md) · [页面与分类](pages-and-sections.md) |
+| 展示 | [三视图](alternate-views.md) · [主题](theming.md) · [图标](icons.md) |
+| 组件与探针 | [小组件](widgets.md) · [状态指示](status-indicators.md) |
+| 交互 | [搜索与快捷键](searching.md) · [多语言](multi-language-support.md) |
+| 服务端 | [API](api.md) · [认证](authentication.md) |
+| 原版运维 | [部署](deployment.md) · [管理](management.md) · [备份](backup-restore.md) |
+| 开发 | [开发](developing.md) · [开发指南](development-guides.md) · [上游贡献](contributing.md) |
+| 社区与来源 | [展示](showcase.md) · [致谢](credits.md) · [原版 README](../README_UPSTREAM.md) |
+
+[MIT 许可证](../LICENSE) · [安全报告](../.github/SECURITY.md)

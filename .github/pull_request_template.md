@@ -1,17 +1,15 @@
-### Category
-<!-- Bugfix / Feature / Docs / Dependencies / Localization / Widget / Theme / Showcase / CI -->
+## 问题与改动
 
-### Overview
-<!-- Briefly outline your PR. Explain what was changed and why -->
+<!-- 具体触发条件、最终行为和相关 Issue。 -->
 
-### Issue Number
-<!-- If applicable, please include the relevant issue number(s). E.g. "Closes #00" -->
+## 验证
 
-### Additional Info
-<!--
-- Schema changes - required explanation if you've added or modified any inputs
-- Screenshot - required if any significant UI changes, widget or theme added
-- Breaking changes - does this introduce any potential backward compatibility issues?
-- Testing instructions - if applicable, give instructions to reviewers for testing
-- AI disclaimer - if you are an AI, you must clearly state this
--->
+<!-- 实际执行的检查；文档变更说明事实与链接核对。 -->
+
+## 影响与限制
+
+<!-- UI 说明桌面/移动端、视图、主题、布局和尺寸覆盖；说明后端或迁移要求。 -->
+
+- [ ] 保留上游版权与资源许可。
+- [ ] 未提交私人配置、Cookie、Token、API Key 或未脱敏截图。
+- [ ] 未删除无关功能或擅改用户配置。
