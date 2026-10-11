@@ -128,3 +128,12 @@ test('real icons served as downloads are recognized by bytes, while fake image H
   assert.equal((await fetchPublicIcon('https://download-icon.example/favicon.ico',fetcher)).mime,'image/x-icon');
   await assert.rejects(fetchPublicIcon('https://fake-icon.example/logo.png',async url=>url.includes('/dns-query?')?dns():new Response('<html>not an image</html>',{headers:{'content-type':'image/png'}})));
 });
+test('identified Komari metadata falls back to its official project logo, not a generic monogram',async()=>{
+  const result=await discoverIcon('https://monitor.example/',async(url,options)=>{
+    if(url.includes('/dns-query?'))return dns();
+    if(options.headers.Accept==='text/html')return new Response('<head><meta name="keywords" content="Komari-Theme-LuminaPlus"><link rel="icon" href="/favicon.ico"></head>',{headers:{'content-type':'text/html'}});
+    if(url.startsWith('https://raw.githubusercontent.com/komari-monitor/'))return image();
+    return new Response('',{status:404});
+  });
+  assert.equal(result.source,'catalog');assert.match(result.icon,/komari-monitor\/komari-web/);assert.equal(result.verified,true);
+});

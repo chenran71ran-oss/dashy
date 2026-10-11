@@ -1,5 +1,5 @@
 // Reads public homepage icon metadata. Never forwards session cookies or site URL tokens.
-import { officialSiteIcons } from './icon-catalog.mjs';
+import { officialSiteIcons, officialApplicationIcons } from './icon-catalog.mjs';
 const dnsCache = new Map();
 const blockedHost = /(^|\.)(localhost|local|internal|home|lan|invalid)$/i;
 export function publicIconUrl(value, base) {
@@ -84,15 +84,17 @@ async function parseLinks(html) {
   if(typeof HTMLRewriter==='undefined') {
     const head=html.split(/<body[\s>]/i)[0].replace(/<!--[\s\S]*?-->|<(script|style|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
     const base=head.match(/<base\b[^>]*>/i);
-    return {base:base?attrs(base[0]).href:'',entries:[...head.matchAll(/<link\b[^>]*>/gi)].map(m=>attrs(m[0])).filter(a=>a.href && /(^|\s)(icon|apple-touch-icon|manifest)(\s|$)/i.test(a.rel||''))};
+    const product=[...head.matchAll(/<meta\b[^>]*>/gi)].map(m=>attrs(m[0])).find(a=>/^(keywords|generator)$/i.test(a.name||'') && /\bkomari(?:\b|-theme)/i.test(a.content||''))?'komari':'';
+    return {product,base:base?attrs(base[0]).href:'',entries:[...head.matchAll(/<link\b[^>]*>/gi)].map(m=>attrs(m[0])).filter(a=>a.href && /(^|\s)(icon|apple-touch-icon|manifest)(\s|$)/i.test(a.rel||''))};
   }
   const entries=[];
-  let base='';
+  let base='',product='';
   const rewriter=new HTMLRewriter().on('head link', {element(e){
     const rel=e.getAttribute('rel')||'', href=e.getAttribute('href');
     if(href && /(^|\s)(icon|apple-touch-icon|manifest)(\s|$)/i.test(rel))entries.push({rel,href,type:e.getAttribute('type')||'',sizes:e.getAttribute('sizes')||''});
-  }}).on('head base',{element(e){base ||= e.getAttribute('href')||'';}});
-  await rewriter.transform(new Response(html,{headers:{'content-type':'text/html'}})).text();return {base,entries};
+  }}).on('head base',{element(e){base ||= e.getAttribute('href')||'';}})
+    .on('head meta',{element(e){if(/^(keywords|generator)$/i.test(e.getAttribute('name')||'') && /\bkomari(?:\b|-theme)/i.test(e.getAttribute('content')||''))product='komari';}});
+  await rewriter.transform(new Response(html,{headers:{'content-type':'text/html'}})).text();return {base,entries,product};
 }
 async function limitedHtml(response) {
   const reader=response.body?.getReader(); if(!reader)return '';
@@ -148,6 +150,8 @@ export async function discoverIcon(value, fetcher=fetch, {page=false}={}) {
           }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,3));
         }catch(error){if(controller.signal.aborted)throw error;}
       }
+      const application=officialApplicationIcons[metadata.product];
+      if(application)candidates.push({icon:application,source:'catalog'});
     } else {
       reason=response.ok?'not-html':`http-${response.status}`;
       await response.body?.cancel();
