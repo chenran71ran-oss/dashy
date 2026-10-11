@@ -81,3 +81,45 @@ test('a candidate redirect to an internal host never becomes a successful icon',
   });
   assert.equal(result.icon,'');assert.equal(result.verified,false);
 });
+test('explicit reads retain app paths, honor base href and remove query secrets',async()=>{
+  const calls=[];
+  const result=await discoverIcon('https://panel.example/custom/panel?token=secret#key',async(url,options)=>{
+    calls.push(url);if(url.includes('/dns-query?'))return dns();
+    if(options.headers.Accept==='image/*')return image();
+    return new Response('<head><base href="/custom/"><link rel="icon" href="icons/logo.png"></head>',{headers:{'content-type':'text/html'}});
+  },{page:true});
+  assert.equal(result.icon,'https://panel.example/custom/icons/logo.png');
+  assert.ok(calls.includes('https://panel.example/custom/panel'));assert.ok(calls.every(x=>!x.includes('secret')&&!x.includes('#key')));
+});
+test('discover PWA manifest icons relative to their manifest, not the origin',async()=>{
+  const result=await discoverIcon('https://pwa.example/app/panel',async(url,options)=>{
+    if(url.includes('/dns-query?'))return dns();
+    if(options.headers.Accept==='image/*')return image();
+    if(url.endsWith('/app/manifest.webmanifest'))return Response.json({icons:[{src:'icons/logo.png',sizes:'192x192'}]});
+    return new Response('<head><link rel="manifest" href="manifest.webmanifest"></head>',{headers:{'content-type':'text/html'}});
+  },{page:true});
+  assert.equal(result.icon,'https://pwa.example/app/icons/logo.png');assert.equal(result.source,'manifest');
+});
+test('explicit browser reads are path-scoped and send no query or fragment',async()=>{
+  const bodies=[];const fetcher=async(_,options)=>{bodies.push(JSON.parse(options.body));return Response.json({icon:'https://pathcache.example/logo.png',source:'site'});};
+  await discoverSiteIcon('https://pathcache.example/app/panel?token=secret#fragment',{fetcher,page:true});
+  await discoverSiteIcon('https://pathcache.example/other/',{fetcher,page:true});
+  assert.equal(bodies.length,2);assert.deepEqual(bodies[0],{origin:'https://pathcache.example',page:'https://pathcache.example/app/panel'});
+});
+test('AWS console subdomains use the public vendor icon without visiting the account URL',async()=>{
+  const calls=[];
+  const result=await discoverIcon('https://session.region.console.aws.amazon.com/ec2/home',async(url)=>{
+    calls.push(url);return url.includes('/dns-query?')?dns():image();
+  },{page:true});
+  assert.equal(result.source,'catalog');assert.match(result.icon,/awslabs\/aws-icons-for-plantuml/);
+  assert.ok(calls.every(url=>!url.includes('session.region')));
+});
+test('manifest discovery does not fetch private targets or follow unchecked redirects',async()=>{
+  const calls=[];
+  const result=await discoverIcon('https://manifest-safe.example/app/',async(url,options)=>{
+    calls.push(url);if(url.includes('/dns-query?'))return dns();
+    if(options.headers.Accept==='text/html')return new Response('<head><link rel="manifest" href="https://127.0.0.1/private"></head>',{headers:{'content-type':'text/html'}});
+    return new Response('',{status:404});
+  },{page:true});
+  assert.equal(result.verified,false);assert.ok(calls.every(url=>!url.includes('127.0.0.1')));
+});

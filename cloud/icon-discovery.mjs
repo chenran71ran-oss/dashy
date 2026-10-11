@@ -68,13 +68,18 @@ export function extractIconLinks(html) {
   return [...head.matchAll(/<link\b[^>]*>/gi)].map(m=>attrs(m[0])).filter(a=>a.href && /(^|\s)(icon|apple-touch-icon)(\s|$)/i.test(a.rel||''));
 }
 async function parseLinks(html) {
-  if(typeof HTMLRewriter==='undefined')return extractIconLinks(html);
+  if(typeof HTMLRewriter==='undefined') {
+    const head=html.split(/<body[\s>]/i)[0].replace(/<!--[\s\S]*?-->|<(script|style|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
+    const base=head.match(/<base\b[^>]*>/i);
+    return {base:base?attrs(base[0]).href:'',entries:[...head.matchAll(/<link\b[^>]*>/gi)].map(m=>attrs(m[0])).filter(a=>a.href && /(^|\s)(icon|apple-touch-icon|manifest)(\s|$)/i.test(a.rel||''))};
+  }
   const entries=[];
+  let base='';
   const rewriter=new HTMLRewriter().on('head link', {element(e){
     const rel=e.getAttribute('rel')||'', href=e.getAttribute('href');
-    if(href && /(^|\s)(icon|apple-touch-icon)(\s|$)/i.test(rel))entries.push({rel,href,type:e.getAttribute('type')||'',sizes:e.getAttribute('sizes')||''});
-  }});
-  await rewriter.transform(new Response(html,{headers:{'content-type':'text/html'}})).text();return entries;
+    if(href && /(^|\s)(icon|apple-touch-icon|manifest)(\s|$)/i.test(rel))entries.push({rel,href,type:e.getAttribute('type')||'',sizes:e.getAttribute('sizes')||''});
+  }}).on('head base',{element(e){base ||= e.getAttribute('href')||'';}});
+  await rewriter.transform(new Response(html,{headers:{'content-type':'text/html'}})).text();return {base,entries};
 }
 async function limitedHtml(response) {
   const reader=response.body?.getReader(); if(!reader)return '';
@@ -83,11 +88,17 @@ async function limitedHtml(response) {
   finally { await reader.cancel().catch(()=>{}); }
   const bytes=new Uint8Array(size);let at=0;for(const part of chunks){bytes.set(part,at);at+=part.length;}return new TextDecoder().decode(bytes);
 }
-export async function discoverIcon(value, fetcher=fetch) {
-  const root=publicIconUrl(value); root.pathname='/';root.search='';
+export async function discoverIcon(value, fetcher=fetch, {page=false}={}) {
+  const root=publicIconUrl(value); if(!page)root.pathname='/';root.search='';
   const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),6500);
   let stage='dns';
   try {
+    // Account-specific console hosts use the vendor's public logo, not a login favicon.
+    const consoleIcon=(root.hostname==='console.aws.amazon.com'||root.hostname.endsWith('.console.aws.amazon.com'))&&officialSiteIcons['console.aws.amazon.com'];
+    if(consoleIcon) {
+      try {await fetchPublicIcon(consoleIcon,fetcher,{signal:controller.signal});return {icon:consoleIcon,source:'catalog',verified:true};}
+      catch(error){if(controller.signal.aborted)throw error;}
+    }
     let target=root, response;
     for(let redirects=0;redirects<=2;redirects++){
       stage='dns';
@@ -103,18 +114,34 @@ export async function discoverIcon(value, fetcher=fetch) {
     let reason='', candidates=[];
     if(response.ok && (response.headers.get('content-type')||'').toLowerCase().includes('html')) {
       stage='html';
-      const links=await parseLinks(await limitedHtml(response));
+      const metadata=await parseLinks(await limitedHtml(response));
+      let base=target;try { if(metadata.base)base=publicIconUrl(metadata.base,target); }catch{}
+      const links=metadata.entries.filter(e=>!/(^|\s)manifest(\s|$)/i.test(e.rel));
       candidates=links.map(entry=>{
-        try { const url=publicIconUrl(entry.href.replace(/&amp;/g,'&'),target);return {...entry,icon:url.href,source:'site',
+        try { const url=publicIconUrl(entry.href.replace(/&amp;/g,'&'),base);return {...entry,icon:url.href,source:'site',
           score:(/(^|\s)icon(\s|$)/i.test(entry.rel)?300:0)+(/svg/i.test(entry.type||url.pathname)?128:0)+Math.min(parseInt(entry.sizes)||0,192)}; }
         catch { return null; }
-      }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,3);
+      }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,5);
+      // Apps may expose their only real logo through the PWA manifest.
+      for(const entry of metadata.entries.filter(e=>/(^|\s)manifest(\s|$)/i.test(e.rel)).slice(0,1)) {
+        try {
+          const manifest=publicIconUrl(entry.href.replace(/&amp;/g,'&'),base);
+          await checkDns(manifest.hostname,fetcher,controller.signal,fetcher===fetch);
+          const result=await fetcher(manifest.href,{redirect:'manual',credentials:'omit',signal:controller.signal,headers:{Accept:'application/manifest+json, application/json'}});
+          if(!result.ok || !/(json|manifest)/i.test(result.headers.get('content-type')||'')){await result.body?.cancel();continue;}
+          const data=JSON.parse(await limitedHtml(result));
+          if(Array.isArray(data.icons))candidates.push(...data.icons.slice(0,16).map(e=>{
+            try{return {icon:publicIconUrl(e.src,manifest).href,source:'manifest',score:Math.min(parseInt(e.sizes)||0,512)};}catch{return null;}
+          }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,3));
+        }catch(error){if(controller.signal.aborted)throw error;}
+      }
     } else {
       reason=response.ok?'not-html':`http-${response.status}`;
       await response.body?.cancel();
     }
     const known=officialSiteIcons[root.hostname];
     if(known)candidates.push({icon:known,source:'catalog'});
+    if(page)candidates.push({icon:new URL('favicon.ico',target).href,source:'favicon'});
     candidates.push({icon:`${target.origin}/favicon.ico`,source:'favicon'});
     stage='image';
     const seen=new Set();

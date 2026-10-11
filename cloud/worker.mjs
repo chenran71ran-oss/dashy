@@ -252,7 +252,11 @@ export default {
       if (u.pathname === '/api/icon-discovery' && method === 'POST') {
         sameOrigin(req, u); await authorize(req, env);
         const body = await limitedBody(req, 4096);
-        try { return json(await discoverIcon(body.origin)); }
+        try {
+          const page=body.page && publicIconUrl(body.page);
+          if(page && page.origin!==publicIconUrl(body.origin).origin)throw new Error('Public HTTPS site required');
+          return json(await discoverIcon(page?.href||body.origin,fetch,{page:!!page}));
+        }
         catch (error) { return json({ icon: '', source: 'unavailable', reason: ['dns','request','html','timeout'].includes(error.iconReason)?error.iconReason:'public-site-required' }); }
       }
       if (['/api/config', '/config-manager/save'].includes(u.pathname) && ['POST', 'PUT'].includes(method)) {

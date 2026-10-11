@@ -74,7 +74,7 @@ export default {
   methods: {
     async readWebsiteIcon() {
       const request=++this.discoveryRequest; this.fetching=true;this.discoveryNote='';
-      const result=await discoverSiteIcon(this.url,{force:true});
+      const result=await discoverSiteIcon(this.url,{force:true,page:true});
       if(request!==this.discoveryRequest)return;
       this.fetching=false;
       this.discoveryReason=result.reason||'';
