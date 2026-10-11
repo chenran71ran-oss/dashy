@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { discoverIcon, publicIconUrl, isPublicAddress, extractIconLinks } from '../cloud/icon-discovery.mjs';
+import { discoverIcon, publicIconUrl, isPublicAddress, extractIconLinks, fetchPublicIcon } from '../cloud/icon-discovery.mjs';
 import { discoverSiteIcon } from '../src/utils/SiteIcons.js';
 import worker from '../cloud/worker.mjs';
 const image=()=>new Response(new Uint8Array([137,80,78,71,13,10,26,10]),{headers:{'content-type':'image/png'}});
@@ -122,4 +122,9 @@ test('manifest discovery does not fetch private targets or follow unchecked redi
     return new Response('',{status:404});
   },{page:true});
   assert.equal(result.verified,false);assert.ok(calls.every(url=>!url.includes('127.0.0.1')));
+});
+test('real icons served as downloads are recognized by bytes, while fake image HTML is rejected',async()=>{
+  const fetcher=async url=>url.includes('/dns-query?')?dns():new Response(new Uint8Array([0,0,1,0,1,0,32,32]),{headers:{'content-type':'application/octet-stream'}});
+  assert.equal((await fetchPublicIcon('https://download-icon.example/favicon.ico',fetcher)).mime,'image/x-icon');
+  await assert.rejects(fetchPublicIcon('https://fake-icon.example/logo.png',async url=>url.includes('/dns-query?')?dns():new Response('<html>not an image</html>',{headers:{'content-type':'image/png'}})));
 });

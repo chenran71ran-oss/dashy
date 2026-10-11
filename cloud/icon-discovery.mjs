@@ -21,6 +21,18 @@ export function isPublicAddress(value) {
     || (a===169 && b===254) || (a===172 && b>=16 && b<=31) || (a===192 && (b===168 || b===0 || b===2))
     || (a===198 && (b===18 || b===19 || b===51 && c===100)) || (a===203 && b===0 && c===113));
 }
+export function imageMime(bytes) {
+  const starts=(values)=>values.every((value,i)=>bytes[i]===value);
+  const text=new TextDecoder().decode(bytes.slice(0,1024));
+  if(starts([137,80,78,71,13,10,26,10]))return 'image/png';
+  if(starts([255,216,255]))return 'image/jpeg';
+  if(/^GIF8[79]a/.test(text))return 'image/gif';
+  if(text.startsWith('RIFF') && text.slice(8,12)==='WEBP')return 'image/webp';
+  if(starts([0,0,1,0]))return 'image/x-icon';
+  if(text.slice(4,8)==='ftyp' && /avif|avis/.test(text.slice(8,32)))return 'image/avif';
+  if(/^\s*(?:<\?xml[^>]*>\s*)?(?:<!--[\s\S]*?-->\s*)*<svg(?:\s|>)/i.test(text))return 'image/svg+xml';
+  return '';
+}
 async function checkDns(host, fetcher, signal, useCache) {
   if (useCache && dnsCache.get(host)>Date.now()) return;
   const results=await Promise.all(['A','AAAA'].map(async type=>{
@@ -49,14 +61,15 @@ export async function fetchPublicIcon(value, fetcher=fetch, {signal}={}) {
         target=publicIconUrl(location,target);continue;
       }
       const mime=(response.headers.get('content-type')||'').split(';')[0].toLowerCase();
-      if(!response.ok || !['image/png','image/jpeg','image/webp','image/gif','image/svg+xml','image/x-icon','image/vnd.microsoft.icon','image/avif'].includes(mime))throw new Error('Image unavailable');
+      if(!response.ok || !['image/png','image/jpeg','image/webp','image/gif','image/svg+xml','image/x-icon','image/vnd.microsoft.icon','image/avif','application/octet-stream','binary/octet-stream'].includes(mime))throw new Error('Image unavailable');
       const reader=response.body?.getReader();if(!reader)throw new Error('Empty image');
       const chunks=[];let size=0;
       try { while(true){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>524288)throw new Error('Image too large');chunks.push(value);} }
       finally { await reader.cancel().catch(()=>{}); }
       const bytes=new Uint8Array(size);let at=0;for(const chunk of chunks){bytes.set(chunk,at);at+=chunk.length;}
-      if(!size)throw new Error('Empty image');
-      return {bytes,mime};
+      const detected=imageMime(bytes);
+      if(!detected)throw new Error('Invalid image');
+      return {bytes,mime:detected};
     }
     throw new Error('Image unavailable');
   } finally { clearTimeout(timer); signal?.removeEventListener('abort',abort); }
