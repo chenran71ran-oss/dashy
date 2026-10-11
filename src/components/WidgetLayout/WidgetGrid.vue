@@ -27,6 +27,7 @@ export default {
   &[data-widget-size='large'] { --view-widget-min: 24rem; }
   &[data-widget-layout='vertical'] { grid-template-columns: minmax(0, 1fr); }
   > :deep(.widget-base) { min-width: 0; max-width: 100%; margin: 0; align-self: start; }
+  > :deep(.metric-widget) { align-self: stretch; }
 }
 @media(max-width:599px) { .view-widget-grid { grid-template-columns: minmax(0, 1fr); gap: .5rem; } }
 </style>

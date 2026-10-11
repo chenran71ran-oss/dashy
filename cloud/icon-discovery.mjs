@@ -1,4 +1,5 @@
 // Reads public homepage icon metadata. Never forwards session cookies or site URL tokens.
+import { officialSiteIcons } from './icon-catalog.mjs';
 const dnsCache = new Map();
 const blockedHost = /(^|\.)(localhost|local|internal|home|lan|invalid)$/i;
 export function publicIconUrl(value, base) {
@@ -32,9 +33,12 @@ async function checkDns(host, fetcher, signal, useCache) {
   const addresses=results.flat(); if(!addresses.length || addresses.some(a=>!isPublicAddress(a)))throw new Error('Non-public host');
   if(useCache){if(dnsCache.size>=64)dnsCache.delete(dnsCache.keys().next().value);dnsCache.set(host,Date.now()+60000);}
 }
-export async function fetchPublicIcon(value, fetcher=fetch) {
+export async function fetchPublicIcon(value, fetcher=fetch, {signal}={}) {
   let target=publicIconUrl(value);
   const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),6500);
+  const abort=()=>controller.abort();
+  if(signal?.aborted)controller.abort();
+  signal?.addEventListener('abort',abort,{once:true});
   try {
     for(let redirects=0;redirects<=2;redirects++) {
       await checkDns(target.hostname,fetcher,controller.signal,fetcher===fetch);
@@ -55,7 +59,7 @@ export async function fetchPublicIcon(value, fetcher=fetch) {
       return {bytes,mime};
     }
     throw new Error('Image unavailable');
-  } finally { clearTimeout(timer); }
+  } finally { clearTimeout(timer); signal?.removeEventListener('abort',abort); }
 }
 const attrs = tag => Object.fromEntries([...tag.matchAll(/([\w:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g)].map(m=>[m[1].toLowerCase(),m[2]??m[3]??m[4]]));
 export function extractIconLinks(html) {
@@ -96,15 +100,32 @@ export async function discoverIcon(value, fetcher=fetch) {
       // Public redirects may select a locale path. Queries never come from the user's bookmark.
       target=publicIconUrl(location,target);target.search='';
     }
-    if(!response.ok || !(response.headers.get('content-type')||'').toLowerCase().includes('html'))return {icon:`${root.origin}/favicon.ico`,source:'favicon',reason:response.ok?'not-html':`http-${response.status}`};
-    stage='html';
-    const links=await parseLinks(await limitedHtml(response));
-    const candidates=links.map(entry=>{
-      try { const url=publicIconUrl(entry.href.replace(/&amp;/g,'&'),target);return {...entry,icon:url.href,
-        score:(/(^|\s)icon(\s|$)/i.test(entry.rel)?300:0)+(/svg/i.test(entry.type||url.pathname)?128:0)+Math.min(parseInt(entry.sizes)||0,192)}; }
-      catch { return null; }
-    }).filter(Boolean).sort((a,b)=>b.score-a.score);
-    return {icon:candidates[0]?.icon||`${target.origin}/favicon.ico`,source:candidates.length?'site':'favicon'};
+    let reason='', candidates=[];
+    if(response.ok && (response.headers.get('content-type')||'').toLowerCase().includes('html')) {
+      stage='html';
+      const links=await parseLinks(await limitedHtml(response));
+      candidates=links.map(entry=>{
+        try { const url=publicIconUrl(entry.href.replace(/&amp;/g,'&'),target);return {...entry,icon:url.href,source:'site',
+          score:(/(^|\s)icon(\s|$)/i.test(entry.rel)?300:0)+(/svg/i.test(entry.type||url.pathname)?128:0)+Math.min(parseInt(entry.sizes)||0,192)}; }
+        catch { return null; }
+      }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,3);
+    } else {
+      reason=response.ok?'not-html':`http-${response.status}`;
+      await response.body?.cancel();
+    }
+    const known=officialSiteIcons[root.hostname];
+    if(known)candidates.push({icon:known,source:'catalog'});
+    candidates.push({icon:`${target.origin}/favicon.ico`,source:'favicon'});
+    stage='image';
+    const seen=new Set();
+    for(const candidate of candidates) {
+      if(seen.has(candidate.icon))continue;seen.add(candidate.icon);
+      try {
+        await fetchPublicIcon(candidate.icon,fetcher,{signal:controller.signal});
+        return {icon:candidate.icon,source:candidate.source,verified:true,...(reason?{reason}:{})};
+      } catch(error) { if(controller.signal.aborted)throw error; }
+    }
+    return {icon:'',source:'unavailable',verified:false,reason:reason||'no-icon'};
   } catch(error) { error.iconReason=controller.signal.aborted?'timeout':stage;throw error; }
   finally { clearTimeout(timer); }
 }

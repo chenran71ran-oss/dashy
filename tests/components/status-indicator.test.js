@@ -19,3 +19,11 @@ describe('HTTP and Ping indicators only show success when the response confirms 
     wrapper.unmount();
   });
 });
+
+it('labels dual HTTP/Ping probes independently and includes the type in accessible status', () => {
+  const make=(checkType,statusSuccess,statusText)=>shallowMount(StatusIndicator,{props:{checkType,showLabel:true,statusSuccess,statusText},global:{directives:{tooltip:{}}}});
+  const http=make('http',true,'200 OK'),ping=make('ping',false,'Backend unavailable');
+  expect(http.get('.check-label').text()).toBe('HTTP');expect(ping.get('.check-label').text()).toBe('Ping');
+  expect(http.attributes('aria-label')).toBe('HTTP · 200 OK');expect(ping.find('.dot-red').exists()).toBe(true);
+  http.unmount();ping.unmount();
+});

@@ -193,6 +193,7 @@ export default {
   --metric-value-height: calc(var(--metric-value-size) + .5rem);
   --metric-gap: .75rem;
   --metric-body-columns: minmax(0, 1fr);
+  --metric-body-rows: var(--metric-value-height) minmax(min-content, 1fr);
   --metric-body-gap: .25rem;
   --metric-meta-align: center;
   --metric-meta-justify: center;
@@ -248,7 +249,11 @@ export default {
 
   // Shared value sizing, with content-driven height instead of an empty fixed frame.
   &.metric-widget {
-    align-self: start;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    .widget-wrap { flex: 1; display: flex; flex-direction: column; }
+    :deep(.clock), :deep(.weather) { flex: 1; display: flex; flex-direction: column; }
     --widget-heading-size: .9rem;
     --widget-meta-size: .8rem;
     &[data-widget-size='small'] { --widget-heading-size: .85rem; --widget-meta-size: .75rem; }
@@ -256,7 +261,9 @@ export default {
     .widget-label { padding: .125rem var(--widget-controls-space) .125rem 0; }
     :deep(.metric-body) {
       display: grid;
+      flex: 1;
       grid-template-columns: var(--metric-body-columns);
+      grid-template-rows: var(--metric-body-rows);
       gap: var(--metric-body-gap);
       align-items: center;
       width: var(--metric-body-width, 100%);
@@ -266,7 +273,7 @@ export default {
     }
     :deep(.metric-value), :deep(.metric-meta) { min-width: 0; max-width: 100%; }
     :deep(.metric-value:only-child) { grid-column: 1 / -1; }
-    :deep(.metric-meta) { text-align: var(--metric-meta-align); overflow-wrap: anywhere; }
+    :deep(.metric-meta) { align-self: var(--metric-meta-self, end); text-align: var(--metric-meta-align); overflow-wrap: anywhere; }
   }
 
   .widget-actions {
@@ -334,6 +341,8 @@ export default {
   @container widget-frame (min-width: 28rem) {
     &[data-widget-size='small'] .widget-wrap {
       --metric-body-columns: max-content minmax(0, 1fr);
+      --metric-body-rows: minmax(var(--metric-value-height), 1fr);
+      --metric-meta-self: center;
       --metric-body-width: fit-content;
       --metric-body-gap: 1rem;
       --metric-meta-align: left;
@@ -343,6 +352,8 @@ export default {
   @container widget-frame (min-width: 40rem) {
     &[data-widget-size='medium'] .widget-wrap {
       --metric-body-columns: max-content minmax(0, 1fr);
+      --metric-body-rows: minmax(var(--metric-value-height), 1fr);
+      --metric-meta-self: center;
       --metric-body-width: fit-content;
       --metric-body-gap: 1.25rem;
       --metric-meta-align: left;

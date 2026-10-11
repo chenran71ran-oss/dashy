@@ -78,12 +78,14 @@ export default {
       if(request!==this.discoveryRequest)return;
       this.fetching=false;
       this.discoveryReason=result.reason||'';
-      if(result.icon){
+      if(result.icon && result.verified){
         this.choose(result.icon);
-        const problem=result.reason==='dns'?'暂无法解析网站':result.reason==='timeout'?'读取网站超时':result.reason==='public-site-required'?'仅支持公开 HTTPS 网站':result.reason?'网站元信息暂不可用':'';
-        this.discoveryNote=result.source==='site'?'已读取网站声明的图标，可在左侧预览。':`${problem?problem+'，先使用':'使用'}网站 favicon；无法显示时可从图库选择或填写图片地址。`;
+        this.discoveryNote=result.source==='catalog'?'已读取核实的官方图标，可在左侧预览。':'已读取并验证网站图标，可在左侧预览。';
       }
-      else this.discoveryNote='暂时无法读取图标，请从图库选择或填写图片地址。';
+      else {
+        const problem=result.reason==='dns'?'暂无法解析网站':result.reason==='timeout'?'读取网站超时':result.reason==='public-site-required'?'仅支持公开 HTTPS 网站':result.reason?.startsWith('http-')?'网站未提供可读取的图标':'未找到可用的网站图标';
+        this.discoveryNote=`${problem}，已保留原图标。可从图库选择或填写图片地址。`;
+      }
     },
     choose(value) { this.$emit('update:modelValue', value); this.open = false; },
     async toggle() {

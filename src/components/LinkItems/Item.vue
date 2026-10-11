@@ -34,14 +34,14 @@
       <div class="indicators-container">
         <!-- Status indicator dot (if enabled) showing weather service is available -->
         <StatusIndicator
-          v-if="enableStatusCheck"
+          v-if="enableStatusCheck" check-type="http" :show-label="enableStatusCheck && isPingCheckEnabled"
           :statusSuccess="statusResponse?.successStatus"
           :statusText="statusResponse?.message"
           :statusAccessibility="appConfig.statusCheckAccessibility"
         />
         <!-- Status indicator dot (if enabled) showing host ping status -->
         <StatusIndicator
-          v-if="isPingCheckEnabled"
+          v-if="isPingCheckEnabled" check-type="ping" :show-label="enableStatusCheck && isPingCheckEnabled"
           :statusSuccess="pingResponse?.successStatus"
           :statusText="pingResponse?.message"
           :statusTimeout="pingCheckTimeout"

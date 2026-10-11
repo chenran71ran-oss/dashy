@@ -1,13 +1,15 @@
 <template>
-  <div class="indicator"
+  <div :class="['indicator', { 'labelled-indicator': showLabel }]"
+    role="img" :aria-label="labelledStatus"
     v-tooltip="{
-      content: statusText || otherStatusText,
+      content: labelledStatus,
       popperClass: ['status-tooltip', `tip-${color()}`],
       delay: { show: 0, hide: 150 }
     }">
     <div :class="['dot', `dot-${color()}`, { 'a11y-mode': a11yMode }]">
       <span><span></span></span>
     </div>
+    <span v-if="showLabel" class="check-label">{{ checkLabel }}</span>
   </div>
 </template>
 
@@ -17,11 +19,15 @@ export default {
   name: 'StatusIndicator',
   props: {
     statusText: { type: String, default: '' },
+    checkType: { type: String, default: '' },
+    showLabel: { type: Boolean, default: false },
     statusSuccess: Boolean,
     statusTimeout: { type: Number, default: 2000 },
     statusAccessibility: { type: Boolean, default: false },
   },
   computed: {
+    checkLabel() { return this.checkType === 'ping' ? 'Ping' : this.checkType === 'http' ? 'HTTP' : ''; },
+    labelledStatus() { return `${this.checkLabel ? this.checkLabel + ' · ' : ''}${this.statusText || this.otherStatusText}`; },
     /* If true, will use shapes instead of dots for indicator status */
     a11yMode() {
       return !!this.statusAccessibility;
@@ -62,6 +68,13 @@ export default {
   }
 }
 
+.labelled-indicator { display: inline-flex; align-items: center; gap: 4px; padding: 4px; }
+.check-label { font: 600 9px/1.2 sans-serif; color: var(--item-text-color, var(--foreground)); }
+
+@keyframes breathe {
+  0%, 100% { opacity: 1; filter: brightness(1.05); }
+  50% { opacity: .5; filter: brightness(.75); }
+}
 @keyframes pulse {
   0% { opacity: .75; transform: scale(1); }
   25% { opacity: 0.75; transform: scale(1); }
@@ -87,6 +100,7 @@ export default {
   }
   &.dot-green {
     background-color: var(--success);
+    animation: breathe 2.4s ease-in-out infinite;
     > span { animation: pulse 2.4s ease-out infinite; }
     > span > span { display: none; }
     span, span:after {

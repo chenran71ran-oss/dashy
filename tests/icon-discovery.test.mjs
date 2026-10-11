@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import { discoverIcon, publicIconUrl, isPublicAddress, extractIconLinks } from '../cloud/icon-discovery.mjs';
 import { discoverSiteIcon } from '../src/utils/SiteIcons.js';
 import worker from '../cloud/worker.mjs';
+const image=()=>new Response(new Uint8Array([137,80,78,71,13,10,26,10]),{headers:{'content-type':'image/png'}});
 const dns=()=>Response.json({Status:0,Answer:[{type:1,data:'8.8.8.8'}]});
 test('read public homepage declarations without bookmark path/query or credentials',async()=>{
   const calls=[];
-  const fetcher=async(url,options)=>{calls.push({url,options});return url.includes('/dns-query?')?dns():new Response('<head><link rel="apple-touch-icon" href="/apple.png" sizes="180x180"><link rel="icon" type="image/svg+xml" href="/icons/brand.svg?v=2&amp;x=1"></head>',{headers:{'content-type':'text/html'}});};
+  const fetcher=async(url,options)=>{calls.push({url,options});return url.includes('/dns-query?')?dns():options?.headers?.Accept==='image/*'?image():new Response('<head><link rel="apple-touch-icon" href="/apple.png" sizes="180x180"><link rel="icon" type="image/svg+xml" href="/icons/brand.svg?v=2&amp;x=1"></head>',{headers:{'content-type':'text/html'}});};
   const r=await discoverIcon('https://public.example/private/sub?token=secret#fragment',fetcher);
   assert.equal(r.icon,'https://public.example/icons/brand.svg?v=2&x=1');assert.equal(r.source,'site');
   const site=calls.find(c=>!c.url.includes('/dns-query?'));assert.equal(site.url,'https://public.example/');
@@ -16,7 +17,7 @@ test('read public homepage declarations without bookmark path/query or credentia
 });
 test('public redirects retain locale paths and every redirect is checked',async()=>{
   const calls=[];
-  const fetcher=async(url)=>{calls.push(url);if(url.includes('/dns-query?'))return dns();if(url==='https://redirect.example/')return new Response('',{status:302,headers:{location:'https://landing.example/en/?track=1'}});return new Response('<head><link href="logo.png" rel="shortcut icon"></head>',{headers:{'content-type':'text/html'}});};
+  const fetcher=async(url,options)=>{calls.push(url);if(options?.headers?.Accept==='image/*')return image();if(url.includes('/dns-query?'))return dns();if(url==='https://redirect.example/')return new Response('',{status:302,headers:{location:'https://landing.example/en/?track=1'}});return new Response('<head><link href="logo.png" rel="shortcut icon"></head>',{headers:{'content-type':'text/html'}});};
   assert.equal((await discoverIcon('https://redirect.example/',fetcher)).icon,'https://landing.example/en/logo.png');
   assert.ok(calls.includes('https://landing.example/en/'));assert.ok(!calls.some(x=>x.includes('track=1')));
   await assert.rejects(discoverIcon('https://redirect.example/',async url=>url.includes('/dns-query?')?dns():new Response('',{status:302,headers:{location:'https://127.0.0.1/'}})));
@@ -28,7 +29,7 @@ test('reject private, encoded IP, credential and non-HTTPS targets before fetchi
 });
 test('bound HTML reads, ignore executable/comment text, and fall back to favicon',async()=>{
   assert.deepEqual(extractIconLinks('<!-- <link rel="icon" href="bad.png"> --><head><script>"<link rel=icon href=bad.png>"</script><link REL="ICON" HREF="ok.png"></head><body><link rel="icon" href="body.png">'),[{rel:'ICON',href:'ok.png'}]);
-  const r=await discoverIcon('https://large.example/',async url=>url.includes('/dns-query?')?dns():new Response('x'.repeat(70000)+'<link rel="icon" href="too-late.png">',{headers:{'content-type':'text/html'}}));
+  const r=await discoverIcon('https://large.example/',async (url,options)=>url.includes('/dns-query?')?dns():options?.headers?.Accept==='image/*'?image():new Response('x'.repeat(70000)+'<link rel="icon" href="too-late.png">',{headers:{'content-type':'text/html'}}));
   assert.equal(r.icon,'https://large.example/favicon.ico');
 });
 test('browser requests use origin only and coalesce repeated lookups',async()=>{
@@ -50,7 +51,33 @@ test('discovery endpoint requires login and same origin, without writing KV',asy
 test('failed metadata lookups preserve a useful reason and still supply the root favicon',async()=>{
   await assert.rejects(discoverIcon('https://dns-failed.example',async()=>new Response('',{status:503})),error=>error.iconReason==='dns');
   const blocked=await discoverIcon('https://http-failed.example',async url=>url.includes('/dns-query?')?dns():new Response('',{status:403}));
-  assert.equal(blocked.reason,'http-403');assert.equal(blocked.source,'favicon');
+  assert.equal(blocked.reason,'http-403');assert.equal(blocked.source,'unavailable');assert.equal(blocked.icon,'');assert.equal(blocked.verified,false);
   const result=await discoverSiteIcon('https://read-failed.example/sub?token=secret',{fetcher:async()=>Response.json({icon:'',source:'unavailable',reason:'dns'})});
   assert.equal(result.icon,'https://read-failed.example/favicon.ico');assert.equal(result.source,'unavailable');assert.equal(result.reason,'dns');
+});
+
+test('skip broken declarations, validate the next image, and reject HTML masquerading as a favicon',async()=>{
+  const result=await discoverIcon('https://candidates.example',async (url,options)=>{
+    if(url.includes('/dns-query?'))return dns();
+    if(options.headers.Accept==='text/html')return new Response('<head><link rel="icon" href="/broken.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/apple.png" sizes="180x180"></head>',{headers:{'content-type':'text/html'}});
+    return url.endsWith('/apple.png')?image():new Response('<html>login</html>',{headers:{'content-type':'text/html'}});
+  });
+  assert.equal(result.icon,'https://candidates.example/apple.png');assert.equal(result.verified,true);
+});
+test('use a verified official icon when Linux DO homepage metadata is unavailable',async()=>{
+  const calls=[];
+  const result=await discoverIcon('https://linux.do/t/private?token=secret',async (url,options)=>{
+    calls.push(url);if(url.includes('/dns-query?'))return dns();
+    return options.headers.Accept==='image/*'?image():new Response('',{status:403});
+  });
+  assert.match(result.icon,/^https:\/\/cdn3\.ldstatic\.com\/.*180x180\.png$/);assert.equal(result.source,'catalog');assert.equal(result.verified,true);
+  assert.ok(calls.every(url=>!url.includes('secret')&&!url.includes('/t/private')));
+});
+test('a candidate redirect to an internal host never becomes a successful icon',async()=>{
+  const result=await discoverIcon('https://unsafe-icon.example',async (url,options)=>{
+    if(url.includes('/dns-query?'))return dns();
+    if(options.headers.Accept==='text/html')return new Response('<head><link rel="icon" href="/redirect.png"></head>',{headers:{'content-type':'text/html'}});
+    return new Response('',{status:302,headers:{location:'https://127.0.0.1/'}});
+  });
+  assert.equal(result.icon,'');assert.equal(result.verified,false);
 });

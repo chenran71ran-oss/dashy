@@ -68,7 +68,7 @@ export default {
       return builtinIconPath(this.effectiveIcon) || portalIconPath(this.effectiveIcon) || this.effectiveIcon;
     },
     isGlyph() { return this.resolvedIcon.startsWith('/portal-icons/lucide/'); },
-    isBrand() { return this.resolvedIcon.startsWith('/portal-icons/'); },
+    isBrand() { return this.resolvedIcon.startsWith('/portal-icons/') || this.resolvedIcon === matchPortalIcon(this.url, this.title)?.src; },
     monogram() {
       const label = this.title || this.getHostName(this.url).replace(/^www\./, '') || '?';
       return Array.from(label)[0].toUpperCase();
@@ -306,7 +306,7 @@ export default {
     /* Returns fallback URL for icon types that have one, else undefined */
     getFallbackIcon() {
       const iconType = this.iconType || '';
-      if (this.isBrand) return websiteFavicon(this.url) || undefined;
+      if (this.isBrand && this.resolvedIcon.startsWith('/portal-icons/')) return websiteFavicon(this.url) || undefined;
       // A site may refuse server-side favicon requests. Prefer its bundled brand;
       // other custom images get one direct-browser retry, preserving the saved URL.
       if (window.__KH_CLOUD_AUTH && /^https:\/\//i.test(this.resolvedIcon)) return matchPortalIcon(this.url, this.title)?.src || this.resolvedIcon;
