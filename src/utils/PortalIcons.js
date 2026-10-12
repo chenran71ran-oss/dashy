@@ -3,6 +3,7 @@ import { officialSiteIcons } from '../../cloud/icon-catalog.mjs';
 const qx = (id, title, file, hosts = [], aliases = []) => ({ id, title, src: `/portal-icons/qx/${file}.png`, hosts, aliases, source: 'QX' });
 const local = (id, title, hosts = [], aliases = []) => ({ id, title, src: `/portal-icons/${id}.svg`, hosts, aliases, source: 'Simple Icons' });
 export const portalIcons = [
+  { id: 'nodeseek', title: 'NodeSeek', src: officialSiteIcons['nodeseek.com'], hosts: ['nodeseek.com'], aliases: ['nodeseek', 'node seek'], source: 'Official favicon' },
   { id: 'awsconsole', title: 'AWS Management Console', src: officialSiteIcons['console.aws.amazon.com'], hosts: ['console.aws.amazon.com'], aliases: ['aws', 'aws控制面板'], source: 'AWS Architecture Icons' },
   { id: 'linuxdo', title: 'LINUX DO', src: officialSiteIcons['linux.do'], hosts: ['linux.do'], aliases: ['linux do', 'linuxdo'], source: 'Official favicon' },
   qx('chatgpt', 'ChatGPT / GPT', 'ChatGPT', ['chatgpt.com', 'chat.openai.com'], ['chatgpt', 'gpt']),
@@ -22,7 +23,7 @@ export const portalIcons = [
   qx('globalspeed', 'GlobalSpeed', 'GlobalSpeed', [], ['globalspeed']),
   qx('dmit', 'DMIT', 'DMIT', ['dmit.io'], ['dmit', 'dmit 官网']),
   qx('racknerd', 'RackNerd / RN-VPS', 'RN-VPS', ['racknerd.com'], ['racknerd', 'rn-vps']),
-  qx('haita', '海獭', 'Haita', [], ['海獭']), qx('liangxin', '良心云', 'Liangxin', [], ['良心云']), qx('yuetutu', '月兔', 'Yuetutu', [], ['月兔']),
+  qx('haita', '海獭', 'Haita', [], ['海獭']), { ...qx('liangxin', '良心云', 'Liangxin', [], ['良心云']), src: '/portal-icons/liangxin-transparent.png', source: 'Official logo, background removed' }, qx('yuetutu', '月兔', 'Yuetutu', [], ['月兔']),
   local('cloudflare', 'Cloudflare', ['dash.cloudflare.com', 'speed.cloudflare.com', 'cloudflare.com']),
   local('fast', 'Fast.com', ['fast.com']), local('bilibili', '哔哩哔哩 / Bilibili', ['bilibili.com']),
   local('xiaohongshu', '小红书', ['xiaohongshu.com']), { ...local('dashy', 'Dashy', ['demo.dashy.to'], ['dashy 演示']), src: '/portal-icons/dashy.png', source: 'Dashy' },

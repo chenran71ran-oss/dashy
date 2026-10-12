@@ -114,6 +114,18 @@ test('AWS console subdomains use the public vendor icon without visiting the acc
   assert.equal(result.source,'catalog');assert.match(result.icon,/awslabs\/aws-icons-for-plantuml/);
   assert.ok(calls.every(url=>!url.includes('session.region')));
 });
+test('NodeSeek uses its verified official icon for both bare and www hostnames',async()=>{
+  for(const host of ['nodeseek.com','www.nodeseek.com']) {
+    const result=await discoverIcon(`https://${host}/`,async(url)=>url.includes('/dns-query?')?dns():image());
+    assert.equal(result.source,'catalog');assert.equal(result.icon,'/portal-icons/nodeseek.png');assert.equal(result.verified,true);
+  }
+});
+test('browser accepts only registered local brand assets returned by discovery',async()=>{
+  const good=await discoverSiteIcon('https://www.nodeseek.com/',{force:true,fetcher:async()=>Response.json({icon:'/portal-icons/nodeseek.png',source:'catalog',verified:true})});
+  assert.equal(good.icon,'/portal-icons/nodeseek.png');assert.equal(good.verified,true);
+  const bad=await discoverSiteIcon('https://unregistered.example/',{fetcher:async()=>Response.json({icon:'/api/config',source:'catalog',verified:true})});
+  assert.equal(bad.verified,false);
+});
 test('manifest discovery does not fetch private targets or follow unchecked redirects',async()=>{
   const calls=[];
   const result=await discoverIcon('https://manifest-safe.example/app/',async(url,options)=>{

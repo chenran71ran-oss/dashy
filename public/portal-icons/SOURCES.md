@@ -6,6 +6,8 @@
 - Each pack's complete license is stored in its own directory.
 - Bundled packs are served by Home Lab without runtime GitHub requests. Remote website and official fallback icons may still require their public host. Lucide SVGs use a CSS mask to follow the theme text color. Fluent and Icons8 preserve their flat colors and transparent backgrounds.
 - `scripts/sync-flat-color-icons.mjs` can refresh the committed Icons8 assets from the pinned upstream revision. The catalog keeps each icon's category, bilingual names where available, and searchable keywords.
-- QX brand sources and the existing portal registry remain unchanged.
+- Original QX source assets are retained; selected brand variants are documented below.
+- NodeSeek: official apple-touch icon declared by https://www.nodeseek.com/ at /static/image/favicon/android-chrome-512x512.png, mirrored without modification as `nodeseek.png` to avoid runtime source availability issues. Trademark rights remain with NodeSeek.
+- Liangxinyun: public logo from https://xn--9kqz23b19z.com/images/logo.png. `liangxin-transparent.png` is a background-extraction edit made with the built-in image tool, preserving the yellow/cyan mark and wording. The original QX asset is retained. Trademark rights remain with its owner.
 - AWS console fallback: public AWS Architecture Icons from https://github.com/awslabs/aws-icons-for-plantuml — the General/AWSManagementConsole.png resource is referenced remotely. Follow the upstream project's icon terms and trademark notices.
 - Komari fallback: official project favicon referenced by https://github.com/komari-monitor/komari in its README, pinned to komari-monitor/komari-web revision d54ce1288df41ead08aa19f8700186e68028a889. This is a remote project asset, not an original Home Lab logo.
