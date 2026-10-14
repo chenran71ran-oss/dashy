@@ -109,7 +109,8 @@ export async function discoverIcon(value, fetcher=fetch, {page=false}={}) {
   let stage='dns';
   try {
     // Verified bundled brand assets do not depend on remote metadata availability.
-    if(root.hostname==='nodeseek.com'||root.hostname==='www.nodeseek.com')return {icon:officialSiteIcons['nodeseek.com'],source:'catalog',verified:true};
+    const bundled=officialSiteIcons[root.hostname] || (root.hostname==='www.nodeseek.com'?officialSiteIcons['nodeseek.com']:'');
+    if(bundled?.startsWith('/portal-icons/'))return {icon:bundled,source:'catalog',verified:true};
     const consoleIcon=(root.hostname==='console.aws.amazon.com'||root.hostname.endsWith('.console.aws.amazon.com'))?officialSiteIcons['console.aws.amazon.com']:(root.hostname==='nodeseek.com'||root.hostname==='www.nodeseek.com')?officialSiteIcons['nodeseek.com']:'';
     if(consoleIcon) {
       try {await fetchPublicIcon(consoleIcon,fetcher,{signal:controller.signal});return {icon:consoleIcon,source:'catalog',verified:true};}

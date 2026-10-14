@@ -13,3 +13,12 @@ it('saves a verified icon candidate and reports success',async()=>{
   const wrapper=shallowMount(IconPicker,{props:{modelValue:'portal-github',url:'https://site.example'}});
   await wrapper.vm.readWebsiteIcon();expect(wrapper.emitted('update:modelValue')).toEqual([['https://site.example/apple.png']]);wrapper.unmount();
 });
+it('explains HTTP 403 as a refused server request, not a site without an icon',async()=>{
+  discoverSiteIcon.mockResolvedValue({icon:'https://site.example/favicon.ico',source:'unavailable',verified:false,reason:'http-403'});
+  const wrapper=shallowMount(IconPicker,{props:{modelValue:'auto',url:'https://site.example'}});
+  await wrapper.vm.readWebsiteIcon();
+  expect(wrapper.vm.discoveryNote).toContain('HTTP 403');
+  expect(wrapper.vm.discoveryNote).toContain('拒绝');
+  expect(wrapper.vm.discoveryNote).toContain('已保留原图标');
+  expect(wrapper.emitted('update:modelValue')).toBeUndefined();wrapper.unmount();
+});

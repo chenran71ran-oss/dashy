@@ -3,6 +3,7 @@ import { officialSiteIcons } from '../../cloud/icon-catalog.mjs';
 const qx = (id, title, file, hosts = [], aliases = []) => ({ id, title, src: `/portal-icons/qx/${file}.png`, hosts, aliases, source: 'QX' });
 const local = (id, title, hosts = [], aliases = []) => ({ id, title, src: `/portal-icons/${id}.svg`, hosts, aliases, source: 'Simple Icons' });
 export const portalIcons = [
+  { id: 'deepseek', title: 'DeepSeek / DeepSeek API', src: officialSiteIcons['platform.deepseek.com'], hosts: ['deepseek.com'], aliases: ['deepseek', 'deepseek api', '深度求索'], source: 'Official platform favicon' },
   { id: 'nodeseek', title: 'NodeSeek', src: officialSiteIcons['nodeseek.com'], hosts: ['nodeseek.com'], aliases: ['nodeseek', 'node seek'], source: 'Official favicon' },
   { id: 'awsconsole', title: 'AWS Management Console', src: officialSiteIcons['console.aws.amazon.com'], hosts: ['console.aws.amazon.com'], aliases: ['aws', 'aws控制面板'], source: 'AWS Architecture Icons' },
   { id: 'linuxdo', title: 'LINUX DO', src: officialSiteIcons['linux.do'], hosts: ['linux.do'], aliases: ['linux do', 'linuxdo'], source: 'Official favicon' },

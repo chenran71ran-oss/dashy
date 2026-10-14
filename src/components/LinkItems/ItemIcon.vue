@@ -67,7 +67,9 @@ export default {
       if (this.effectiveIcon === 'auto') return matchPortalIcon(this.url, this.title)?.src || this.discoveredIcon || websiteFavicon(this.url);
       return builtinIconPath(this.effectiveIcon) || portalIconPath(this.effectiveIcon) || this.effectiveIcon;
     },
-    isGlyph() { return this.resolvedIcon.startsWith('/portal-icons/lucide/'); },
+    // The official DeepSeek favicon is a black silhouette. Use its original
+    // shape as a mask so it remains visible in both light and dark themes.
+    isGlyph() { return this.resolvedIcon.startsWith('/portal-icons/lucide/') || this.resolvedIcon === '/portal-icons/deepseek.svg'; },
     isBrand() { return this.resolvedIcon.startsWith('/portal-icons/') || this.resolvedIcon === matchPortalIcon(this.url, this.title)?.src; },
     monogram() {
       const label = this.title || this.getHostName(this.url).replace(/^www\./, '') || '?';
