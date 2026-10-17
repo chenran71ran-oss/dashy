@@ -6,7 +6,7 @@ import { themeLabels } from '../src/utils/ThemeCatalog.js';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const asset=name=>'data:image/png;base64,'+fs.readFileSync(path.join(process.env.LOGIN_PREVIEW_ASSETS||path.join(root,'public/mech'),name+'.png')).toString('base64');
 const {default:vue}=await import('@vitejs/plugin-vue');
-const result=await build({configFile:false,root,plugins:[vue(),{name:'preview-mascot',transform(code,id){if(id.endsWith('/MechPalette.js'))return code.replace("`/mech/${red ? 'red' : 'blue'}.png`",`(red?${JSON.stringify(asset('red'))}:${JSON.stringify(asset('blue'))})`);}}],resolve:{alias:{'@':path.join(root,'src')}},css:{preprocessorOptions:{scss:{silenceDeprecations:['import','legacy-js-api']}}},build:{write:false,minify:true,lib:{entry:path.join(root,'dev/login-preview.js'),name:'LoginThemePreview',formats:['iife']},cssCodeSplit:false}});
+const result=await build({configFile:false,root,define:{'process.env.NODE_ENV':JSON.stringify('production')},plugins:[vue(),{name:'preview-mascot',transform(code,id){if(id.endsWith('/MechPalette.js'))return code.replace("`/mech/${red ? 'red' : 'blue'}.png`",`(red?${JSON.stringify(asset('red'))}:${JSON.stringify(asset('blue'))})`);}}],resolve:{alias:{'@':path.join(root,'src')}},css:{preprocessorOptions:{scss:{silenceDeprecations:['import','legacy-js-api']}}},build:{write:false,minify:true,lib:{entry:path.join(root,'dev/login-preview.js'),name:'LoginThemePreview',formats:['iife']},cssCodeSplit:false}});
 const output=Array.isArray(result)?result[0].output:result.output;
 const code=output.find(x=>x.type==='chunk').code;
 const css=output.filter(x=>x.type==='asset' && x.fileName.endsWith('.css')).map(x=>x.source).join('\n');
