@@ -13,7 +13,7 @@ export async function discoverSiteIcon(url,{force=false,page=false,fetcher=fetch
   const stored=cache.get(key);if(!force && stored?.expires>Date.now())return stored.promise;
   const promise=(async()=>{
     try {
-      const response=await fetcher('/api/icon-discovery',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(page?{origin,page:target.href}:{origin}),signal:AbortSignal.timeout(8000)});
+      const response=await fetcher('/api/icon-discovery',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(page?{origin,page:target.href}:{origin}),signal:AbortSignal.timeout(page?23000:8000)});
       if(!response.ok)throw new Error('Icon unavailable');const data=await response.json();
       let icon='';try{const u=new URL(data.icon);if(u.protocol==='https:' && !u.username && !u.password)icon=u.href;}catch{}
       if(typeof data.icon==='string' && data.icon.startsWith('/portal-icons/') && Object.values(officialSiteIcons).includes(data.icon))icon=data.icon;

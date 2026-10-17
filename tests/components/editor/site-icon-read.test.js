@@ -22,3 +22,11 @@ it('explains HTTP 403 as a refused server request, not a site without an icon',a
   expect(wrapper.vm.discoveryNote).toContain('已保留原图标');
   expect(wrapper.emitted('update:modelValue')).toBeUndefined();wrapper.unmount();
 });
+
+it('explains runtime metadata limitations without replacing the existing icon',async()=>{
+  discoverSiteIcon.mockResolvedValue({icon:'https://site.example/favicon.ico',source:'unavailable',verified:false,reason:'dynamic-metadata'});
+  const wrapper=shallowMount(IconPicker,{props:{modelValue:'auto',url:'https://site.example'}});
+  await wrapper.vm.readWebsiteIcon();
+  expect(wrapper.vm.discoveryNote).toContain('动态');expect(wrapper.vm.discoveryNote).toContain('已保留原图标');
+  expect(wrapper.emitted('update:modelValue')).toBeUndefined();wrapper.unmount();
+});

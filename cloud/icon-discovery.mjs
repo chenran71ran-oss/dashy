@@ -82,19 +82,40 @@ export function extractIconLinks(html) {
 }
 async function parseLinks(html) {
   if(typeof HTMLRewriter==='undefined') {
+    const shell=html.split(/<body[\s>]/i)[0].replace(/<!--[\s\S]*?-->|<(style|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'').replace(/(<script\b[^>]*>)[\s\S]*?<\/script\s*>/gi,'$1</script>');
+    const scripts=[...shell.matchAll(/<script\b[^>]*>/gi)].map(m=>attrs(m[0])).filter(a=>a.src);
     const head=html.split(/<body[\s>]/i)[0].replace(/<!--[\s\S]*?-->|<(script|style|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
     const base=head.match(/<base\b[^>]*>/i);
     const product=[...head.matchAll(/<meta\b[^>]*>/gi)].map(m=>attrs(m[0])).find(a=>/^(keywords|generator)$/i.test(a.name||'') && /\bkomari(?:\b|-theme)/i.test(a.content||''))?'komari':'';
-    return {product,base:base?attrs(base[0]).href:'',entries:[...head.matchAll(/<link\b[^>]*>/gi)].map(m=>attrs(m[0])).filter(a=>a.href && /(^|\s)(icon|apple-touch-icon|manifest)(\s|$)/i.test(a.rel||''))};
+    return {product,scripts,base:base?attrs(base[0]).href:'',entries:[...head.matchAll(/<link\b[^>]*>/gi)].map(m=>attrs(m[0])).filter(a=>a.href && /(^|\s)(icon|apple-touch-icon|manifest)(\s|$)/i.test(a.rel||''))};
   }
-  const entries=[];
+  const entries=[],scripts=[];
   let base='',product='';
   const rewriter=new HTMLRewriter().on('head link', {element(e){
     const rel=e.getAttribute('rel')||'', href=e.getAttribute('href');
     if(href && /(^|\s)(icon|apple-touch-icon|manifest)(\s|$)/i.test(rel))entries.push({rel,href,type:e.getAttribute('type')||'',sizes:e.getAttribute('sizes')||''});
-  }}).on('head base',{element(e){base ||= e.getAttribute('href')||'';}})
+  }}).on('head script',{element(e){const src=e.getAttribute('src');if(src)scripts.push({src,type:e.getAttribute('type')||''});}})
+    .on('head base',{element(e){base ||= e.getAttribute('href')||'';}})
     .on('head meta',{element(e){if(/^(keywords|generator)$/i.test(e.getAttribute('name')||'') && /\bkomari(?:\b|-theme)/i.test(e.getAttribute('content')||''))product='komari';}});
-  await rewriter.transform(new Response(html,{headers:{'content-type':'text/html'}})).text();return {base,entries,product};
+  await rewriter.transform(new Response(html,{headers:{'content-type':'text/html'}})).text();return {base,entries,product,scripts};
+}
+function isShopShell(scripts,base,target) {
+  // Jing Shop injects link[rel=icon] from its public system configuration at runtime.
+  // Recognize its own entry bundle, never arbitrary third-party scripts or domains.
+  return scripts.some(script=>{
+    try {const url=publicIconUrl(script.src,base);return script.type==='module' && url.origin===target.origin && /^\/package\/shop\/assets\/index\.[\w-]+\.js$/.test(url.pathname);}
+    catch {return false;}
+  });
+}
+async function shopConfigIcon(target,fetcher,signal) {
+  const endpoint=new URL('/shopApi/system/config',target);
+  await checkDns(endpoint.hostname,fetcher,signal,fetcher===fetch);
+  // This is a public metadata read; no login, POST, script execution or redirects.
+  const response=await fetcher(endpoint.href,{method:'GET',redirect:'manual',credentials:'omit',signal,headers:{Accept:'application/json'}});
+  if(!response.ok || !/\bjson\b/i.test(response.headers.get('content-type')||'')){await response.body?.cancel();return '';}
+  const data=JSON.parse(await limitedHtml(response));
+  const icon=data?.code===1?data?.data?.website?.favicon:'';
+  return typeof icon==='string' && icon.trim()?publicIconUrl(icon,target).href:'';
 }
 async function limitedHtml(response) {
   const reader=response.body?.getReader(); if(!reader)return '';
@@ -105,7 +126,7 @@ async function limitedHtml(response) {
 }
 export async function discoverIcon(value, fetcher=fetch, {page=false}={}) {
   const root=publicIconUrl(value); if(!page)root.pathname='/';root.search='';
-  const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),6500);
+  const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),page?20000:6500);
   let stage='dns';
   try {
     // Verified bundled brand assets do not depend on remote metadata availability.
@@ -128,10 +149,11 @@ export async function discoverIcon(value, fetcher=fetch, {page=false}={}) {
       // Public redirects may select a locale path. Queries never come from the user's bookmark.
       target=publicIconUrl(location,target);target.search='';
     }
-    let reason='', candidates=[];
+    let reason='', candidates=[],hasScripts=false;
     if(response.ok && (response.headers.get('content-type')||'').toLowerCase().includes('html')) {
       stage='html';
       const metadata=await parseLinks(await limitedHtml(response));
+      hasScripts=metadata.scripts.length>0;
       let base=target;try { if(metadata.base)base=publicIconUrl(metadata.base,target); }catch{}
       const links=metadata.entries.filter(e=>!/(^|\s)manifest(\s|$)/i.test(e.rel));
       candidates=links.map(entry=>{
@@ -154,6 +176,12 @@ export async function discoverIcon(value, fetcher=fetch, {page=false}={}) {
       }
       const application=officialApplicationIcons[metadata.product];
       if(application)candidates.push({icon:application,source:'catalog'});
+      if(!candidates.length && isShopShell(metadata.scripts,base,target)) {
+        try {
+          const icon=await shopConfigIcon(target,fetcher,controller.signal);
+          if(icon)candidates.push({icon,source:'site-config'});
+        }catch(error){if(controller.signal.aborted)throw error;}
+      }
     } else {
       reason=response.ok?'not-html':`http-${response.status}`;
       await response.body?.cancel();
@@ -171,7 +199,7 @@ export async function discoverIcon(value, fetcher=fetch, {page=false}={}) {
         return {icon:candidate.icon,source:candidate.source,verified:true,...(reason?{reason}:{})};
       } catch(error) { if(controller.signal.aborted)throw error; }
     }
-    return {icon:'',source:'unavailable',verified:false,reason:reason||'no-icon'};
+    return {icon:'',source:'unavailable',verified:false,reason:reason||(hasScripts?'dynamic-metadata':'no-icon')};
   } catch(error) { error.iconReason=controller.signal.aborted?'timeout':stage;throw error; }
   finally { clearTimeout(timer); }
 }

@@ -167,3 +167,53 @@ test('identified Komari metadata falls back to its official project logo, not a 
   });
   assert.equal(result.source,'catalog');assert.match(result.icon,/komari-monitor\/komari-web/);assert.equal(result.verified,true);
 });
+
+const shopShell = '<head><script type="module" src="/package/shop/assets/index.3fc5a55f.js"></script></head><body><div id="app"></div></body>';
+test('read runtime favicon from an identified shop app public config, without a domain-specific icon',async()=>{
+  const calls=[];
+  const result=await discoverIcon('https://store.example/shop/seller?token=secret#session',async(url,options)=>{
+    calls.push({url,options});
+    if(url.includes('/dns-query?'))return dns();
+    if(url==='https://store.example/shop/seller')return new Response(shopShell,{headers:{'content-type':'text/html'}});
+    if(url==='https://store.example/shopApi/system/config')return Response.json({code:1,data:{website:{favicon:'https://cdn.example/real-brand.jpg'}}});
+    if(url==='https://cdn.example/real-brand.jpg')return new Response(new Uint8Array([255,216,255,224]),{headers:{'content-type':'image/jpeg'}});
+    return new Response('',{status:404});
+  },{page:true});
+  assert.deepEqual(result,{icon:'https://cdn.example/real-brand.jpg',source:'site-config',verified:true});
+  const config=calls.find(c=>c.url.endsWith('/shopApi/system/config'));
+  assert.equal(config.options.method,'GET');assert.equal(config.options.credentials,'omit');
+  assert.ok(calls.every(c=>!c.url.includes('secret')&&!c.url.includes('#session')));
+});
+test('an ordinary app or third-party script must not trigger shop configuration probes',async()=>{
+  for(const script of ['/assets/app.js','https://external.example/package/shop/assets/index.123.js']) {
+    const calls=[];
+    const result=await discoverIcon('https://ordinary.example/',async(url,options)=>{
+      calls.push(url);if(url.includes('/dns-query?'))return dns();
+      if(options.headers.Accept==='text/html')return new Response(`<head><script type="module" src="${script}"></script></head>`,{headers:{'content-type':'text/html'}});
+      return new Response('',{status:404});
+    });
+    assert.equal(result.verified,false);assert.equal(result.reason,'dynamic-metadata');
+    assert.ok(!calls.some(c=>c.includes('/shopApi/')));
+  }
+});
+test('valid HTML icon declarations take precedence over a runtime config probe',async()=>{
+  const calls=[];
+  const result=await discoverIcon('https://declared-shop.example/',async(url,options)=>{
+    calls.push(url);if(url.includes('/dns-query?'))return dns();
+    if(options.headers.Accept==='text/html')return new Response(shopShell.replace('</head>','<link rel="icon" href="/declared.png"></head>'),{headers:{'content-type':'text/html'}});
+    return url.endsWith('/declared.png')?image():new Response('',{status:404});
+  });
+  assert.equal(result.icon,'https://declared-shop.example/declared.png');assert.ok(!calls.some(c=>c.includes('/shopApi/')));
+});
+test('runtime configuration cannot introduce private icons or follow unvalidated redirects',async()=>{
+  for(const response of [()=>Response.json({code:1,data:{website:{favicon:'https://127.0.0.1/private.png'}}}),()=>new Response('',{status:302,headers:{location:'https://127.0.0.1/private'}}),()=>new Response('<html>Login</html>',{headers:{'content-type':'text/html'}})]) {
+    const calls=[];
+    const result=await discoverIcon('https://unsafe-config.example/',async(url,options)=>{
+      calls.push(url);if(url.includes('/dns-query?'))return dns();
+      if(url.endsWith('/shopApi/system/config'))return response();
+      if(options.headers.Accept==='text/html')return new Response(shopShell,{headers:{'content-type':'text/html'}});
+      return new Response('',{status:404});
+    });
+    assert.equal(result.verified,false);assert.ok(calls.every(c=>!c.includes('127.0.0.1')));
+  }
+});
