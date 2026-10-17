@@ -61,6 +61,10 @@ export default {
       immediate: true,
       handler(t) { applyTheme(t, this.appConfig); },
     },
+    'appConfig.customColors': {
+      deep: true,
+      handler() { applyTheme(this.effectiveTheme,this.appConfig); },
+    },
     /* Keep i18n in sync with the active page's language (incl. sub-page overrides) */
     'appConfig.language': {
       immediate: true,

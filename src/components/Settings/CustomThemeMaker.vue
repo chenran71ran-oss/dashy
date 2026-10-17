@@ -55,6 +55,8 @@ import { localStorageKeys, mainCssVars } from '@/utils/config/defaults';
 import Button from '@/components/FormElements/Button';
 import SaveIcon from '@/assets/interface-icons/save-config.svg';
 import CancelIcon from '@/assets/interface-icons/config-cancel.svg';
+import { saveSharedTheme } from '@/utils/SharedTheme';
+import Keys from '@/utils/StoreMutations';
 
 export default {
   name: 'ThemeMaker',
@@ -67,6 +69,7 @@ export default {
     return {
       customColors: this.makeInitialData(mainCssVars),
       showingAllVars: false,
+      saving: false,
     };
   },
   props: {
@@ -83,7 +86,15 @@ export default {
       document.documentElement.style.setProperty(`--${variable}`, value);
     },
     /* Persist new color settings to localStorage and notify user */
-    saveChanges() {
+    async saveChanges() {
+      if(this.saving)return;
+      if(window.__KH_CLOUD_AUTH) {
+        this.saving=true;
+        try {this.$store.commit(Keys.SET_SHARED_THEME,await saveSharedTheme(this.themeToEdit,{colors:this.customColors}));}
+        catch(error){this.$toast(error.message);return;}
+        finally{this.saving=false;}
+        this.$toast('主题配色已同步到云端');this.$emit('closeThemeConfigurator');return;
+      }
       let priorSettings = {};
       try { priorSettings = JSON.parse(localStorage[localStorageKeys.CUSTOM_COLORS] || '{}'); }
       catch { /* ignore corrupt data */ }
@@ -102,7 +113,15 @@ export default {
       this.$emit('closeThemeConfigurator');
     },
     /* Resets styles, and removes data for current theme from local storage */
-    resetAndSave() {
+    async resetAndSave() {
+      if(this.saving)return;
+      if(window.__KH_CLOUD_AUTH) {
+        this.saving=true;
+        try {this.$store.commit(Keys.SET_SHARED_THEME,await saveSharedTheme(this.themeToEdit,{colors:null}));}
+        catch(error){this.$toast(error.message);return;}
+        finally{this.saving=false;}
+        this.resetUnsavedColors();this.$toast('已恢复主题默认配色并同步到云端');return;
+      }
       let priorSettings = {};
       try { priorSettings = JSON.parse(localStorage[localStorageKeys.CUSTOM_COLORS] || '{}'); }
       catch { /* ignore corrupt data */ }

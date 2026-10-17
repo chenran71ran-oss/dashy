@@ -1,6 +1,6 @@
 import { themeLabels } from '../src/utils/ThemeCatalog.js';
 const themes=new Set(Object.keys(themeLabels));
-export const loginColorKeys=Object.freeze(['primary','background','background-darker','foreground','heading-text-color','item-text-color','widget-text-color','widget-background-color','interactive-editor-background','interactive-editor-color','error','danger']);
+export const loginColorKeys=Object.freeze(['item-background','login-form-background','primary','background','background-darker','foreground','heading-text-color','item-text-color','widget-text-color','widget-background-color','interactive-editor-background','interactive-editor-color','error','danger']);
 const color=value=>typeof value==='string' && value.length<=100 && (/^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/i.test(value) || /^(?:rgb|rgba|hsl|hsla|oklch|oklab)\([\d.,%+\- /deg]+\)$/i.test(value) || /^(?:transparent|black|white|red|green|blue|orange|purple|pink|yellow|cyan|teal|navy|gray|grey|rebeccapurple)$/i.test(value));
 export function publicLoginAppearance(config={}) {
   const result={theme:themes.has(config.theme)?config.theme:'nord-frost'};

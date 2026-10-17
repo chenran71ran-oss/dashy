@@ -6,7 +6,6 @@
         <p class="login-wordmark">PERSONAL PORTAL</p>
         <h1 id="portal-title">Home Lab<span aria-hidden="true">.</span></h1>
         <p class="login-intro">你的站点、工具与灵感，<br class="desktop-break">从这里开始。</p>
-        <div class="login-theme-note"><span class="theme-swatch" aria-hidden="true"></span><span>{{ themeLabel(theme) }}<small>与总站主题同步</small></span></div>
       </section>
       <form class="cloud-login-panel" @submit.prevent="login" aria-labelledby="login-title" :aria-busy="busy">
         <div class="login-form-heading"><span class="login-kicker">WELCOME BACK</span><h2 id="login-title">进入你的空间</h2><p>使用管理员密码登录 Home Lab。</p></div>
@@ -28,31 +27,32 @@
 <script setup>
 import { ref,onMounted,onBeforeUnmount } from 'vue';
 import MechLogo from './components/PageStrcture/MechLogo.vue';
-import { themeLabel } from './utils/ThemeCatalog';
 import { resolveLoginAppearance,applyLoginAppearance } from './utils/LoginAppearance';
 const emit=defineEmits(['authenticated']);
 const password=ref(''),busy=ref(false),error=ref(''),revealPassword=ref(false);
 const theme=ref('nord-frost'),themeStyles=ref({});
 let savedAppearance={},alive=true;
-const preference=window.matchMedia('(prefers-color-scheme: dark)');
-const controller=new AbortController();
+let controller,refreshTimer;
 function syncAppearance(){
-  let storage;try{storage=window.localStorage;}catch{}
-  const appearance=resolveLoginAppearance(savedAppearance,storage,preference.matches);
+  const appearance=resolveLoginAppearance(savedAppearance);
   theme.value=appearance.theme;themeStyles.value=applyLoginAppearance(appearance);
 }
-function storageChanged(event){if(['theme','customColors',null].includes(event.key))syncAppearance();}
 syncAppearance();
-onMounted(async()=>{
-  preference.addEventListener?.('change',syncAppearance);window.addEventListener('storage',storageChanged);
-  const timer=setTimeout(()=>controller.abort(),3000);
+async function refreshAppearance(){
+  if(document.hidden || controller)return;
+  controller=new AbortController();
+  const timer=setTimeout(()=>controller?.abort(),3000);
   try{
     const response=await fetch('/api/login-appearance',{credentials:'same-origin',cache:'no-store',signal:controller.signal});
     if(response.ok && alive){savedAppearance=await response.json();if(alive)syncAppearance();}
-  }catch{/* Local appearance and login remain available while metadata is offline. */}
-  finally{clearTimeout(timer);}
+  }catch{/* Keep the last successful appearance while offline. */}
+  finally{clearTimeout(timer);controller=undefined;}
+}
+onMounted(()=>{
+  refreshAppearance();refreshTimer=setInterval(refreshAppearance,15000);
+  window.addEventListener('focus',refreshAppearance);document.addEventListener('visibilitychange',refreshAppearance);
 });
-onBeforeUnmount(()=>{alive=false;controller.abort();preference.removeEventListener?.('change',syncAppearance);window.removeEventListener('storage',storageChanged);});
+onBeforeUnmount(()=>{alive=false;controller?.abort();clearInterval(refreshTimer);window.removeEventListener('focus',refreshAppearance);document.removeEventListener('visibilitychange',refreshAppearance);});
 async function login(){
   if(busy.value)return;
   busy.value=true;error.value='';
@@ -65,15 +65,15 @@ async function login(){
 }
 </script>
 <style scoped>
-.cloud-login{position:fixed;inset:0;overflow:auto;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100dvh;padding:48px 24px 28px;background:var(--login-page,#eceff4);color:var(--login-page-text,#2e3440);font-family:var(--font-body,system-ui),"Microsoft YaHei",sans-serif;color-scheme:light dark}
+.cloud-login{position:fixed;inset:0;overflow:auto;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100dvh;padding:48px 24px 28px;background:var(--login-page,#eceff4);color:var(--login-page-text,#2e3440);font-family:var(--login-font,system-ui,sans-serif);color-scheme:light dark;isolation:isolate}.cloud-login::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 5% 12%,color-mix(in srgb,var(--login-accent) var(--login-glow-start),transparent),transparent 58%),radial-gradient(ellipse at 95% 90%,color-mix(in srgb,var(--login-accent) var(--login-glow-end),transparent),transparent 55%)}
 .login-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,384px);align-items:center;gap:64px;width:min(100%,880px);margin:auto 0}
-.login-identity{min-width:0;padding:20px 0}.login-mech{width:120px;height:120px;margin-bottom:28px}.login-wordmark{font-size:11px;font-weight:700;letter-spacing:.18em;line-height:1.5;margin:0 0 12px}.login-identity h1{font-family:var(--font-headings,inherit);font-size:56px;line-height:1.12;letter-spacing:-.04em;font-weight:750;margin:0 0 20px}.login-identity h1 span{color:var(--login-focus)}.login-intro{font-size:18px;line-height:1.75;margin:0;max-width:28ch}.login-theme-note{display:flex;align-items:center;gap:12px;margin-top:40px;font-size:13px;line-height:1.5}.theme-swatch{width:24px;height:24px;border-radius:4px;background:var(--login-accent);outline:1px solid color-mix(in srgb,currentColor 25%,transparent);outline-offset:3px}.login-theme-note small{display:block;font-size:11px;margin-top:1px}
-.cloud-login-panel{box-sizing:border-box;min-width:0;width:100%;padding:36px 32px 28px;background:var(--login-panel);color:var(--login-text);border:1px solid color-mix(in srgb,var(--login-text) 18%,transparent);border-radius:12px;box-shadow:0 4px 0 color-mix(in srgb,var(--login-focus) 38%,transparent)}
+.login-identity{min-width:0;padding:20px 0}.login-mech{width:120px;height:120px;margin-bottom:28px}.login-wordmark{font-size:11px;font-weight:700;letter-spacing:.18em;line-height:1.5;margin:0 0 12px}.login-identity h1{font-family:var(--font-headings,inherit);font-size:56px;line-height:1.12;letter-spacing:-.04em;font-weight:750;margin:0 0 20px}.login-identity h1 span{color:var(--login-focus)}.login-intro{font-size:18px;line-height:1.75;margin:0;max-width:28ch}
+.cloud-login-panel{box-sizing:border-box;min-width:0;width:100%;padding:36px 32px 28px;background:var(--login-panel);color:var(--login-text);border:1px solid color-mix(in srgb,var(--login-accent) 24%,var(--login-panel));border-top:3px solid var(--login-accent);border-radius:16px;box-shadow:0 18px 60px color-mix(in srgb,var(--login-page-text) 10%,transparent)}
 .login-kicker{font-size:10px;font-weight:700;letter-spacing:.15em;color:var(--login-muted)}.login-form-heading h2{font-size:25px;line-height:1.4;margin:10px 0 8px;letter-spacing:-.025em}.login-form-heading p{font-size:14px;line-height:1.7;margin:0;color:var(--login-muted)}
-.cloud-login label{display:block;font-size:13px;font-weight:650;margin:32px 0 10px}.login-password-field{position:relative;min-width:0}.cloud-login input{box-sizing:border-box;display:block;width:100%;min-height:50px;padding:12px 52px 12px 14px;background:var(--login-panel);color:var(--login-text);border:1px solid color-mix(in srgb,var(--login-text) 45%,transparent);border-radius:6px;font:inherit;font-size:16px}.cloud-login input::placeholder{color:var(--login-muted)}.cloud-login input:focus{outline:2px solid var(--login-focus);outline-offset:-1px}.cloud-login input[aria-invalid=true]{border-color:var(--login-error)}
-.password-reveal{position:absolute;right:2px;top:2px;display:grid;place-items:center;width:46px;height:46px;border:0;border-radius:4px;background:transparent;color:var(--login-muted);cursor:pointer}.password-reveal svg{width:20px;height:20px}.password-reveal:hover{background:color-mix(in srgb,var(--login-text) 8%,transparent)}
+.cloud-login label{display:block;font-size:13px;font-weight:650;margin:32px 0 10px}.login-password-field{position:relative;min-width:0}.cloud-login input{box-sizing:border-box;display:block;width:100%;min-height:50px;padding:12px 52px 12px 14px;background:var(--login-field);color:var(--login-field-text);border:1px solid color-mix(in srgb,var(--login-field-text) 35%,transparent);border-radius:6px;font:inherit;font-size:16px}.cloud-login input::placeholder{color:var(--login-field-muted);opacity:1}.cloud-login input:focus{outline:2px solid var(--login-focus);outline-offset:-1px}.cloud-login input[aria-invalid=true]{border-color:var(--login-error)}
+.password-reveal{position:absolute;right:2px;top:2px;display:grid;place-items:center;width:46px;height:46px;border:0;border-radius:4px;background:transparent;color:var(--login-field-muted);cursor:pointer}.password-reveal svg{width:20px;height:20px}.password-reveal:hover{background:color-mix(in srgb,var(--login-text) 8%,transparent)}
 .cloud-error{min-height:24px;font-size:13px;line-height:1.6;color:var(--login-error);margin:8px 0 10px;overflow-wrap:anywhere}.login-submit{display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;width:100%;min-height:50px;padding:12px 16px;border:1px solid var(--login-focus);border-radius:6px;background:var(--login-accent);color:var(--login-on-accent);font:inherit;font-size:15px;font-weight:700;cursor:pointer}.login-submit:hover{filter:brightness(.96)}.cloud-login button:focus-visible{outline:2px solid var(--login-focus);outline-offset:3px}.cloud-login button:disabled{opacity:.65;cursor:wait}.login-helper{font-size:12px;line-height:1.7;margin:18px 0 0;color:var(--login-muted)}.login-footer{font-size:11px;line-height:1.6;text-align:center;letter-spacing:.06em;margin:36px 0 0;flex-shrink:0}.login-footer span{margin:0 10px}
-@media(max-width:700px){.cloud-login{padding:24px 20px 20px;justify-content:flex-start}.login-shell{grid-template-columns:minmax(0,384px);justify-content:center;gap:24px;margin:auto 0}.login-identity{display:grid;grid-template-columns:64px minmax(0,1fr);column-gap:18px;padding:0;align-items:center}.login-mech{width:64px;height:64px;margin:0;grid-row:1/4}.login-wordmark{font-size:10px;margin:0 0 4px}.login-identity h1{font-size:32px;line-height:1.1;margin:0}.login-intro{font-size:16px;line-height:1.6;grid-column:1/-1;margin-top:16px;max-width:none}.desktop-break{display:none}.login-theme-note{grid-column:1/-1;margin-top:16px;font-size:13px}.login-theme-note small{display:inline;margin-left:10px;font-size:12px}.theme-swatch{width:16px;height:16px;outline-offset:2px}.cloud-login-panel{padding:26px 24px 24px}.login-form-heading h2{font-size:23px}.login-form-heading p{font-size:16px}.cloud-login label{font-size:14px;margin-top:26px}.login-helper{font-size:13px}.login-footer{margin-top:24px;font-size:11px}}
-@media(max-width:360px){.cloud-login{padding:20px 16px}.cloud-login-panel{padding:24px 20px}.login-theme-note small{display:block;margin-left:0}.login-intro{font-size:16px}}
+@media(max-width:700px){.cloud-login{padding:24px 20px 20px;justify-content:flex-start}.login-shell{grid-template-columns:minmax(0,384px);justify-content:center;gap:24px;margin:auto 0}.login-identity{display:grid;grid-template-columns:64px minmax(0,1fr);column-gap:18px;padding:0;align-items:center}.login-mech{width:64px;height:64px;margin:0;grid-row:1/4}.login-wordmark{font-size:10px;margin:0 0 4px}.login-identity h1{font-size:32px;line-height:1.1;margin:0}.login-intro{font-size:16px;line-height:1.6;grid-column:1/-1;margin-top:16px;max-width:none}.desktop-break{display:none}.cloud-login-panel{padding:26px 24px 24px}.login-form-heading h2{font-size:23px}.login-form-heading p{font-size:16px}.cloud-login label{font-size:14px;margin-top:26px}.login-helper{font-size:13px}.login-footer{margin-top:24px;font-size:11px}}
+@media(max-width:360px){.cloud-login{padding:20px 16px}.cloud-login-panel{padding:24px 20px}.login-intro{font-size:16px}}
 @media(prefers-reduced-motion:no-preference){.login-submit,.password-reveal{transition:background-color .15s,filter .15s}}
 </style>

@@ -35,7 +35,7 @@ export default class ConfigAccumulator {
     }
     // Fill in defaults if anything missing
     let usersAppConfig = { ...defaultAppConfig };
-    if (localStorage[localStorageKeys.APP_CONFIG]) {
+    if (!window.__KH_CLOUD_AUTH && localStorage[localStorageKeys.APP_CONFIG]) {
       try { usersAppConfig = JSON.parse(localStorage[localStorageKeys.APP_CONFIG]); }
       catch { ErrorHandler('Malformed app config in local storage'); }
     } else if (Object.keys(appConfigFile).length > 0) {
@@ -48,7 +48,7 @@ export default class ConfigAccumulator {
     usersAppConfig.iconSize = localStorage[localStorageKeys.ICON_SIZE]
       || appConfigFile.iconSize
       || defaultIconSize;
-    usersAppConfig.theme = localStorage[localStorageKeys.THEME]
+    usersAppConfig.theme = (!window.__KH_CLOUD_AUTH && localStorage[localStorageKeys.THEME])
       || appConfigFile.theme
       || defaultTheme;
     // Don't let users modify users locally

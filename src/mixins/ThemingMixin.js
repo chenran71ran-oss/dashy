@@ -8,6 +8,7 @@
 import Keys from '@/utils/StoreMutations';
 import { builtInThemes } from '@/utils/config/defaults';
 import { getExternalThemes, getExtraThemeNames } from '@/utils/Theming';
+import { saveSharedTheme } from '@/utils/SharedTheme';
 
 export default {
   data: () => ({ selectedTheme: '' }),
@@ -26,8 +27,11 @@ export default {
   methods: {
     /* Called when the user picks a theme in the dropdown — store commit
      * triggers the central watcher in App.vue to apply to the DOM. */
-    themeChangedInUI() {
-      this.$store.commit(Keys.SET_THEME, this.selectedTheme);
+    async themeChangedInUI() {
+      if(window.__KH_CLOUD_AUTH && !this.$store.state.editMode) {
+        const saved=await saveSharedTheme(this.selectedTheme);
+        this.$store.commit(Keys.SET_SHARED_THEME,saved);
+      } else this.$store.commit(Keys.SET_THEME, this.selectedTheme);
     },
   },
 };
