@@ -78,7 +78,7 @@ const attrs = tag => Object.fromEntries([...tag.matchAll(/([\w:-]+)\s*=\s*(?:"([
 export function extractIconLinks(html) {
   // Node test fallback. Production uses the Worker's HTMLRewriter below.
   const head=html.split(/<body[\s>]/i)[0].replace(/<!--[\s\S]*?-->|<(script|style|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
-  return [...head.matchAll(/<link\b[^>]*>/gi)].map(m=>attrs(m[0])).filter(a=>a.href && /(^|\s)(icon|apple-touch-icon)(\s|$)/i.test(a.rel||''));
+  return [...head.matchAll(/<link\b[^>]*>/gi)].map(m=>attrs(m[0])).filter(a=>a.href && /(^|\s)(icon|apple-touch-icon(?:-precomposed)?)(\s|$)/i.test(a.rel||''));
 }
 async function parseLinks(html) {
   if(typeof HTMLRewriter==='undefined') {
@@ -87,13 +87,13 @@ async function parseLinks(html) {
     const head=html.split(/<body[\s>]/i)[0].replace(/<!--[\s\S]*?-->|<(script|style|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
     const base=head.match(/<base\b[^>]*>/i);
     const product=[...head.matchAll(/<meta\b[^>]*>/gi)].map(m=>attrs(m[0])).find(a=>/^(keywords|generator)$/i.test(a.name||'') && /\bkomari(?:\b|-theme)/i.test(a.content||''))?'komari':'';
-    return {product,scripts,base:base?attrs(base[0]).href:'',entries:[...head.matchAll(/<link\b[^>]*>/gi)].map(m=>attrs(m[0])).filter(a=>a.href && /(^|\s)(icon|apple-touch-icon|manifest)(\s|$)/i.test(a.rel||''))};
+    return {product,scripts,base:base?attrs(base[0]).href:'',entries:[...head.matchAll(/<link\b[^>]*>/gi)].map(m=>attrs(m[0])).filter(a=>a.href && /(^|\s)(icon|apple-touch-icon(?:-precomposed)?|manifest)(\s|$)/i.test(a.rel||''))};
   }
   const entries=[],scripts=[];
   let base='',product='';
   const rewriter=new HTMLRewriter().on('head link', {element(e){
     const rel=e.getAttribute('rel')||'', href=e.getAttribute('href');
-    if(href && /(^|\s)(icon|apple-touch-icon|manifest)(\s|$)/i.test(rel))entries.push({rel,href,type:e.getAttribute('type')||'',sizes:e.getAttribute('sizes')||''});
+    if(href && /(^|\s)(icon|apple-touch-icon(?:-precomposed)?|manifest)(\s|$)/i.test(rel))entries.push({rel,href,type:e.getAttribute('type')||'',sizes:e.getAttribute('sizes')||''});
   }}).on('head script',{element(e){const src=e.getAttribute('src');if(src)scripts.push({src,type:e.getAttribute('type')||''});}})
     .on('head base',{element(e){base ||= e.getAttribute('href')||'';}})
     .on('head meta',{element(e){if(/^(keywords|generator)$/i.test(e.getAttribute('name')||'') && /\bkomari(?:\b|-theme)/i.test(e.getAttribute('content')||''))product='komari';}});
@@ -124,7 +124,7 @@ async function limitedHtml(response) {
   finally { await reader.cancel().catch(()=>{}); }
   const bytes=new Uint8Array(size);let at=0;for(const part of chunks){bytes.set(part,at);at+=part.length;}return new TextDecoder().decode(bytes);
 }
-export async function discoverIcon(value, fetcher=fetch, {page=false}={}) {
+export async function discoverIcon(value, fetcher=fetch, {page=false,onImage}={}) {
   const root=publicIconUrl(value); if(!page)root.pathname='/';root.search='';
   const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),page?20000:6500);
   let stage='dns';
@@ -132,9 +132,9 @@ export async function discoverIcon(value, fetcher=fetch, {page=false}={}) {
     // Verified bundled brand assets do not depend on remote metadata availability.
     const bundled=officialSiteIcons[root.hostname] || (root.hostname==='www.nodeseek.com'?officialSiteIcons['nodeseek.com']:'');
     if(bundled?.startsWith('/portal-icons/'))return {icon:bundled,source:'catalog',verified:true};
-    const consoleIcon=(root.hostname==='console.aws.amazon.com'||root.hostname.endsWith('.console.aws.amazon.com'))?officialSiteIcons['console.aws.amazon.com']:(root.hostname==='nodeseek.com'||root.hostname==='www.nodeseek.com')?officialSiteIcons['nodeseek.com']:'';
+    const consoleIcon=(root.hostname==='console.aws.amazon.com'||root.hostname.endsWith('.console.aws.amazon.com'))?officialSiteIcons['console.aws.amazon.com']:officialSiteIcons[root.hostname]||'';
     if(consoleIcon) {
-      try {await fetchPublicIcon(consoleIcon,fetcher,{signal:controller.signal});return {icon:consoleIcon,source:'catalog',verified:true};}
+      try {const asset=await fetchPublicIcon(consoleIcon,fetcher,{signal:controller.signal});try{await onImage?.(consoleIcon,asset);}catch{}return {icon:consoleIcon,source:'catalog',verified:true};}
       catch(error){if(controller.signal.aborted)throw error;}
     }
     let target=root, response;
@@ -150,6 +150,19 @@ export async function discoverIcon(value, fetcher=fetch, {page=false}={}) {
       target=publicIconUrl(location,target);target.search='';
     }
     let reason='', candidates=[],hasScripts=false;
+    const seen=new Set();
+    const probe=async entries=>{
+      for(const candidate of entries) {
+        if(seen.has(candidate.icon))continue;seen.add(candidate.icon);
+        try {
+          const asset=await fetchPublicIcon(candidate.icon,fetcher,{signal:controller.signal});
+          // Reuse these exact bytes for the card; a cache failure must not discard a valid image.
+          try {await onImage?.(candidate.icon,asset);}catch{}
+          return {icon:candidate.icon,source:candidate.source,verified:true,...(reason?{reason}:{})};
+        }catch(error){if(controller.signal.aborted)throw error;}
+      }
+      return null;
+    };
     if(response.ok && (response.headers.get('content-type')||'').toLowerCase().includes('html')) {
       stage='html';
       const metadata=await parseLinks(await limitedHtml(response));
@@ -161,6 +174,8 @@ export async function discoverIcon(value, fetcher=fetch, {page=false}={}) {
           score:(/(^|\s)icon(\s|$)/i.test(entry.rel)?300:0)+(/svg/i.test(entry.type||url.pathname)?128:0)+Math.min(parseInt(entry.sizes)||0,192)}; }
         catch { return null; }
       }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,5);
+      // Optional manifest/config requests must not delay a working declared icon.
+      stage='image';const declared=await probe(candidates);if(declared)return declared;stage='html';
       // Apps may expose their only real logo through the PWA manifest.
       for(const entry of metadata.entries.filter(e=>/(^|\s)manifest(\s|$)/i.test(e.rel)).slice(0,1)) {
         try {
@@ -176,7 +191,7 @@ export async function discoverIcon(value, fetcher=fetch, {page=false}={}) {
       }
       const application=officialApplicationIcons[metadata.product];
       if(application)candidates.push({icon:application,source:'catalog'});
-      if(!candidates.length && isShopShell(metadata.scripts,base,target)) {
+      if(isShopShell(metadata.scripts,base,target)) {
         try {
           const icon=await shopConfigIcon(target,fetcher,controller.signal);
           if(icon)candidates.push({icon,source:'site-config'});
@@ -191,14 +206,7 @@ export async function discoverIcon(value, fetcher=fetch, {page=false}={}) {
     if(page)candidates.push({icon:new URL('favicon.ico',target).href,source:'favicon'});
     candidates.push({icon:`${target.origin}/favicon.ico`,source:'favicon'});
     stage='image';
-    const seen=new Set();
-    for(const candidate of candidates) {
-      if(seen.has(candidate.icon))continue;seen.add(candidate.icon);
-      try {
-        await fetchPublicIcon(candidate.icon,fetcher,{signal:controller.signal});
-        return {icon:candidate.icon,source:candidate.source,verified:true,...(reason?{reason}:{})};
-      } catch(error) { if(controller.signal.aborted)throw error; }
-    }
+    const result=await probe(candidates);if(result)return result;
     return {icon:'',source:'unavailable',verified:false,reason:reason||(hasScripts?'dynamic-metadata':'no-icon')};
   } catch(error) { error.iconReason=controller.signal.aborted?'timeout':stage;throw error; }
   finally { clearTimeout(timer); }

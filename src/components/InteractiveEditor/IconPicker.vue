@@ -7,7 +7,7 @@
       <button type="button" @click="toggle" :aria-expanded="open">{{ open ? '收起' : '选择图标' }}</button>
     </div>
     <div v-if="allowAuto" class="auto-tools">
-      <p class="picker-hint">{{ usesAutomaticIcon ? '自动：你的 QX 图库 → 网站声明图标 → favicon → 首字。预览与主页、工作台一致。' : '当前为手动图标，预览与主页、工作台一致。' }}</p>
+      <p class="picker-hint">{{ usesAutomaticIcon ? '自动：品牌图库 → 当前页面声明图标与应用清单 → favicon。首字仅为加载失败占位。' : '当前为手动图标，预览与主页、工作台一致。' }}</p>
       <button type="button" class="auto-button" @click="choose('auto')">自动匹配图标</button>
       <button type="button" class="auto-button read-site-icon" aria-label="读取网站图标" @click="readWebsiteIcon" :disabled="fetching || !url">{{ fetching ? '正在读取…' : '↻ 读取当前网站图标' }}</button>
       <p v-if="discoveryNote" class="picker-hint" role="status" :data-icon-reason="discoveryReason">{{ discoveryNote }}</p>
@@ -33,7 +33,7 @@
 <script>
 import { portalIcons, websiteIcon } from '@/utils/PortalIcons';
 import { builtinIcons, builtinIconPath, iconCategories, isColoredIcon } from '@/utils/BuiltinIcons';
-import { discoverSiteIcon } from '@/utils/SiteIcons';
+import { discoverSiteIcon, verifySiteIcon } from '@/utils/SiteIcons';
 import Icon from '@/components/LinkItems/ItemIcon.vue';
 // New manual choices must not be interpreted as the legacy emoji placeholders
 // that older Home Lab configs migrate to brand icons.
@@ -76,14 +76,20 @@ export default {
       const request=++this.discoveryRequest; this.fetching=true;this.discoveryNote='';
       const result=await discoverSiteIcon(this.url,{force:true,page:true});
       if(request!==this.discoveryRequest)return;
-      this.fetching=false;
       this.discoveryReason=result.reason||'';
+      if(result.icon && result.verified && !(await verifySiteIcon(result.icon))) {
+        if(request!==this.discoveryRequest)return;
+        this.fetching=false;this.discoveryReason='image-load';
+        this.discoveryNote='读取到图片地址，但浏览器无法显示，已保留原图标。请从图库选择或填写其他图片地址。';return;
+      }
+      if(request!==this.discoveryRequest)return;
+      this.fetching=false;
       if(result.icon && result.verified){
         this.choose(result.icon);
         this.discoveryNote=result.source==='catalog'?'已读取核实的官方图标，可在左侧预览。':'已读取并验证网站图标，可在左侧预览。';
       }
       else {
-        const problem=result.reason==='dns'?'暂无法解析网站':result.reason==='timeout'?'读取网站超时':result.reason==='public-site-required'?'仅支持公开 HTTPS 网站':result.reason==='dynamic-metadata'?'页面可能动态加载图标，未能从公开元数据读取':result.reason==='http-403'?'网站拒绝服务器读取（HTTP 403）':result.reason?.startsWith('http-')?`网站返回 HTTP ${result.reason.slice(5)}，未能读取图标`:'未找到可用的网站图标';
+        const problem=result.reason==='login-required'?'总站登录已过期，请重新登录后读取':result.reason==='dns'?'暂无法解析网站':result.reason==='timeout'?'读取网站超时':result.reason==='public-site-required'?'仅支持公开 HTTPS 网站':result.reason==='dynamic-metadata'?'页面可能动态加载图标，未能从公开元数据读取':result.reason==='http-403'?'网站拒绝服务器读取（HTTP 403）':result.reason?.startsWith('http-')?`网站返回 HTTP ${result.reason.slice(5)}，未能读取图标`:'未找到可用的网站图标';
         this.discoveryNote=`${problem}，已保留原图标。可从图库选择或填写图片地址。`;
       }
     },

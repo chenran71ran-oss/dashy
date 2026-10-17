@@ -5,6 +5,41 @@ import { discoverSiteIcon } from '../src/utils/SiteIcons.js';
 import worker from '../cloud/worker.mjs';
 const image=()=>new Response(new Uint8Array([137,80,78,71,13,10,26,10]),{headers:{'content-type':'image/png'}});
 const dns=()=>Response.json({Status:0,Answer:[{type:1,data:'8.8.8.8'}]});
+test('the image route serves the exact image verified during discovery without fetching it again',async(t)=>{
+  const values=new Map();let imageRequests=0;
+  const env={ADMIN_TOKEN:'test-only',HOME_KV:{get:async key=>values.get(key)||null,put:async(key,value)=>values.set(key,value)}};
+  const login=await worker.fetch(new Request('https://home.example/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:'test-only'})}),env);
+  const cookie=login.headers.get('set-cookie').split(';')[0];
+  t.mock.method(globalThis,'fetch',async(url,options)=>{
+    if(url.includes('/dns-query?'))return dns();
+    if(options.headers.Accept==='image/*'){imageRequests++;if(imageRequests>1)throw new Error('source no longer available');return image();}
+    return new Response('<link rel="icon" href="/icon.png">',{headers:{'content-type':'text/html'}});
+  });
+  const discovered=await worker.fetch(new Request('https://home.example/api/icon-discovery',{method:'POST',headers:{origin:'https://home.example',cookie,'content-type':'application/json'},body:JSON.stringify({origin:'https://exact-bytes.example'})}),env);
+  assert.equal((await discovered.json()).verified,true);
+  const displayed=await worker.fetch(new Request('https://home.example/api/icon-image?url='+encodeURIComponent('https://exact-bytes.example/icon.png'),{headers:{origin:'https://home.example',cookie}}),env);
+  assert.equal(displayed.status,200);assert.equal(displayed.headers.get('content-type'),'image/png');assert.equal(imageRequests,1);
+});
+test('recognize precomposed Apple icons used by Google AI Studio',async()=>{
+  const result=await discoverIcon('https://studio.example/',async(url,options)=>url.includes('/dns-query?')?dns():options.headers.Accept==='image/*'?image():new Response('<head><link rel="apple-touch-icon-precomposed" href="/studio.png" sizes="192x192"></head>',{headers:{'content-type':'text/html'}}));
+  assert.equal(result.icon,'https://studio.example/studio.png');
+});
+test('a broken optional manifest cannot prevent a valid declared favicon',async()=>{
+  let manifests=0;
+  const result=await discoverIcon('https://manifest-delay.example/',async(url,options)=>{
+    if(url.includes('/dns-query?'))return dns();
+    if(url.endsWith('/manifest.json')){manifests++;throw new Error('manifest timeout');}
+    if(options.headers.Accept==='image/*')return image();
+    return new Response('<head><link rel="icon" href="/logo.png"><link rel="manifest" href="/manifest.json"></head>',{headers:{'content-type':'text/html'}});
+  });
+  assert.equal(result.icon,'https://manifest-delay.example/logo.png');
+  assert.equal(manifests,0);
+});
+test('discovery supplies verified image bytes to the display cache',async()=>{
+  const captured=[];
+  const result=await discoverIcon('https://cache-bytes.example/',async(url,options)=>url.includes('/dns-query?')?dns():options.headers.Accept==='image/*'?image():new Response('<link rel="icon" href="/logo.png">',{headers:{'content-type':'text/html'}}),{onImage:async(url,asset)=>captured.push({url,mime:asset.mime,bytes:[...asset.bytes]})});
+  assert.equal(captured.length,1);assert.equal(captured[0].url,result.icon);assert.equal(captured[0].mime,'image/png');
+});
 test('read public homepage declarations without bookmark path/query or credentials',async()=>{
   const calls=[];
   const fetcher=async(url,options)=>{calls.push({url,options});return url.includes('/dns-query?')?dns():options?.headers?.Accept==='image/*'?image():new Response('<head><link rel="apple-touch-icon" href="/apple.png" sizes="180x180"><link rel="icon" type="image/svg+xml" href="/icons/brand.svg?v=2&amp;x=1"></head>',{headers:{'content-type':'text/html'}});};

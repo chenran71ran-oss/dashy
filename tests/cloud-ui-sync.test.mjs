@@ -5,8 +5,9 @@ import {fetchPublicIcon} from '../cloud/icon-discovery.mjs';
 const dns=()=>Response.json({Status:0,Answer:[{type:1,data:'8.8.8.8'}]});
 test('image fetching validates redirects, refuses non-images and bounds payloads',async()=>{
  const calls=[];
- const fetcher=async(url,options)=>{calls.push({url,options});if(url.includes('/dns-query?'))return dns();if(url.includes('start.example'))return new Response(null,{status:302,headers:{location:'https://cdn.example/icon.png'}});return new Response(new Uint8Array([1,2,3]),{headers:{'content-type':'image/png'}});};
- const result=await fetchPublicIcon('https://start.example/icon',fetcher);assert.equal(result.mime,'image/png');assert.deepEqual([...result.bytes],[1,2,3]);
+ const png=Uint8Array.from(Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a8R8AAAAASUVORK5CYII=","base64"));
+ const fetcher=async(url,options)=>{calls.push({url,options});if(url.includes('/dns-query?'))return dns();if(url.includes('start.example'))return new Response(null,{status:302,headers:{location:'https://cdn.example/icon.png'}});return new Response(png,{headers:{'content-type':'image/png'}});};
+ const result=await fetchPublicIcon('https://start.example/icon',fetcher);assert.equal(result.mime,'image/png');assert.deepEqual(result.bytes,png);
  assert.ok(calls.every(c=>c.options.credentials!=='include'&&!c.options.headers.Cookie&&!c.options.headers.Authorization));
  await assert.rejects(fetchPublicIcon('https://start.example/icon',async url=>url.includes('/dns-query?')?dns():new Response(null,{status:302,headers:{location:'https://127.0.0.1/icon'}})));
  await assert.rejects(fetchPublicIcon('https://cdn.example/icon',async url=>url.includes('/dns-query?')?dns():new Response('<script>alert(1)</script>',{headers:{'content-type':'text/html'}})));

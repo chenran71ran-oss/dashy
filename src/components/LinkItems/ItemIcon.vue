@@ -110,7 +110,7 @@ export default {
     async discoverAutoIcon() {
       const request=++this.iconRequest; this.discoveredIcon='';
       if(this.effectiveIcon!=='auto' || !this.url || matchPortalIcon(this.url,this.title))return;
-      const result=await discoverSiteIcon(this.url);
+      const result=await discoverSiteIcon(this.url,{page:true});
       if(request===this.iconRequest)this.discoveredIcon=result.icon;
     },
     /* Determine icon type, e.g. local or remote asset, SVG, favicon, font-awesome, etc */
