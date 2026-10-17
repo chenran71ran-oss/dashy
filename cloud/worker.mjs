@@ -6,6 +6,7 @@ import { parse as parseYaml } from 'yaml';
 import { readWeather } from './weather.mjs';
 import { discoverIcon, fetchPublicIcon, publicIconUrl } from './icon-discovery.mjs';
 import { iconCacheKey, cacheIconAsset } from './icon-cache.mjs';
+import { publicLoginAppearance } from './login-appearance.mjs';
 import { CONFIG_KEY, configPath, configKey, saveConfig, listHistory, readHistory } from './config-storage.mjs';
 import { statusCheck, pingCheck, corsProxy, backendService } from './services.mjs';
 const OLD_CONFIG_KEY = 'kenneth-home:config:v1';
@@ -171,6 +172,12 @@ export default {
       const u = new URL(req.url), method = req.method;
       if (u.protocol === 'http:' && !['localhost', '127.0.0.1', '[::1]'].includes(u.hostname)) {
         u.protocol = 'https:'; return Response.redirect(u.href, 308);
+      }
+      if (u.pathname === '/api/login-appearance' && method === 'GET') {
+        // Public presentation only; the complete configuration stays authenticated.
+        let config=DEFAULT_CONFIG;
+        try {config=await readConfig(env);}catch{}
+        return json(publicLoginAppearance(config.appConfig));
       }
       if (u.pathname === '/api/login' && method === 'POST') {
         sameOrigin(req, u);

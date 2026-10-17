@@ -1,6 +1,8 @@
 import { createApp } from 'vue';
 import CloudLogin from './CloudLogin.vue';
 import './styles/typography.scss';
+// Reuse the portal palettes before authentication.
+import './styles/login-palettes.scss';
 
 async function start() {
   let gate;
