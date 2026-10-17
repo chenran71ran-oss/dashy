@@ -5,6 +5,7 @@ import configSchema from '../src/utils/config/ConfigSchema.json' with { type: 'j
 import { parse as parseYaml } from 'yaml';
 import { readWeather } from './weather.mjs';
 import { discoverIcon, fetchPublicIcon, publicIconUrl } from './icon-discovery.mjs';
+import { iconCacheKey, cacheIconAsset } from './icon-cache.mjs';
 import { CONFIG_KEY, configPath, configKey, saveConfig, listHistory, readHistory } from './config-storage.mjs';
 import { statusCheck, pingCheck, corsProxy, backendService } from './services.mjs';
 const OLD_CONFIG_KEY = 'kenneth-home:config:v1';
@@ -231,8 +232,7 @@ export default {
         const value=u.searchParams.get('url');
         if(!value||value.length>4096)fail('图标地址无效');
         const target=publicIconUrl(value);
-        const digest=await crypto.subtle.digest('SHA-256',encoder.encode(target.href));
-        const key='kenneth-home:icon:'+base64url(digest);
+        const key=await iconCacheKey(target.href);
         const cached=await env.HOME_KV?.get(key);let data;
         if(cached)data=JSON.parse(cached);
         else {
@@ -255,7 +255,7 @@ export default {
         try {
           const page=body.page && publicIconUrl(body.page);
           if(page && page.origin!==publicIconUrl(body.origin).origin)throw new Error('Public HTTPS site required');
-          return json(await discoverIcon(page?.href||body.origin,fetch,{page:!!page}));
+          return json(await discoverIcon(page?.href||body.origin,fetch,{page:!!page,onImage:(url,asset)=>cacheIconAsset(env.HOME_KV,url,asset)}));
         }
         catch (error) { return json({ icon: '', source: 'unavailable', reason: ['dns','request','html','timeout'].includes(error.iconReason)?error.iconReason:'public-site-required' }); }
       }

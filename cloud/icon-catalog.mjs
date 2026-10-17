@@ -1,5 +1,6 @@
 // Verified public icons for sites whose homepage metadata is not always available.
 export const officialSiteIcons = Object.freeze({
+  'aistudio.google.com': 'https://www.gstatic.com/images/branding/productlogos/ai_studio/v1/web-512dp/logo_ai_studio_color_1x_web_512dp.png',
   'nodeseek.com': '/portal-icons/nodeseek.png',
   'deepseek.com': '/portal-icons/deepseek.svg',
   'www.deepseek.com': '/portal-icons/deepseek.svg',

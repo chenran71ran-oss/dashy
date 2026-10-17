@@ -14,12 +14,33 @@ export async function discoverSiteIcon(url,{force=false,page=false,fetcher=fetch
   const promise=(async()=>{
     try {
       const response=await fetcher('/api/icon-discovery',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(page?{origin,page:target.href}:{origin}),signal:AbortSignal.timeout(page?23000:8000)});
-      if(!response.ok)throw new Error('Icon unavailable');const data=await response.json();
+      if(!response.ok)return {icon:'',source:'unavailable',reason:response.status===401?'login-required':`http-${response.status}`,verified:false};const data=await response.json();
       let icon='';try{const u=new URL(data.icon);if(u.protocol==='https:' && !u.username && !u.password)icon=u.href;}catch{}
       if(typeof data.icon==='string' && data.icon.startsWith('/portal-icons/') && Object.values(officialSiteIcons).includes(data.icon))icon=data.icon;
-      return {icon:icon||websiteFavicon(url),source:icon?data.source:'unavailable',reason:data.reason,verified:!!icon && data.verified!==false};
+      return {icon:icon||websiteFavicon(url),source:icon?data.source:'unavailable',reason:data.reason,verified:!!icon && data.verified===true};
     }catch{return {icon:websiteFavicon(url),source:'unavailable',reason:'request',verified:false};}
   })();
   if(cache.size>=64)cache.delete(cache.keys().next().value);
-  cache.set(key,{promise,expires:Date.now()+600000});return promise;
+  cache.set(key,{promise,expires:Date.now()+600000});
+  promise.then(result=>{if(cache.get(key)?.promise===promise)cache.get(key).expires=Date.now()+(result.verified?600000:5000);});
+  return promise;
+}
+
+// Use the same image route as the actual card, then its direct-browser fallback.
+// A byte signature alone cannot prove that Safari/Chrome can decode the image.
+export async function verifySiteIcon(icon,{imageFactory=()=>new Image()}={}) {
+  const paths=typeof window!=='undefined' && window.__KH_CLOUD_AUTH && /^https:\/\//i.test(icon)
+    ? [`/api/icon-image?url=${encodeURIComponent(icon)}`,icon] : [icon];
+  for(const path of paths) {
+    const loaded=await new Promise(resolve=>{
+      const image=imageFactory();
+      const finish=value=>{clearTimeout(timer);image.onload=null;image.onerror=null;resolve(value);};
+      const timer=setTimeout(()=>finish(false),4000);
+      image.referrerPolicy='no-referrer';
+      image.onload=()=>finish(image.naturalWidth>0 && image.naturalHeight>0);
+      image.onerror=()=>finish(false);image.src=path;
+    });
+    if(loaded)return true;
+  }
+  return false;
 }

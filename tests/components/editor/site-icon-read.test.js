@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import IconPicker from '@/components/InteractiveEditor/IconPicker.vue';
 import { discoverSiteIcon } from '@/utils/SiteIcons';
-vi.mock('@/utils/SiteIcons',()=>({ discoverSiteIcon:vi.fn() }));
+vi.mock('@/utils/SiteIcons',()=>({ discoverSiteIcon:vi.fn(),verifySiteIcon:vi.fn().mockResolvedValue(true) }));
 vi.mock('@/components/LinkItems/ItemIcon.vue',()=>({default:{template:'<span />'}}));
 it('retains the existing manual icon when the favicon has not been verified',async()=>{
   discoverSiteIcon.mockResolvedValue({icon:'https://site.example/favicon.ico',verified:false,reason:'http-403'});

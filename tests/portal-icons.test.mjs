@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { matchPortalIcon, websiteFavicon, websiteIcon, portalIconPath } from '../src/utils/PortalIcons.js';
+test('Google AI Studio keeps its own product identity, while unknown Google apps are not assigned Google Search',()=>{
+  assert.equal(matchPortalIcon('https://aistudio.google.com/usage').id,'aistudio');
+  assert.equal(matchPortalIcon('https://unknown-app.google.com/'),undefined);
+  assert.equal(matchPortalIcon('https://www.google.com/').id,'google');
+});
 test('brand domains match precisely, including known self-hosted Emby', () => {
   assert.equal(matchPortalIcon('https://chatgpt.com/c/test').id, 'chatgpt');
   assert.equal(matchPortalIcon('https://gemini.google.com/app').id, 'gemini');

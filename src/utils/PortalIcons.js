@@ -3,6 +3,7 @@ import { officialSiteIcons } from '../../cloud/icon-catalog.mjs';
 const qx = (id, title, file, hosts = [], aliases = []) => ({ id, title, src: `/portal-icons/qx/${file}.png`, hosts, aliases, source: 'QX' });
 const local = (id, title, hosts = [], aliases = []) => ({ id, title, src: `/portal-icons/${id}.svg`, hosts, aliases, source: 'Simple Icons' });
 export const portalIcons = [
+  { id: 'aistudio', title: 'Google AI Studio / Gemini API', src: officialSiteIcons['aistudio.google.com'], hosts: ['aistudio.google.com'], aliases: ['google api', 'google ai studio', 'gemini api'], source: 'Official AI Studio product icon' },
   { id: 'deepseek', title: 'DeepSeek / DeepSeek API', src: officialSiteIcons['platform.deepseek.com'], hosts: ['deepseek.com'], aliases: ['deepseek', 'deepseek api', '深度求索'], source: 'Official platform favicon' },
   { id: 'nodeseek', title: 'NodeSeek', src: officialSiteIcons['nodeseek.com'], hosts: ['nodeseek.com'], aliases: ['nodeseek', 'node seek'], source: 'Official favicon' },
   { id: 'awsconsole', title: 'AWS Management Console', src: officialSiteIcons['console.aws.amazon.com'], hosts: ['console.aws.amazon.com'], aliases: ['aws', 'aws控制面板'], source: 'AWS Architecture Icons' },
@@ -14,7 +15,7 @@ export const portalIcons = [
   qx('github', 'GitHub', 'GitHub', ['github.com'], ['github', '总站源码']),
   qx('speedtest', 'Speedtest', 'Speedtest', ['speedtest.net'], ['speedtest']),
   qx('netflix', 'Netflix', 'Netflix', ['netflix.com']),
-  qx('google', 'Google', 'Google', ['google.com', 'www.google.com']),
+  { ...qx('google', 'Google', 'Google', ['google.com', 'www.google.com']), exactHosts: true },
   qx('spotify', 'Spotify', 'Spotify', ['spotify.com']),
   qx('telegram', 'Telegram', 'Telegram', ['telegram.org', 'web.telegram.org', 't.me']),
   qx('tiktok', 'TikTok / 抖音', 'TikTok', ['tiktok.com', 'douyin.com'], ['抖音', 'tiktok']),
@@ -36,7 +37,7 @@ export function matchPortalIcon(url = '', title = '') {
   let host = '';
   try { host = new URL(url).hostname.toLowerCase().replace(/^www\./, ''); } catch { /* Name-only matching in the picker. */ }
   // Longer host entries (Gemini, Cloudflare speed) precede broad brand matches.
-  const byHost = portalIcons.find(e => e.hosts.some(domain => host === domain || host.endsWith(`.${domain}`)));
+  const byHost = portalIcons.find(e => e.hosts.some(domain => host === domain || (!e.exactHosts && host.endsWith(`.${domain}`))));
   if (byHost) return byHost;
   if (host.split('.')[0] === 'emby') return portalIcons.find(e => e.id === 'emby');
   const name = title.trim().toLowerCase();
