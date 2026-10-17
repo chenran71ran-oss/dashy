@@ -1,0 +1,34 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import worker,{DEFAULT_CONFIG} from '../cloud/worker.mjs';
+import {CONFIG_KEY} from '../cloud/config-storage.mjs';
+
+test('a desktop theme selection is shared with a signed-out mobile while preserving bookmarks and history',async()=>{
+ const original={...DEFAULT_CONFIG,appConfig:{...DEFAULT_CONFIG.appConfig,theme:'dracula',dayTheme:'matrix',nightTheme:'nord',customColors:{dracula:{primary:'#ff0099'}}},sections:[{name:'Keep bookmarks',items:[{title:'Private link',url:'https://private.example/'}]}]};
+ const values=new Map([[CONFIG_KEY,JSON.stringify(original)]]);
+ const env={ADMIN_TOKEN:'test-only',HOME_KV:{get:async k=>values.get(k)??null,put:async(k,v)=>values.set(k,v)}};
+ const root='http://127.0.0.1';
+ const login=await worker.fetch(new Request(root+'/api/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:'test-only'})}),env);
+ const cookie=login.headers.get('set-cookie').split(';')[0];
+ const save=(body,headers={cookie,origin:root})=>worker.fetch(new Request(root+'/api/theme',{method:'PATCH',headers:{'content-type':'application/json',...headers},body:JSON.stringify(body)}),env);
+ assert.equal((await save({theme:'material-original'},{})).status,401);
+ assert.equal((await save({theme:'material-original'},{cookie,origin:'https://other.example'})).status,403);
+ assert.equal((await save({theme:'__proto__'})).status,400);
+ assert.equal((await save({theme:['dracula']})).status,400);
+ assert.equal((await save({theme:'https://external.example/theme.css'})).status,400);
+ const response=await save({theme:'material-original',sections:[]});
+ assert.equal(response.status,200);assert.deepEqual(await response.json(),{theme:'material-original'});
+ const persisted=JSON.parse(values.get(CONFIG_KEY));
+ assert.deepEqual(persisted.sections,original.sections);assert.deepEqual(persisted.appConfig.customColors,original.appConfig.customColors);
+ assert.equal(persisted.appConfig.theme,'material-original');assert.equal(persisted.appConfig.dayTheme,undefined);assert.equal(persisted.appConfig.nightTheme,undefined);
+ const mobile=await worker.fetch(new Request(root+'/api/login-appearance'),env);
+ assert.equal((await mobile.json()).theme,'material-original');
+ assert.ok([...values.keys()].some(k=>k.includes('history:/conf.yml:')));
+ const colors={'item-background':'#fff',primary:'#1299dd','font-body':'Roboto'};
+ assert.equal((await save({theme:'material-original',colors})).status,200);
+ assert.deepEqual(JSON.parse(values.get(CONFIG_KEY)).appConfig.customColors['material-original'],colors);
+ const publicColors=await (await worker.fetch(new Request(root+'/api/login-appearance'),env)).json();
+ assert.deepEqual(publicColors.customColors['material-original'],{'item-background':'#fff',primary:'#1299dd'});
+ assert.equal((await save({theme:'material-original',colors:null})).status,200);
+ assert.equal(JSON.parse(values.get(CONFIG_KEY)).appConfig.customColors['material-original'],undefined);
+});

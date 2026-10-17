@@ -6,6 +6,8 @@ import { parse as parseYaml } from 'yaml';
 import { readWeather } from './weather.mjs';
 import { discoverIcon, fetchPublicIcon, publicIconUrl } from './icon-discovery.mjs';
 import { iconCacheKey, cacheIconAsset } from './icon-cache.mjs';
+import { publicLoginAppearance } from './login-appearance.mjs';
+import { themeLabels } from '../src/utils/ThemeCatalog.js';
 import { CONFIG_KEY, configPath, configKey, saveConfig, listHistory, readHistory } from './config-storage.mjs';
 import { statusCheck, pingCheck, corsProxy, backendService } from './services.mjs';
 const OLD_CONFIG_KEY = 'kenneth-home:config:v1';
@@ -172,6 +174,12 @@ export default {
       if (u.protocol === 'http:' && !['localhost', '127.0.0.1', '[::1]'].includes(u.hostname)) {
         u.protocol = 'https:'; return Response.redirect(u.href, 308);
       }
+      if (u.pathname === '/api/login-appearance' && method === 'GET') {
+        // Public presentation only; the complete configuration stays authenticated.
+        let config=DEFAULT_CONFIG;
+        try {config=await readConfig(env);}catch{}
+        return json(publicLoginAppearance(config.appConfig));
+      }
       if (u.pathname === '/api/login' && method === 'POST') {
         sameOrigin(req, u);
         const body = await limitedBody(req, 6000);
@@ -185,6 +193,25 @@ export default {
       }
       if (u.pathname === '/api/session' && method === 'GET') {
         await authorize(req, env); return json({ authenticated: true });
+      }
+      if (u.pathname === '/api/theme' && method === 'PATCH') {
+        sameOrigin(req,u);await authorize(req,env);
+        if(!env.HOME_KV)fail('HOME_KV 未绑定，主题尚未保存',503);
+        const body=await limitedBody(req,60000);
+        if(typeof body.theme!=='string'||!Object.hasOwn(themeLabels,body.theme))fail('请选择内置主题');
+        const config=await readConfig(env);
+        const app={...config.appConfig,theme:body.theme};
+        // Explicit shared selection takes precedence over device day/night settings.
+        delete app.dayTheme;delete app.nightTheme;
+        if(Object.hasOwn(body,'colors')) {
+          const colors=body.colors;
+          if(colors!==null && (typeof colors!=='object'||Array.isArray(colors)||Object.keys(colors).length>200||Object.entries(colors).some(([k,v])=>!/^[-a-z][a-z0-9-]{0,79}$/i.test(k)||typeof v!=='string'||v.length>500)))fail('主题颜色格式不正确');
+          app.customColors={...app.customColors};
+          if(colors===null)delete app.customColors[body.theme];
+          else app.customColors[body.theme]=colors;
+        }
+        await saveConfig(env,'/conf.yml',{...config,appConfig:app});
+        return json({theme:body.theme,...(Object.hasOwn(body,'colors')?{colors:body.colors}:{})});
       }
       const servicePath = u.pathname.replace(/\/$/, '');
       if (['/status-check', '/ping-check', '/system-info', '/cors-proxy', '/get-user'].includes(servicePath)) {

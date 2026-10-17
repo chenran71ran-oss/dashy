@@ -11,7 +11,7 @@
           <p>当前主题优先 · 点击 ☆ 收藏置顶</p>
           <div ref="themeList" class="theme-list" role="group" aria-label="主题列表">
             <div v-for="name in orderedThemes" :key="name" class="theme-row" :class="{active: name === selectedTheme}">
-              <button type="button" class="theme-choice" :aria-pressed="name === selectedTheme" @click="chooseTheme(name)">
+              <button type="button" class="theme-choice" :disabled="themeSaving" :aria-pressed="name === selectedTheme" @click="chooseTheme(name)">
                 <span>{{ chineseLabel(name) }}<small>{{ name }}</small></span><span v-if="name === selectedTheme" class="current-label">当前</span>
               </button>
               <button type="button" class="theme-favorite" :disabled="favoritesSaving" :aria-label="(favorites.includes(name) ? '取消收藏 ' : '收藏 ') + name" :aria-pressed="favorites.includes(name)" @click="toggleFavorite(name)">{{ favorites.includes(name) ? '★' : '☆' }}</button>
@@ -35,7 +35,7 @@ import { themeLabel, orderThemes, readThemeFavorites } from '@/utils/ThemeCatalo
 import { loadFavoriteThemes, setFavoriteTheme } from '@/utils/ThemeFavorites';
 export default {
   name: 'ThemeSelector', mixins: [ThemingMixin], props: { hidePallete: Boolean }, components: { CustomThemeMaker, IconPalette },
-  data: () => ({ themeConfiguratorOpen: false, dropdownOpen: false, query: '', favorites: [], favoritesSaving: false, favoritesNote: '正在读取收藏…' }),
+  data: () => ({ themeConfiguratorOpen: false, dropdownOpen: false, query: '', favorites: [], favoritesSaving: false, themeSaving: false, favoritesNote: '正在读取收藏…' }),
   computed: { orderedThemes() { return orderThemes(this.themeNames, this.selectedTheme, this.favorites, this.query); } },
   mounted() { this.syncFavorites(); this.refreshFavorites(); window.addEventListener('storage', this.syncFavorites); window.addEventListener('home-lab-theme-favorites', this.syncFavorites); window.addEventListener('keydown', this.closeWithEscape); },
   beforeUnmount() { window.removeEventListener('storage', this.syncFavorites); window.removeEventListener('home-lab-theme-favorites', this.syncFavorites); window.removeEventListener('keydown', this.closeWithEscape); },
@@ -57,7 +57,13 @@ export default {
     },
     async toggleDropdown() { this.dropdownOpen = !this.dropdownOpen; this.query = ''; if (this.dropdownOpen) { this.refreshFavorites(); await this.$nextTick(); this.$refs.themeSearch?.focus(); } },
     focusFirstTheme() { this.$refs.themeList?.querySelector('.theme-choice')?.focus(); },
-    chooseTheme(name) { this.selectedTheme = name; this.themeChangedInUI(); this.dropdownOpen = false; },
+    async chooseTheme(name) {
+      if(this.themeSaving)return;
+      this.themeSaving=true;this.selectedTheme=name;
+      try {await this.themeChangedInUI();this.dropdownOpen=false;}
+      catch(error){this.selectedTheme=this.themeFromStore;this.$toast(error.message);}
+      finally{this.themeSaving=false;}
+    },
     openThemeConfigurator() { this.dropdownOpen = false; this.$store.commit(Keys.SET_MODAL_OPEN, true); this.themeConfiguratorOpen = true; },
     closeThemeConfigurator() { if (this.themeConfiguratorOpen) { this.$store.commit(Keys.SET_MODAL_OPEN, false); this.themeConfiguratorOpen = false; } },
     closePopovers() { this.dropdownOpen = false; this.closeThemeConfigurator(); },

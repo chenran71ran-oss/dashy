@@ -15,6 +15,7 @@ import {
   getUserState,
 } from '@/utils/auth/Auth';
 import { localStorageKeys, theme as defaultTheme } from '@/utils/config/defaults';
+import { withoutLocalAppearance,withSharedAppearance } from '@/utils/SharedTheme';
 
 const {
   INITIALIZE_CONFIG,
@@ -30,6 +31,7 @@ const {
   SET_ITEM_LAYOUT,
   SET_ITEM_SIZE,
   SET_THEME,
+  SET_SHARED_THEME,
   UPDATE_ITEM,
   USE_MAIN_CONFIG,
   SET_EDIT_MODE,
@@ -105,7 +107,7 @@ function readLocalOverrides(subConfigId) {
 
   const appConfig = {};
   if (localAppConfig && typeof localAppConfig === 'object') {
-    Object.assign(appConfig, localAppConfig);
+    Object.assign(appConfig, window.__KH_CLOUD_AUTH ? withoutLocalAppearance(localAppConfig) : localAppConfig);
     hasStructural = true;
   }
   // Quick-picker slots layer on top for normal local stuff
@@ -113,7 +115,7 @@ function readLocalOverrides(subConfigId) {
   const layout = localStorage.getItem(scope.LAYOUT);
   const iconSize = localStorage.getItem(scope.ICON_SIZE);
   const language = localStorage.getItem(scope.LANGUAGE);
-  if (theme) appConfig.theme = theme;
+  if (theme && !window.__KH_CLOUD_AUTH) appConfig.theme = theme;
   if (layout) appConfig.layout = layout;
   if (iconSize) appConfig.iconSize = iconSize;
   if (language) appConfig.language = language;
@@ -153,7 +155,8 @@ function buildRootEffective(state) {
 function mergeWithRoot(root, own) {
   const rootApp = root.appConfig || {};
   const ownApp = own.appConfig || {};
-  const appConfig = { ...rootApp, ...ownApp };
+  let appConfig = { ...rootApp, ...ownApp };
+  if(window.__KH_CLOUD_AUTH)appConfig=withSharedAppearance(appConfig,rootApp);
   if (rootApp.auth !== undefined) appConfig.auth = rootApp.auth;
   else delete appConfig.auth;
   return {
@@ -207,6 +210,7 @@ const store = createStore({
       // short-circuit caching bug where unread props wouldn't invalidate).
       const cfg = state.config?.appConfig;
       const configTheme = cfg?.theme;
+      if(window.__KH_CLOUD_AUTH && !state.editMode)return configTheme || defaultTheme;
       const dayTheme = cfg?.dayTheme;
       const nightTheme = cfg?.nightTheme;
       const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
@@ -418,6 +422,16 @@ const store = createStore({
     [SET_THEME](state, theme) {
       patchAppConfigField(state, 'theme', theme, configScope(state.currentConfigInfo.confId).THEME);
       InfoHandler('Theme updated', InfoKeys.VISUAL);
+    },
+    [SET_SHARED_THEME](state, {theme,colors}) {
+      const update=config=>{
+        const app={...(config?.appConfig||{}),theme};delete app.dayTheme;delete app.nightTheme;
+        if(colors!==undefined){app.customColors={...app.customColors};if(colors===null)delete app.customColors[theme];else app.customColors[theme]=colors;}
+        return {...config,appConfig:app};
+      };
+      state.rootConfig=update(state.rootConfig);state.config=update(state.config);
+      // Sub-pages inherit the root appearance; do not create an override there.
+      if(!state.currentConfigInfo.confId)state.configSource=update(state.configSource);
     },
     [SET_ITEM_LAYOUT](state, layout) {
       patchAppConfigField(state, 'layout', layout, configScope(state.currentConfigInfo.confId).LAYOUT);
