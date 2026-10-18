@@ -11,6 +11,9 @@
 | [功能边界](home-lab/features.md) | 原生可用能力、数据源与后端要求 |
 | [架构](home-lab/architecture.md) | 前后端、数据流与目录职责 |
 | [FAQ](home-lab/faq.md) | 保存、图标、嵌入、天气与隐私 |
+| [变更日志](../CHANGELOG.md) | 本 fork 的功能与修复里程碑 |
+| [历史索引](home-lab/history.md) | 48 条既有定制提交的中文摘要与真实 SHA |
+| [维护与回滚](home-lab/maintenance.md) | 分支、PR、检查、部署与配置恢复 |
 | [贡献](../CONTRIBUTING.md) | 开发、验证与提交 |
 
 ## 专项技术说明
@@ -18,6 +21,7 @@
 - [功能恢复与后端接入](home-lab-feature-restoration.md)
 - [图标与主题](home-lab-icons-and-themes.md)
 - [图标资源许可](../public/portal-icons/SOURCES.md)
+- [登录页独立预览与验证范围](login-theme-preview.md)
 
 ## Dashy 上游参考
 

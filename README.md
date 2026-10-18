@@ -13,7 +13,7 @@
 [![Vue 3](https://img.shields.io/badge/Frontend-Vue_3-42b883?style=flat-square)](docs/home-lab/architecture.md)
 [![Dashy](https://img.shields.io/badge/Based_on-Dashy-8b5cf6?style=flat-square)](https://github.com/Lissy93/dashy)
 
-[快速部署](docs/home-lab/deployment.md) · [使用指南](docs/home-lab/usage.md) · [功能边界](docs/home-lab/features.md) · [English](README.EN.md)
+[快速部署](docs/home-lab/deployment.md) · [使用指南](docs/home-lab/usage.md) · [变更日志](CHANGELOG.md) · [维护与回滚](docs/home-lab/maintenance.md) · [English](README.EN.md)
 
 </div>
 
@@ -26,6 +26,14 @@ Home Lab 将日常书签、自建服务和需要查看的信息集中在一起�
 由 **Kenneth（chenran71ran-oss）** 维护，基于 Dashy 持续进行前端改造。主要工作集中在 **中文本地化、布局与管理交互重构、PC / 移动端适配、HTTP / Ping 状态展示，以及网站图标抓取与统一渲染**。Cloudflare Workers + KV 是配套部署与数据适配方案。
 
 项目名称是 **Home Lab**；仓库保留 fork 名称 `dashy`，便于追踪上游。Dashy 提供原有的导航、主题、小组件与配置基础，本项目在此基础上改进中文使用体验和前端交互。
+
+## 当前维护状态
+
+截至 2026-10-18，网站图标可靠性修复与主题联动登录页已分别通过 [PR #1](https://github.com/chenran71ran-oss/dashy/pull/1)、[PR #2](https://github.com/chenran71ran-oss/dashy/pull/2) 合并到 `master`。登录页复用总站配色，手机端居中并将页脚与卡片统一排布；正常浏览模式选择的主题和保存的配色使用云端配置供电脑、手机共同读取。
+
+`master` 是本仓库的默认主分支，与常见的 `main` 承担相同角色。它沿用上游的名称，功能试验在独立分支进行，确认后通过 PR 合并。GitHub 合并、Cloudflare 部署成功与线上验收是三个步骤，应分别确认。
+
+历史改动见 [变更日志](CHANGELOG.md)；逐条提交、中文说明与可核对的 SHA 见 [历史索引](docs/home-lab/history.md)。`package.json` 的 `4.7.17` 沿用上游基础版本，不能代替本 fork 的功能变更记录。
 
 ## 核心改造
 
@@ -56,6 +64,8 @@ HTTP 检测可由 Worker 执行；真实 ICMP Ping 仍需兼容的主机后端�
 ### 主题与像素机甲风格
 
 加入 Home Lab 标识与像素机甲主题联动，调整主题菜单的当前项定位、中文名称、收藏排序及可读性。主题收藏通过 KV 同步，桌面和移动端读取同一份收藏。
+
+登录页与总站共享内置主题和安全自定义颜色。云端部署中，正常浏览模式选择主题、保存或重置配色会写入根配置；旧浏览器偏好和分页面主题不会覆盖共享外观。登录页在可见期间每 15 秒、已登录页面每 30 秒检查更新，重新聚焦也会刷新；编辑或弹窗期间保护草稿。KV 跨地区传播可能额外延迟。布局等其他偏好不因此全部变成跨设备同步。
 
 ## 一个入口，三种使用方式
 
@@ -93,6 +103,9 @@ HTTP 检测可由 Worker 执行；真实 ICMP Ping 仍需兼容的主机后端�
 | 功能是否需要 API 或后端 | [功能边界](docs/home-lab/features.md) |
 | 理解前后端与文件职责 | [架构与文件导航](docs/home-lab/architecture.md) |
 | 排查保存、图标、天气与嵌入 | [常见问题](docs/home-lab/faq.md) |
+| 查阅历次功能和修复 | [变更日志](CHANGELOG.md) · [提交历史索引](docs/home-lab/history.md) |
+| 分支协作、验证、上线与回滚 | [维护指南](docs/home-lab/maintenance.md) |
+| 查看登录页的独立交互预览 | [预览生成说明](docs/login-theme-preview.md) |
 | 查阅完整 Dashy 配置字段 | [文档索引](docs/readme.md) |
 | 提交改进 | [贡献指南](CONTRIBUTING.md) |
 
