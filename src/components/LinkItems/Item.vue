@@ -1,5 +1,5 @@
 <template ref="container">
-  <div :class="`item-wrapper wrap-size-${size} span-${makeColumnCount}`" >
+  <div :class="[`item-wrapper wrap-size-${size} span-${makeColumnCount}`,{'focus-card':focusCard}]" >
     <a @click="itemClicked"
       @long-press="openContextMenu"
       @contextmenu="preventNativeContextMenu"
@@ -53,6 +53,18 @@
       <!-- Edit icon (displayed only when in edit mode) -->
       <EditModeIcon v-if="isEditMode" class="edit-mode-item" @click="openItemSettings()" />
     </a>
+    <button v-if="focusCard && item.description && !isEditMode" ref="descriptionButton" type="button"
+      class="focus-description-button" :aria-label="`查看 ${item.title} 的完整说明`" :aria-expanded="descriptionOpen"
+      :aria-controls="`focus-description-${item.id}`" @click.stop="openDescription">ⓘ</button>
+    <Teleport to="body">
+      <dialog v-if="focusCard && item.description" ref="descriptionDialog" class="focus-description-dialog"
+        :id="`focus-description-${item.id}`" :aria-labelledby="`focus-description-title-${item.id}`"
+        :style="descriptionStyles" @click="descriptionBackdropClicked" @close="descriptionClosed">
+        <h2 :id="`focus-description-title-${item.id}`">{{ item.title }}</h2>
+        <p>{{ item.description }}</p>
+        <button type="button" @click="closeDescription">关闭说明</button>
+      </dialog>
+    </Teleport>
     <!-- Right-click context menu -->
     <ContextMenu
       :show="contextMenuOpen && !isAddNew"
@@ -92,6 +104,7 @@ export default {
   name: 'Item',
   mixins: [ItemMixin],
   props: {
+    focusCard: Boolean,
     itemSize: { type: String, default: '' },
     parentSectionTitle: { type: String, default: '' }, // Title of parent section (for add new)
     isAddNew: Boolean, // Only set if 'fake' item used as Add New button
@@ -146,6 +159,8 @@ export default {
     return {
       editMenuOpen: false,
       titleTruncated: false,
+      descriptionOpen: false,
+      descriptionStyles: {},
     };
   },
   watch: {
@@ -181,6 +196,11 @@ export default {
       // Aliases only resolve against the root config, so never promise one on a sub-page
       const aliasWorksHere = alias && !this.$store.getters.isSubConfig;
       const hasShortcut = hotkey || aliasWorksHere;
+      if(this.focusCard && !this.isEditMode && (description || this.titleTruncated || provider || hasShortcut))return {
+        content:[title,description,provider?`Provider: ${provider}`:'',hotkey?`Press '${hotkey}' to launch`:'',aliasWorksHere?`Visit '/${alias}' to launch`:''].filter(Boolean).join('\n'),html:false,
+        placement:'auto',delay:{show:250,hide:100},
+        popperClass:'item-description-tooltip focus-description-tooltip',inheritFocusColors:true,
+      };
       if (!description && !provider && !hasShortcut && !this.titleTruncated) return {}; // Nothing to show
       const parts = [];
       if (this.titleTruncated) parts.push(`<b>${title}</b>`);
@@ -248,6 +268,17 @@ export default {
     reducedMotion() {
       return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     },
+    openDescription() {
+      const colors=getComputedStyle(this.$el);
+      this.descriptionStyles={
+        '--focus-tooltip-background':colors.getPropertyValue('--focus-tooltip-background'),
+        '--focus-tooltip-text':colors.getPropertyValue('--focus-tooltip-text'),
+      };
+      this.$refs.descriptionDialog?.showModal();this.descriptionOpen=true;
+    },
+    closeDescription() { this.$refs.descriptionDialog?.close(); },
+    descriptionClosed() { this.descriptionOpen=false;this.$refs.descriptionButton?.focus(); },
+    descriptionBackdropClicked(event) { if(event.target===this.$refs.descriptionDialog)this.closeDescription(); },
     openItemSettings() {
       this.editMenuOpen = true;
       this.contextMenuOpen = false;
@@ -296,6 +327,7 @@ export default {
     }
   },
   beforeUnmount() {
+    if(this.$refs.descriptionDialog?.open)this.$refs.descriptionDialog.close();
     // Stop periodic ping-check and status-check when item is destroyed (e.g. navigating in multi-page setup)
     if (this.pingIntervalId) clearInterval(this.pingIntervalId);
     if (this.intervalId) clearInterval(this.intervalId);

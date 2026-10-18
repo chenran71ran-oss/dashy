@@ -24,6 +24,14 @@ const GAP = 8;
 const ARROW_SIZE = 6;
 const TRANSITION_MS = 150;
 
+function inheritFocusColors(el,tip,opts) {
+  if(!opts.inheritFocusColors)return;
+  const styles=getComputedStyle(el);
+  for(const [target,source] of [['--description-tooltip-background','--focus-tooltip-background'],['--description-tooltip-color','--focus-tooltip-text']]) {
+    const value=styles.getPropertyValue(source);if(value)tip.style.setProperty(target,value);
+  }
+}
+
 let stylesInjected = false;
 function injectStyles() {
   if (stylesInjected) return;
@@ -224,6 +232,7 @@ function show(el) {
     tip.appendChild(arrow);
     document.body.appendChild(tip);
     state.tooltipEl = tip;
+    inheritFocusColors(el,tip,opts);
 
     positionTooltip(el, tip, opts.placement || DEFAULTS.placement);
 
@@ -346,6 +355,7 @@ export default {
 
     // Update visible tooltip content/position
     if (state.visible && state.tooltipEl) {
+      inheritFocusColors(el,state.tooltipEl,opts);
       const inner = state.tooltipEl.querySelector('.tooltip-inner');
       if (inner) {
         if (opts.html) {

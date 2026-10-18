@@ -286,7 +286,7 @@ export default {
 .focus-category :deep(.section-items) {
   grid-template-columns: repeat(auto-fit, minmax(min(var(--minimal-card-min), 100%), 1fr));
   gap: .75rem; padding: .75rem; box-sizing: border-box;
-  align-items: start; align-content: start; grid-auto-rows: max-content;
+  align-items: stretch; align-content: start; grid-auto-rows: max-content;
 }
 .focus-home:has(.item.size-small) { --minimal-card-min: 8rem; }
 .focus-home:has(.item.size-large) { --minimal-card-min: 14rem; }
