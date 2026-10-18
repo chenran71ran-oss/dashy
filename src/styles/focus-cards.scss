@@ -1,0 +1,88 @@
+/* Focus view geometry wins over theme-specific card dimensions, including default. */
+:root .focus-home .focus-category .focus-card {
+  --focus-card-height: 9.5rem;
+  position: relative;
+  min-width: 0;
+  width: 100%;
+  height: var(--focus-card-height);
+  align-self: stretch;
+  &.wrap-size-small { --focus-card-height: 3.75rem; }
+  &.wrap-size-large { --focus-card-height: 7rem; }
+  > a.item {
+    box-sizing: border-box;
+    width: 100%; min-width: 0; max-width: 100%;
+    height: 100%; min-height: 0; max-height: none;
+    margin: 0; padding: .9rem .8rem; gap: .65rem;
+    display: flex; flex-direction: column-reverse; justify-content: center; align-items: center;
+    color: var(--focus-card-text, var(--item-text-color));
+    background: var(--focus-card-background,var(--item-background));
+    overflow: hidden;
+    --portal-icon-size: 2.6rem;
+    .tile-title { flex: 0 0 auto; display: block; width: 100%; min-width: 0; max-width: 100%; height: auto; padding: 0; overflow: hidden; -webkit-line-clamp: unset; }
+    .tile-title span.text { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0; line-height: 1.4rem; font-size: 1rem; text-align: center; color: inherit; }
+    p.description { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; block-size: 2.4rem; max-block-size: 2.4rem; overflow: hidden; text-overflow: ellipsis; white-space: normal; overflow-wrap: anywhere; line-height: 1.2rem; font-size: .86rem; margin: .3rem 0 0; color: var(--focus-description-text); }
+    .item-icon { flex: 0 0 auto; width: var(--portal-icon-size); min-height: 0; }
+    .tile-icon,.simple-icons,.missing-image,.glyph-icon { width: var(--portal-icon-size); height: var(--portal-icon-size); margin: 0; padding: 0; }
+    .emoji-icon,.fas,.fab,.mdi { font-size: var(--portal-icon-size); }
+    &.size-large { flex-direction: row-reverse; justify-content: flex-end; --portal-icon-size: 2.8rem; }
+    &.size-small { flex-direction: row-reverse; justify-content: flex-end; --portal-icon-size: 1.6rem; padding: .55rem .65rem; }
+    &:is(.size-large,.size-small) .tile-title { flex: 1 1 0; width: auto; }
+    &:is(.size-large,.size-small) .tile-title span.text { text-align: left; }
+    &.size-small p.description { display: none; }
+    &:hover,&:focus-visible {
+      background: var(--focus-card-hover-background,var(--item-background-hover));
+      color: var(--focus-card-hover-text);
+      .tile-title span.text { text-overflow: ellipsis; }
+      p.description { color: var(--focus-description-hover-text); }
+    }
+    &:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+    &::before { content: none !important; }
+  }
+  .focus-description-button {
+    position: absolute; right: 0; bottom: 0; z-index: 3;
+    display: grid; place-items: center; width: 44px; height: 44px;
+    padding: 0; border: 0; border-radius: 6px; font: inherit; font-size: 1.15rem;
+    background: var(--focus-button-background,var(--background)); color: var(--focus-card-text);
+    cursor: pointer; opacity: 0; pointer-events: none;
+    &:focus-visible { outline: 2px solid currentColor; outline-offset: -3px; }
+  }
+  &:hover .focus-description-button,&:focus-within .focus-description-button { opacity: 1; pointer-events: auto; }
+}
+@media (hover: none), (pointer: coarse) {
+  :root .focus-home .focus-category .focus-card {
+    .focus-description-button { opacity: 1; pointer-events: auto; }
+    > a.item .tile-title { padding-inline-end: 2rem; }
+    .opening-method-icon { display: none; }
+  }
+}
+
+:root .focus-home .minimal-section-heading {
+  background: var(--focus-tab-background,var(--minimal-view-section-heading-background));
+  .section-title,.section-icon { color: var(--focus-tab-text); }
+  &.selected {
+    background: var(--focus-tab-selected-background);
+    .section-title,.section-icon { color: var(--focus-tab-selected-text); }
+    &:focus-visible { outline-color: var(--focus-tab-selected-text); }
+  }
+  &:focus-visible { outline: 2px solid var(--focus-tab-text); outline-offset: -3px; }
+}
+
+/* Material and several older themes deliberately hid the old size-specific tooltip. */
+:root body .dashy-tooltip.item-description-tooltip.focus-description-tooltip {
+  display: block !important;
+  max-width: min(26rem,calc(100vw - 24px));
+  .tooltip-inner { white-space: pre-wrap; overflow-wrap: anywhere; padding: .65rem .8rem; line-height: 1.55; }
+}
+dialog.focus-description-dialog {
+  box-sizing: border-box; width: min(30rem,calc(100vw - 32px));
+  max-height: calc(100dvh - 48px); overflow: auto; overscroll-behavior: contain;
+  border: 1px solid currentColor; border-radius: 12px; padding: 24px;
+  background: var(--focus-tooltip-background,var(--background-darker));
+  color: var(--focus-tooltip-text,var(--foreground));
+  font-family: system-ui,'PingFang SC','Microsoft YaHei',sans-serif;
+  &::backdrop { background: #0008; }
+  h2 { margin: 0 0 14px; font-size: 1.1rem; color: inherit; overflow-wrap: anywhere; }
+  p { margin: 0; font-size: 1rem; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+  button { display: block; min-height: 44px; margin: 20px 0 0 auto; padding: 8px 16px; border: 1px solid currentColor; border-radius: 6px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+  button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+}
