@@ -3,8 +3,8 @@
     <div class="theme-control">
       <span class="theme-label">{{ $t('settings.theme-label') }}</span>
       <div class="theme-dropdown">
-        <button class="theme-trigger" type="button" aria-label="选择主题" :aria-expanded="dropdownOpen" @click="toggleDropdown">
-          <span>{{ chineseLabel(selectedTheme) }} <small>{{ selectedTheme }}</small></span><span aria-hidden="true">▾</span>
+        <button class="theme-trigger" type="button" aria-label="选择主题" :aria-expanded="dropdownOpen" :aria-busy="themeSaving" @click="toggleDropdown">
+          <span>{{ chineseLabel(selectedTheme) }} <small aria-live="polite">{{ selectedTheme }}{{ themeSaving ? ' · 同步中' : '' }}</small></span><span aria-hidden="true">▾</span>
         </button>
         <div v-if="dropdownOpen" class="theme-popover">
           <input ref="themeSearch" v-model="query" aria-label="搜索主题" placeholder="搜索中文或英文主题" @keydown.down.prevent="focusFirstTheme" />
@@ -59,8 +59,8 @@ export default {
     focusFirstTheme() { this.$refs.themeList?.querySelector('.theme-choice')?.focus(); },
     async chooseTheme(name) {
       if(this.themeSaving)return;
-      this.themeSaving=true;this.selectedTheme=name;
-      try {await this.themeChangedInUI();this.dropdownOpen=false;}
+      this.themeSaving=true;this.selectedTheme=name;this.dropdownOpen=false;
+      try {await this.themeChangedInUI();}
       catch(error){this.selectedTheme=this.themeFromStore;this.$toast(error.message);}
       finally{this.themeSaving=false;}
     },

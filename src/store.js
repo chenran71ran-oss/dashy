@@ -32,6 +32,7 @@ const {
   SET_ITEM_SIZE,
   SET_THEME,
   SET_SHARED_THEME,
+  SET_THEME_PREVIEW,
   UPDATE_ITEM,
   USE_MAIN_CONFIG,
   SET_EDIT_MODE,
@@ -179,6 +180,7 @@ const store = createStore({
     criticalError: null, // Will store a message, if a critical error occurs
     navigateConfToTab: undefined, // Used to switch active tab in config modal
     authRevision: 0, // Bumped on login/logout so auth-dependent getters re-run
+    themePreview: null, // Transient feedback while a shared theme write is pending
   },
   getters: {
     config(state) {
@@ -210,7 +212,7 @@ const store = createStore({
       // short-circuit caching bug where unread props wouldn't invalidate).
       const cfg = state.config?.appConfig;
       const configTheme = cfg?.theme;
-      if(window.__KH_CLOUD_AUTH && !state.editMode)return configTheme || defaultTheme;
+      if(window.__KH_CLOUD_AUTH && !state.editMode)return state.themePreview || configTheme || defaultTheme;
       const dayTheme = cfg?.dayTheme;
       const nightTheme = cfg?.nightTheme;
       const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
@@ -433,6 +435,7 @@ const store = createStore({
       // Sub-pages inherit the root appearance; do not create an override there.
       if(!state.currentConfigInfo.confId)state.configSource=update(state.configSource);
     },
+    [SET_THEME_PREVIEW](state, theme) { state.themePreview = theme || null; },
     [SET_ITEM_LAYOUT](state, layout) {
       patchAppConfigField(state, 'layout', layout, configScope(state.currentConfigInfo.confId).LAYOUT);
       InfoHandler('Layout updated', InfoKeys.VISUAL);

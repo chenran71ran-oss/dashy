@@ -128,6 +128,66 @@ describe('Computed: itemIcon', () => {
   });
 });
 
+describe('Focus card expansion', () => {
+  function focusItem() {
+    const mounted = mountItem({ props: { focusCard: true } });
+    const { wrapper } = mounted;
+    Object.defineProperty(wrapper.element, 'offsetHeight', { configurable: true, get: () => 88 });
+    const link = wrapper.vm.$refs.itemLink;
+    Object.defineProperty(link, 'offsetHeight', { configurable: true, get: () => wrapper.vm.focusExpanded ? 160 : 88 });
+    const animations = [];
+    link.animate = vi.fn(() => { const animation = { cancel: vi.fn(), onfinish: null }; animations.push(animation); return animation; });
+    return { ...mounted, link, animations };
+  }
+
+  it('expands the existing link on keyboard focus and freezes its grid cell without extra controls', async () => {
+    const { wrapper, link, animations } = focusItem();
+    await wrapper.trigger('focusin');
+    await wrapper.vm.$nextTick();
+    expect(wrapper.classes()).toContain('focus-expanded');
+    expect(wrapper.element.style.getPropertyValue('--focus-rest-height')).toBe('88px');
+    expect(link.animate).toHaveBeenCalledWith([{ height: '88px' }, { height: '160px' }], expect.objectContaining({ duration: 180 }));
+    expect(wrapper.find('button').exists()).toBe(false);
+    expect(wrapper.find('dialog').exists()).toBe(false);
+    await wrapper.trigger('focusout', { relatedTarget: document.body });
+    expect(wrapper.vm.focusClosing).toBe(true);
+    animations.at(-1).onfinish();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.classes()).not.toContain('focus-expanded');
+    wrapper.unmount();
+  });
+
+  it('cancels a collapsing animation if the pointer returns before it finishes', async () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation(query => ({ matches: query.includes('pointer: fine') }));
+    const { wrapper, animations } = focusItem();
+    await wrapper.trigger('mouseenter');
+    await wrapper.vm.$nextTick();
+    await wrapper.trigger('mouseleave');
+    const closing = animations.at(-1);
+    await wrapper.trigger('mouseenter');
+    await wrapper.vm.$nextTick();
+    expect(closing.cancel).toHaveBeenCalledOnce();
+    closing.onfinish();
+    expect(wrapper.vm.focusExpanded).toBe(true);
+    expect(wrapper.vm.focusClosing).toBe(false);
+    wrapper.unmount();
+  });
+
+  it('honors reduced motion and does not add hover expansion to other views', async () => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true });
+    const { wrapper, link } = focusItem();
+    await wrapper.vm.expandFocusCard();
+    wrapper.vm.collapseFocusCard();
+    expect(link.animate).not.toHaveBeenCalled();
+    expect(wrapper.vm.focusExpanded).toBe(false);
+    wrapper.unmount();
+    const regular = mountItem();
+    await regular.wrapper.trigger('focusin');
+    expect(regular.wrapper.vm.focusExpanded).toBe(false);
+    regular.wrapper.unmount();
+  });
+});
+
 describe('Computed: size', () => {
   it('returns valid itemSize prop', () => {
     const { wrapper } = mountItem({ props: { itemSize: 'large' } });

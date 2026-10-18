@@ -256,6 +256,11 @@ export default {
 <style lang="scss">
 /* Import styles used globally throughout the app */
 @import '@/styles/global-styles.scss';
+/* Apply theme geometry once; resume ordinary hover transitions after two frames. */
+html[data-theme-switching],
+html[data-theme-switching] *,
+html[data-theme-switching] *::before,
+html[data-theme-switching] *::after { transition: none !important; }
 @import '@/styles/color-palette.scss';
 @import '@/styles/dimensions.scss';
 @import '@/styles/color-themes.scss';

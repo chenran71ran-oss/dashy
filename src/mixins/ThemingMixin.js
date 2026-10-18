@@ -9,6 +9,7 @@ import Keys from '@/utils/StoreMutations';
 import { builtInThemes } from '@/utils/config/defaults';
 import { getExternalThemes, getExtraThemeNames } from '@/utils/Theming';
 import { saveSharedTheme } from '@/utils/SharedTheme';
+let themeSelectionRevision = 0;
 
 export default {
   data: () => ({ selectedTheme: '' }),
@@ -29,8 +30,16 @@ export default {
      * triggers the central watcher in App.vue to apply to the DOM. */
     async themeChangedInUI() {
       if(window.__KH_CLOUD_AUTH && !this.$store.state.editMode) {
-        const saved=await saveSharedTheme(this.selectedTheme);
-        this.$store.commit(Keys.SET_SHARED_THEME,saved);
+        const theme = this.selectedTheme;
+        const revision = ++themeSelectionRevision;
+        this.$store.commit(Keys.SET_THEME_PREVIEW, theme);
+        try {
+          const saved = await saveSharedTheme(theme);
+          this.$store.commit(Keys.SET_SHARED_THEME, saved);
+        } finally {
+          // Failed saves expose the last confirmed shared theme again.
+          if (revision === themeSelectionRevision) this.$store.commit(Keys.SET_THEME_PREVIEW, null);
+        }
       } else this.$store.commit(Keys.SET_THEME, this.selectedTheme);
     },
   },
