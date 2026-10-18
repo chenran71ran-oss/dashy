@@ -70,6 +70,7 @@ function mountItem(overrides = {}) {
         ...(overrides.mocks || {}),
       },
       stubs: {
+        teleport: false,
         Icon: true,
         ItemOpenMethodIcon: true,
         StatusIndicator: true,
@@ -125,6 +126,55 @@ describe('Computed: itemIcon', () => {
   it('uses automatic website discovery when neither icon is set', () => {
     const { wrapper } = mountItem({ item: { id: '1', title: 'X', url: '#' } });
     expect(wrapper.vm.itemIcon).toBe('auto');
+  });
+});
+
+describe('Focus card descriptions', () => {
+  it('keeps full plain text in the tooltip without changing the saved description', () => {
+    const description = 'A long English description '.repeat(20) + '<script>literal text</script>';
+    const { wrapper } = mountItem({ item: { id: 'focus', title: 'Example', url: '#', description }, props: { focusCard: true } });
+    expect(wrapper.vm.getTooltipOptions().content).toBe(`Example\n${description}`);
+    expect(wrapper.vm.getTooltipOptions().html).toBe(false);
+    expect(wrapper.vm.getTooltipOptions().inheritFocusColors).toBe(true);
+    expect(wrapper.find('p.description').text()).toBe(description);
+    expect(wrapper.find('a .focus-description-button').exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it('opens the touch description dialog without navigating and restores focus on close', async () => {
+    const { wrapper } = mountItem({ props: { focusCard: true } });
+    const dialog = wrapper.vm.$refs.descriptionDialog;
+    dialog.showModal = vi.fn();
+    dialog.close = vi.fn();
+    const focus = vi.spyOn(wrapper.vm.$refs.descriptionButton, 'focus');
+    await wrapper.find('.focus-description-button').trigger('click');
+    expect(dialog.showModal).toHaveBeenCalledOnce();
+    expect(openSpy).not.toHaveBeenCalled();
+    expect(wrapper.find('.focus-description-button').attributes('aria-expanded')).toBe('true');
+    wrapper.vm.closeDescription();
+    expect(dialog.close).toHaveBeenCalledOnce();
+    dialog.dispatchEvent(new Event('close'));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('.focus-description-button').attributes('aria-expanded')).toBe('false');
+    expect(focus).toHaveBeenCalledOnce();
+    wrapper.unmount();
+  });
+
+  it('does not add description controls to other views or empty descriptions', () => {
+    const regular = mountItem();
+    const empty = mountItem({ item: { id: 'empty', title: 'Empty', url: '#' }, props: { focusCard: true } });
+    expect(regular.wrapper.find('.focus-description-button').exists()).toBe(false);
+    expect(regular.wrapper.vm.getTooltipOptions().inheritFocusColors).toBeUndefined();
+    expect(empty.wrapper.find('.focus-description-button').exists()).toBe(false);
+    regular.wrapper.unmount();
+    empty.wrapper.unmount();
+  });
+
+  it('keeps editing controls available instead of the focus description button', () => {
+    const { wrapper } = mountItem({ props: { focusCard: true }, storeState: { editMode: true } });
+    expect(wrapper.find('.focus-description-button').exists()).toBe(false);
+    expect(wrapper.vm.getTooltipOptions().html).toBe(true);
+    wrapper.unmount();
   });
 });
 
