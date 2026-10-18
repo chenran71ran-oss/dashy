@@ -14,7 +14,6 @@
         <Item
           v-else
           :item="item"
-          focusCard
           :itemSize="itemSize"
           :parentSectionTitle="title"
           @itemClicked="$emit('itemClicked')"
