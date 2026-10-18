@@ -286,7 +286,22 @@ export default {
 .focus-category :deep(.section-items) {
   grid-template-columns: repeat(auto-fit, minmax(min(var(--minimal-card-min), 100%), 1fr));
   gap: .75rem; padding: .75rem; box-sizing: border-box;
-  align-items: stretch; align-content: start; grid-auto-rows: max-content;
+  align-items: stretch; align-content: start; grid-auto-rows: 1fr;
+}
+/* Keep the existing theme layout and tooltip; descriptions must not stretch tiles. */
+.focus-home .focus-category :deep(.item-wrapper) {
+  min-width: 0; height: 100%; align-self: stretch;
+}
+.focus-home .focus-category :deep(.item-wrapper > a.item) {
+  height: 100%; max-height: none; box-sizing: border-box;
+}
+.focus-home .focus-category :deep(.item-wrapper > a.item p.description) {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  height: 2.8em; max-height: 2.8em; line-height: 1.4;
+  overflow: hidden; text-overflow: ellipsis; overflow-wrap: anywhere;
+}
+.focus-home .focus-category :deep(.item-wrapper > a.item:is(.size-small,.size-medium) p.description) {
+  display: none;
 }
 .focus-home:has(.item.size-small) { --minimal-card-min: 8rem; }
 .focus-home:has(.item.size-large) { --minimal-card-min: 14rem; }
