@@ -1,9 +1,6 @@
 <template ref="container">
-  <div :class="[`item-wrapper wrap-size-${size} span-${makeColumnCount}`, { 'focus-card': focusCard, 'focus-expanded': focusExpanded, 'focus-closing': focusClosing }]"
-    :style="focusExpanded ? { '--focus-rest-height': `${focusRestHeight}px`, '--focus-available-height': `${focusAvailableHeight}px` } : null"
-    @mouseenter="focusPointerEntered" @mouseleave="focusPointerLeft"
-    @focusin="expandFocusCard" @focusout="focusLeft">
-    <a ref="itemLink" @click="itemClicked"
+  <div :class="`item-wrapper wrap-size-${size} span-${makeColumnCount}`">
+    <a @click="itemClicked"
       @long-press="openContextMenu"
       @contextmenu="preventNativeContextMenu"
       @mouseup.right="openContextMenu"
@@ -15,7 +12,7 @@
       :href="effectiveUrl"
       :target="anchorTarget"
       :class="`item ${makeClassList}`"
-      v-tooltip="focusExpanded && item.description ? null : getTooltipOptions()"
+      v-tooltip="getTooltipOptions()"
       :rel="`${item.rel || 'noopener noreferrer'}`"
       tabindex="0"
       :id="`link-${item.id}`"
@@ -88,15 +85,13 @@ import ContextMenu from '@/components/LinkItems/ItemContextMenu';
 const EditItem = defineAsyncComponent(() => import('@/components/InteractiveEditor/EditItem.vue'));
 import StoreKeys from '@/utils/StoreMutations';
 import ItemMixin from '@/mixins/ItemMixin';
-import FocusCardMixin from '@/mixins/FocusCardMixin';
 import EditModeIcon from '@/assets/interface-icons/interactive-editor-edit-mode.svg';
 import { modalNames } from '@/utils/config/defaults';
 
 export default {
   name: 'Item',
-  mixins: [ItemMixin, FocusCardMixin],
+  mixins: [ItemMixin],
   props: {
-    focusCard: Boolean,
     itemSize: { type: String, default: '' },
     parentSectionTitle: { type: String, default: '' }, // Title of parent section (for add new)
     isAddNew: Boolean, // Only set if 'fake' item used as Add New button

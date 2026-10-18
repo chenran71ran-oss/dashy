@@ -290,7 +290,7 @@ export default {
 }
 /* Keep the existing theme layout and tooltip; descriptions must not stretch tiles. */
 .focus-home .focus-category :deep(.item-wrapper) {
-  min-width: 0; height: 100%; align-self: stretch; position: relative;
+  min-width: 0; height: 100%; align-self: stretch;
 }
 .focus-home .focus-category :deep(.item-wrapper > a.item) {
   height: 100%; max-height: none; box-sizing: border-box;
@@ -302,27 +302,6 @@ export default {
 }
 .focus-home .focus-category :deep(.item-wrapper > a.item:is(.size-small,.size-medium) p.description) {
   display: none;
-}
-.focus-home .focus-category :deep(.focus-card.focus-expanded) {
-  height: var(--focus-rest-height); z-index: 6;
-}
-.focus-home .focus-category :deep(.focus-card.focus-expanded > a.item) {
-  position: absolute; top: 0; inset-inline: 0;
-  height: auto; min-height: var(--focus-rest-height);
-  max-height: max(var(--focus-rest-height), min(var(--focus-available-height), 70dvh, 36rem));
-  overflow: auto; overscroll-behavior: contain;
-  transform: translateY(-3px) scale(1.025); transform-origin: top center;
-  transition: transform 180ms cubic-bezier(.2,.75,.25,1), box-shadow 180ms ease,
-    background-color 160ms ease, color 160ms ease;
-}
-.focus-home .focus-category :deep(.focus-card.focus-expanded > a.item p.description) {
-  display: block; -webkit-line-clamp: unset;
-  height: auto; max-height: none; overflow: visible; white-space: pre-wrap;
-}
-.focus-home .focus-category :deep(.focus-card.focus-closing > a.item) { transform: none; }
-@media (prefers-reduced-motion: reduce) {
-  .focus-home .focus-category :deep(.focus-card > a.item),
-  .focus-home .focus-category :deep(.focus-card.focus-expanded > a.item) { transition: none; transform: none; }
 }
 .focus-home:has(.item.size-small) { --minimal-card-min: 8rem; }
 .focus-home:has(.item.size-large) { --minimal-card-min: 14rem; }
