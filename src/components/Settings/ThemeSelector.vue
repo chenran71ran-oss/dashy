@@ -2,7 +2,7 @@
   <div class="theme-selector-section" v-click-outside="closePopovers" @keydown.esc="closePopovers">
     <div class="theme-control">
       <span class="theme-label">{{ $t('settings.theme-label') }}</span>
-      <div class="theme-dropdown">
+      <div class="theme-dropdown" :style="themeContrastStyles">
         <button class="theme-trigger" type="button" aria-label="选择主题" :aria-expanded="dropdownOpen" :aria-busy="themeSaving" @click="toggleDropdown">
           <span>{{ chineseLabel(selectedTheme) }} <small aria-live="polite">{{ selectedTheme }}{{ themeSaving ? ' · 同步中' : '' }}</small></span><span aria-hidden="true">▾</span>
         </button>
@@ -31,15 +31,18 @@ import CustomThemeMaker from '@/components/Settings/CustomThemeMaker';
 import Keys from '@/utils/StoreMutations';
 import IconPalette from '@/assets/interface-icons/config-color-palette.svg';
 import ThemingMixin from '@/mixins/ThemingMixin';
+import ThemeContrastMixin from '@/mixins/ThemeContrastMixin';
+import { themeMenuPalette } from '@/utils/ThemeMenuPalette';
 import { themeLabel, orderThemes, readThemeFavorites } from '@/utils/ThemeCatalog';
 import { loadFavoriteThemes, setFavoriteTheme } from '@/utils/ThemeFavorites';
 export default {
-  name: 'ThemeSelector', mixins: [ThemingMixin], props: { hidePallete: Boolean }, components: { CustomThemeMaker, IconPalette },
+  name: 'ThemeSelector', mixins: [ThemingMixin, ThemeContrastMixin], props: { hidePallete: Boolean }, components: { CustomThemeMaker, IconPalette },
   data: () => ({ themeConfiguratorOpen: false, dropdownOpen: false, query: '', favorites: [], favoritesSaving: false, themeSaving: false, favoritesNote: '正在读取收藏…' }),
   computed: { orderedThemes() { return orderThemes(this.themeNames, this.selectedTheme, this.favorites, this.query); } },
   mounted() { this.syncFavorites(); this.refreshFavorites(); window.addEventListener('storage', this.syncFavorites); window.addEventListener('home-lab-theme-favorites', this.syncFavorites); window.addEventListener('keydown', this.closeWithEscape); },
   beforeUnmount() { window.removeEventListener('storage', this.syncFavorites); window.removeEventListener('home-lab-theme-favorites', this.syncFavorites); window.removeEventListener('keydown', this.closeWithEscape); },
   methods: {
+    getThemeContrastStyles: themeMenuPalette,
     chineseLabel: themeLabel,
     closeWithEscape(event) { if (event.key === 'Escape' && this.dropdownOpen) this.dropdownOpen = false; },
     syncFavorites() { try { this.favorites = readThemeFavorites(window.localStorage); } catch { this.favorites = []; } },
@@ -76,35 +79,46 @@ export default {
 .theme-control { flex: 1; min-width: 0; }
 .theme-dropdown {
   position: relative;
-  // A matched, opaque palette keeps the selector readable in every site theme.
-  --theme-menu-background: #f8fafc;
-  --theme-menu-color: #172033;
-  --theme-menu-highlight: #dbeafe;
-  --theme-menu-accent: #1e40af;
+  // Theme-derived values arrive on mount; CSS fallbacks prevent an initial flash.
+  --theme-menu-background: var(--settings-background, var(--background));
+  --theme-menu-color: var(--settings-text-color, var(--foreground));
+  --theme-menu-muted: var(--theme-menu-color);
+  --theme-menu-highlight: var(--background-darker);
+  --theme-menu-hover-color: var(--theme-menu-color);
+  --theme-menu-selected: var(--primary);
+  --theme-menu-selected-color: var(--background);
+  --theme-menu-accent: var(--primary);
+  --theme-menu-border: var(--theme-menu-color);
   color: var(--theme-menu-color);
 }
-.theme-dropdown button, .theme-dropdown input { font: inherit; color: var(--theme-menu-color); background: var(--theme-menu-background); border: 1px solid var(--theme-menu-color); }
+.theme-dropdown button, .theme-dropdown input { font: inherit; color: var(--theme-menu-color); background: var(--theme-menu-background); border: 1px solid var(--theme-menu-border); }
 .theme-trigger { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; width: 100%; min-height: 44px; padding: 0.35rem 0.6rem; border-radius: var(--curve-factor-small); text-align: left; cursor: pointer; }
-.theme-dropdown small { display: block; font-size: 0.7rem; opacity: 0.8; overflow-wrap: anywhere; }
-.theme-popover { position: absolute; inset: calc(100% + 0.35rem) auto auto 0; width: max(100%, 17rem); max-width: calc(100vw - 2rem); z-index: 50; color: var(--theme-menu-color); background: var(--theme-menu-background); border: 1px solid var(--theme-menu-color); border-radius: 10px; padding: 0.5rem; box-sizing: border-box; box-shadow: 0 8px 24px #0003; }
-.theme-popover input::placeholder { color: var(--theme-menu-color); opacity: 0.8; }
-.theme-popover p, .theme-dropdown small { color: var(--theme-menu-color); }
+.theme-dropdown small { display: block; font-size: 0.7rem; opacity: 1; overflow-wrap: anywhere; }
+.theme-popover { position: absolute; inset: calc(100% + 0.35rem) auto auto 0; width: max(100%, 17rem); max-width: calc(100vw - 2rem); z-index: 50; color: var(--theme-menu-color); background: var(--theme-menu-background); border: 1px solid var(--theme-menu-border); border-radius: 10px; padding: 0.5rem; box-sizing: border-box; box-shadow: 0 8px 24px #0003; }
+.theme-popover input::placeholder { color: var(--theme-menu-muted); opacity: 1; }
+.theme-popover p, .theme-dropdown small { color: var(--theme-menu-muted); }
 .theme-dropdown .theme-list { scrollbar-color: var(--theme-menu-color) var(--theme-menu-background); }
 .theme-dropdown .theme-list::-webkit-scrollbar-thumb { background: var(--theme-menu-color); }
 .theme-dropdown .theme-list::-webkit-scrollbar-track { background: var(--theme-menu-background); }
 .theme-popover input { padding: 0.6rem; min-height: 44px; width: 100%; box-sizing: border-box; border-radius: 6px; }
 .theme-popover p { font-size: 0.75rem; margin: 0.6rem 0.35rem; }
 .theme-list { max-height: min(320px, 45dvh); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; touch-action: pan-y; }
-.theme-row { display: flex; border-radius: 6px; }
-.theme-row.active { background: var(--theme-menu-highlight); }
-.theme-row button { border: 0; background: transparent; min-height: 48px; cursor: pointer; }
+.theme-dropdown .theme-row { display: flex; width: 100%; border-radius: 6px; overflow: hidden; color: var(--theme-menu-color); transition: background-color 120ms ease, color 120ms ease; }
+.theme-dropdown .theme-row:is(:hover,:focus-within) { background: var(--theme-menu-highlight); color: var(--theme-menu-hover-color); }
+.theme-dropdown .theme-row.active { background: var(--theme-menu-selected); color: var(--theme-menu-selected-color); }
+.theme-dropdown .theme-row button { border: 0; background: transparent; color: inherit; min-height: 48px; cursor: pointer; }
+.theme-dropdown .theme-row button:is(:hover,:focus-visible) { background: transparent; color: inherit; }
+.theme-dropdown .theme-row:is(.active,:hover,:focus-within) small { color: inherit; }
 .theme-choice { display: flex; flex: 1; min-width: 0; align-items: center; justify-content: space-between; text-align: left; padding: 0.4rem 0.5rem; gap: 0.4rem; }
 .theme-choice > span:first-child { min-width: 0; overflow-wrap: anywhere; }
-.current-label { font-size: 0.65rem; flex-shrink: 0; opacity: 0.8; }
+.current-label { font-size: 0.65rem; flex-shrink: 0; }
 .theme-favorite { flex: 0 0 44px; width: 44px; font-size: 1.4rem !important; }
 .theme-dropdown .theme-favorite[aria-pressed='true'] { color: var(--theme-menu-accent); }
-.theme-dropdown button:hover { background: var(--theme-menu-highlight); }
+.theme-dropdown .theme-row:is(.active,:hover,:focus-within) .theme-favorite[aria-pressed='true'] { color: inherit; }
+.theme-dropdown .theme-trigger:hover { background: var(--theme-menu-highlight); color: var(--theme-menu-hover-color); }
+.theme-dropdown .theme-trigger:hover small { color: inherit; }
 .theme-dropdown button:focus-visible, .theme-dropdown input:focus-visible { outline: 2px solid var(--theme-menu-accent); outline-offset: -2px; }
+.theme-dropdown .theme-row button:focus-visible { outline-color: currentColor; }
 .favorite-note { padding: 0.6rem 0.35rem 0; }
 svg.color-button { width: 44px; height: 44px; padding: 0.6rem; box-sizing: border-box; flex-shrink: 0; background: var(--background); border: 1px solid var(--settings-text-color); border-radius: var(--curve-factor); cursor: pointer; path { fill: var(--settings-text-color); } &:hover, &.selected { background: var(--settings-text-color); path { fill: var(--background); } } }
 </style>
