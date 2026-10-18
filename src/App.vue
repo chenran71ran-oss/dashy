@@ -261,7 +261,6 @@ export default {
 @import '@/styles/color-themes.scss';
 @import '@/styles/typography.scss';
 @import '@/styles/portal-layout.scss';
-@import '@/styles/focus-cards.scss';
 @import '@/styles/user-defined-themes.scss';
 
 </style>

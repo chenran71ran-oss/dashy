@@ -1,7 +1,7 @@
 <template>
   <div
     :class="`minimal-section-inner ${selected ? 'selected' : ''} ${showAll ? 'show-all': ''}`"
-    :style="[themeContrastStyles,dynamicStyle]">
+    :style="dynamicStyle">
     <div class="section-items" :style="gridStyle" v-if="items && (selected || showAll)">
       <template v-for="(item) in sortedItems" :key="item.id">
         <SubItemGroup
@@ -14,7 +14,6 @@
         <Item
           v-else
           :item="item"
-          focusCard
           :itemSize="itemSize"
           :parentSectionTitle="title"
           @itemClicked="$emit('itemClicked')"
@@ -46,12 +45,9 @@ import SubItemGroup from '@/components/LinkItems/SubItemGroup.vue';
 import IframeModal from '@/components/LinkItems/IframeModal.vue';
 import sortItems from '@/utils/SortItems';
 import { makeRoutePath, viewFromPath } from '@/utils/config/ConfigHelpers';
-import ThemeContrastMixin from '@/mixins/ThemeContrastMixin';
-import { focusThemeStyles } from '@/utils/FocusTheme';
 
 export default {
   name: 'ItemGroup',
-  mixins: [ThemeContrastMixin],
   props: {
     groupId: { type: String, required: true },
     title: { type: String, default: '' },
@@ -104,7 +100,6 @@ export default {
     IframeModal,
   },
   methods: {
-    getThemeContrastStyles: focusThemeStyles,
     selectSection(index) {
       this.$emit('sectionSelected', index);
     },

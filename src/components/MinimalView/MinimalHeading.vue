@@ -1,7 +1,6 @@
 <template>
   <div
-    @click="selectSection(index)" @keydown.enter.prevent="selectSection(index)" @keydown.space.prevent="selectSection(index)"
-    role="button" tabindex="0" :aria-pressed="selected" :aria-label="title" :style="themeContrastStyles" v-tooltip="tooltip()"
+    @click="selectSection(index)" v-tooltip="tooltip()"
     v-bind:class="{ selected: selected, 'minimal-section-heading': true, center: hideTitleText }">
     <Icon v-if="icon" :icon="icon" size="small" class="section-icon" />
     <h3 class="section-title" v-if="!hideTitleText">{{ title }}</h3>
@@ -10,12 +9,9 @@
 
 <script>
 import Icon from '@/components/LinkItems/ItemIcon.vue';
-import ThemeContrastMixin from '@/mixins/ThemeContrastMixin';
-import { focusThemeStyles } from '@/utils/FocusTheme';
 
 export default {
   name: 'MinimalHeadings',
-  mixins: [ThemeContrastMixin],
   components: { Icon },
   props: {
     index: { type: Number, required: true },
@@ -26,7 +22,6 @@ export default {
   },
   emits: ['sectionSelected'],
   methods: {
-    getThemeContrastStyles: focusThemeStyles,
     selectSection(index) {
       this.$emit('sectionSelected', index);
     },
