@@ -26,3 +26,17 @@ it('subpages inherit the root appearance rather than their cached or file theme'
  expect(store.getters.theme).toBe('dracula');expect(store.state.rootConfig.appConfig.theme).toBe('dracula');
  expect(store.state.config.sections).toBe(before);expect(store.state.rootConfig.appConfig.dayTheme).toBeUndefined();
 });
+it('preview feedback changes the effective theme without altering confirmed root or source configuration',async()=>{
+ await store.dispatch(Keys.INITIALIZE_CONFIG);
+ const root=store.state.rootConfig,source=store.state.configSource;
+ store.commit(Keys.SET_THEME_PREVIEW,'zinc');
+ expect(store.getters.theme).toBe('zinc');
+ expect(store.state.rootConfig).toBe(root);expect(store.state.configSource).toBe(source);
+ expect(store.state.rootConfig.appConfig.theme).toBe('material-original');
+ store.commit(Keys.SET_THEME_PREVIEW,null);
+ expect(store.getters.theme).toBe('material-original');
+ store.commit(Keys.SET_THEME_PREVIEW,'dracula');
+ store.commit(Keys.SET_SHARED_THEME,{theme:'dracula'});
+ store.commit(Keys.SET_THEME_PREVIEW,null);
+ expect(store.getters.theme).toBe('dracula');
+});

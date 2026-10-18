@@ -7,6 +7,16 @@ import ErrorHandler from '@/utils/logging/ErrorHandler';
 
 const EXTERNAL_STYLE_ID = 'user-defined-stylesheet';
 const html = () => document.documentElement;
+let transitionFrame;
+
+// Theme geometry should change once, rather than animate hundreds of `all` rules.
+const beginThemeChange = () => {
+  cancelAnimationFrame(transitionFrame);
+  html().setAttribute('data-theme-switching', '');
+  transitionFrame = requestAnimationFrame(() => {
+    transitionFrame = requestAnimationFrame(() => html().removeAttribute('data-theme-switching'));
+  });
+};
 
 /* Map of { label: href } for stylesheets declared in appConfig.externalStyleSheet */
 export const getExternalThemes = (appConfig) => {
@@ -66,12 +76,14 @@ const applyCustomVars = (theme, appConfig) => {
     ...allKnownVarNames(configColors),
     ...allKnownVarNames(localColors),
   ]);
-  toClear.forEach((v) => html().style.removeProperty(`--${v}`));
-
   // Apply the current theme's custom colors (localStorage overrides appConfig)
-  const vars = (window.__KH_CLOUD_AUTH ? configColors : { ...configColors, ...localColors })[theme];
-  if (!vars) return;
-  Object.entries(vars).forEach(([k, v]) => html().style.setProperty(`--${k}`, v));
+  const vars = (window.__KH_CLOUD_AUTH ? configColors : { ...configColors, ...localColors })[theme] || {};
+  toClear.forEach((v) => {
+    if (!Object.hasOwn(vars, v) && html().style.getPropertyValue(`--${v}`)) html().style.removeProperty(`--${v}`);
+  });
+  Object.entries(vars).forEach(([k, v]) => {
+    if (html().style.getPropertyValue(`--${k}`) !== String(v)) html().style.setProperty(`--${k}`, v);
+  });
 };
 
 /**
@@ -81,14 +93,15 @@ const applyCustomVars = (theme, appConfig) => {
  */
 export const applyTheme = (theme, appConfig = {}) => {
   if (!theme) return;
+  beginThemeChange();
   const externals = getExternalThemes(appConfig);
   const locals = [...builtInThemes, ...getExtraThemeNames(appConfig)];
 
   if (theme.toLowerCase() === 'default') {
     resetDom();
   } else if (locals.includes(theme)) {
-    resetDom();
-    html().setAttribute('data-theme', theme);
+    document.getElementById(EXTERNAL_STYLE_ID)?.remove();
+    if (html().getAttribute('data-theme') !== theme) html().setAttribute('data-theme', theme);
   } else if (externals[theme]) {
     applyRemote(externals[theme]);
   }
