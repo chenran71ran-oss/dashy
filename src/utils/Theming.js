@@ -69,7 +69,7 @@ const applyCustomVars = (theme, appConfig) => {
   toClear.forEach((v) => html().style.removeProperty(`--${v}`));
 
   // Apply the current theme's custom colors (localStorage overrides appConfig)
-  const vars = { ...configColors, ...localColors }[theme];
+  const vars = (window.__KH_CLOUD_AUTH ? configColors : { ...configColors, ...localColors })[theme];
   if (!vars) return;
   Object.entries(vars).forEach(([k, v]) => html().style.setProperty(`--${k}`, v));
 };

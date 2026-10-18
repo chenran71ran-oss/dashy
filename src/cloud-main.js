@@ -1,6 +1,8 @@
 import { createApp } from 'vue';
 import CloudLogin from './CloudLogin.vue';
 import './styles/typography.scss';
+// Reuse the portal palettes before authentication.
+import './styles/login-palettes.scss';
 
 async function start() {
   let gate;
@@ -25,6 +27,8 @@ async function start() {
     };
     window.addEventListener('focus',refreshConfig);
     document.addEventListener('visibilitychange',refreshConfig);
+    // Open desktop/mobile sessions converge after another device saves a theme.
+    setInterval(refreshConfig,30000);
   };
   try {
     const response = await fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' });

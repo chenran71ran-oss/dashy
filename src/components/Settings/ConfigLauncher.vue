@@ -119,7 +119,7 @@ export default {
       conf[topLevelConfKeys.APP_CONFIG] = this.appConfig;
       conf[topLevelConfKeys.PAGE_INFO] = this.pageInfo;
       conf[topLevelConfKeys.SECTIONS] = this.sections;
-      conf[topLevelConfKeys.APP_CONFIG].theme = localStorage[localStorageKeys.THEME]
+      conf[topLevelConfKeys.APP_CONFIG].theme = (!window.__KH_CLOUD_AUTH && localStorage[localStorageKeys.THEME])
         || conf[topLevelConfKeys.APP_CONFIG].theme;
       return conf;
     },

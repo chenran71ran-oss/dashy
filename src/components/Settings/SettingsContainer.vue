@@ -83,7 +83,7 @@ export default {
       return {
         [topLevelConfKeys.APP_CONFIG]: {
           ...app,
-          theme: localStorage[localStorageKeys.THEME] || app.theme,
+          theme: window.__KH_CLOUD_AUTH ? app.theme : localStorage[localStorageKeys.THEME] || app.theme,
         },
         [topLevelConfKeys.PAGE_INFO]: this.$store.getters.pageInfo,
         [topLevelConfKeys.SECTIONS]: this.$store.getters.sections,
