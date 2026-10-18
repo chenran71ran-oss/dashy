@@ -15,7 +15,7 @@ Fork 本仓库，在 Workers & Pages 中创建 Workers 项目并连接 GitHub。
 | 根目录 | 仓库根目录，留空或 `/` |
 | Build command | `npm ci --ignore-scripts --no-audit --no-fund && npm run build` |
 | Deploy command | `npm run deploy` |
-| `NODE_VERSION` | `24.19.0`，当前构建版本 |
+| `NODE_VERSION` | 满足 `package.json` engines 的版本，例如 24.15.0 或更高的 24.x；与已验证构建保持一致 |
 | `SKIP_DEPENDENCY_INSTALL` | `1`，安装由构建命令执行 |
 | `HOME_KV_NAMESPACE_ID` | 自己的 KV Namespace ID |
 | `WORKER_NAME` | 可选；目标名称不同于 `home` 时填写 |
@@ -48,6 +48,8 @@ Fork 本仓库，在 Workers & Pages 中创建 Workers 项目并连接 GitHub。
 部署成功后输入 `ADMIN_TOKEN`，创建分类并添加网站。表单的 **保存** 是编辑预览，最后点击 **保存到云端**，在另一台设备刷新验证。KV 传播可能存在短暂延迟。
 
 提交到生产分支后由 Workers Builds 构建部署。更新前可导出 YAML；每次云端保存前备份上一版，保留最近 20 条目录记录，备份内容保存 30 天。历史记录不代替长期离线备份。
+
+以上自动构建需要先连接 GitHub 与 Workers Builds，并将生产分支指向 `master`。PR 合并只确认代码进入主分支，仍需核对 Cloudflare 构建对应的 SHA、部署结果和生产页面。代码、KV 内容与面板设置分开维护；完整流程和回滚方法见 [维护指南](maintenance.md)。
 
 继承的 Docker、镜像发布等 GitHub Actions 不用于当前 Worker 部署；请查看 Workers Builds 的结果。
 

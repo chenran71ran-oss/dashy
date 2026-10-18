@@ -22,6 +22,9 @@ GitHub 保存代码，Workers Builds 构建部署；线上 KV 不自动提交到
 | `src/views/` | 三视图与页面 |
 | `src/components/` | 卡片、状态点、小组件、编辑器 |
 | `src/utils/` | 图标、主题收藏及辅助逻辑 |
+| `src/CloudLogin.vue`、`src/cloud-main.js` | 主题联动登录页与云端入口 |
+| `src/utils/LoginAppearance.js`、`SharedTheme.js` | 登录颜色计算、共享外观和保存请求 |
+| `cloud/login-appearance.mjs` | 登录前公开外观的白名单投影 |
 | `cloud/worker.mjs` | 登录、鉴权、路由和资源入口 |
 | `cloud/config-storage.mjs` | KV 配置、备份与历史 |
 | `cloud/services.mjs` | HTTP、代理与主机后端适配 |
@@ -42,6 +45,8 @@ GitHub 保存代码，Workers Builds 构建部署；线上 KV 不自动提交到
 
 KV 保存配置、收藏、历史和图标缓存。保存接口使用管理员会话与同源检查；公开抓取不转发总站 Cookie 或授权。代理检查目标与重定向，不提供任意私有网络访问。
 
+`GET /api/login-appearance` 可在登录前读取，只返回内置主题标识及校验过的颜色，不返回书签、页面信息、任意 CSS、外部样式地址或字体地址。`PATCH /api/theme` 需要管理员会话和同源检查，只修改根配置外观，并使用既有历史备份机制。完整配置接口仍要求登录。
+
 配置普通字段会提供给已登录浏览器；仅供服务端使用的密钥应放 Secrets，并使用支持的占位符和代理。
 
 ## 维护原则
@@ -49,3 +54,5 @@ KV 保存配置、收藏、历史和图标缓存。保存接口使用管理员�
 优先通过文档导航整理文件，不随意搬动源码、资源路径或构建配置。保留上游历史以便合并。
 
 继承的 GitHub Actions 和维护元数据仍在 `.github/`，不等同于本 fork 发布流程，Worker 部署以 Workers Builds 为准。代码所有者、权限与发布策略变更应单独评估。
+
+分支、代码与配置回滚流程见 [维护指南](maintenance.md)；已有定制工作可按 [历史索引](history.md) 的 GitHub SHA 追溯。

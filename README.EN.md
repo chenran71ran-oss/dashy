@@ -8,7 +8,7 @@
 
 A Dashy frontend customization focused on Chinese localization, redesigned layouts and desktop/mobile usability
 
-[中文](README.md) · [Deployment](docs/home-lab/deployment.md) · [Features](docs/home-lab/features.md) · [MIT](LICENSE)
+[中文](README.md) · [Deployment](docs/home-lab/deployment.md) · [Changelog](CHANGELOG.md) · [Maintenance](docs/home-lab/maintenance.md) · [MIT](LICENSE)
 
 </div>
 
@@ -19,6 +19,8 @@ A Dashy frontend customization focused on Chinese localization, redesigned layou
 Maintained by Kenneth (`chenran71ran-oss`), Home Lab builds on Dashy's frontend. The main work is Chinese localization, layout and management interaction redesign, desktop/mobile adaptation, HTTP/Ping status presentation, and website icon discovery with consistent rendering. Cloudflare Workers + KV provides supporting deployment and data services.
 
 The repository retains the name `dashy` to preserve its fork relationship. This is a community derivative, not an official Dashy release.
+
+The default branch is `master`, inherited from upstream; it serves the same role commonly called `main`. Icon reliability fixes and the responsive, theme-aware login have been merged through [PR #1](https://github.com/chenran71ran-oss/dashy/pull/1) and [PR #2](https://github.com/chenran71ran-oss/dashy/pull/2). A merged commit does not by itself confirm a successful Cloudflare deployment. See the [changelog](CHANGELOG.md) and [commit index](docs/home-lab/history.md) for this fork's history; package version `4.7.17` identifies its upstream base.
 
 ## Frontend customization
 
@@ -50,6 +52,8 @@ Cards, workspace navigation and editing previews share icon rendering. QX/brand 
 
 Home Lab branding and theme-aware pixel mecha styling, improved current-theme positioning, Chinese labels, favorite ordering and readability. Theme favorites are stored in KV for retrieval across devices.
 
+The login page uses the portal's theme palette. In cloud mode, normal theme selections and saved custom colors update shared root configuration rather than being overridden by stale browser or subpage themes. Visible login pages check every 15 seconds; authenticated pages check every 30 seconds and protect active edits. Focus also triggers refresh. KV propagation can add delay. Mobile branding is centered and its footer stays with the form; desktop columns use tighter spacing. Preview controls are excluded from the deployed login component.
+
 ## Retained capabilities and deployment support
 
 Dashy's navigation, widget catalog, launch methods, YAML import/export and multiple pages remain the foundation. Supporting additions include GitHub-connected Workers Builds, administrator password login, KV storage and configuration history.
@@ -65,6 +69,8 @@ Widgets require their own APIs and credentials. ICMP Ping and host information n
 | [Features](docs/home-lab/features.md) | Functionality and data requirements |
 | [Architecture](docs/home-lab/architecture.md) | Frontend, Worker and file structure |
 | [FAQ](docs/home-lab/faq.md) | Common problems |
+| [Changelog](CHANGELOG.md) / [History](docs/home-lab/history.md) | Milestones and verified commit references |
+| [Maintenance](docs/home-lab/maintenance.md) | Branches, checks, deployment and rollback |
 | [Contributing](CONTRIBUTING.md) | Development and review |
 
 Detailed guides are currently in Chinese. Do not commit personal configuration, cookies or API keys.
