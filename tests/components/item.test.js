@@ -122,9 +122,9 @@ describe('Computed: itemIcon', () => {
     expect(wrapper.vm.itemIcon).toBe('default-icon');
   });
 
-  it('returns falsy when neither is set', () => {
+  it('uses automatic website discovery when neither icon is set', () => {
     const { wrapper } = mountItem({ item: { id: '1', title: 'X', url: '#' } });
-    expect(wrapper.vm.itemIcon).toBeFalsy();
+    expect(wrapper.vm.itemIcon).toBe('auto');
   });
 });
 
@@ -172,9 +172,9 @@ describe('Computed: makeClassList', () => {
     expect(wrapper.vm.makeClassList).toContain('size-small');
   });
 
-  it('includes "short" when no icon', () => {
+  it('reserves icon space for automatic discovery when no icon was configured', () => {
     const { wrapper } = mountItem({ item: { id: '1', title: 'X', url: '#' } });
-    expect(wrapper.vm.makeClassList).toContain('short');
+    expect(wrapper.vm.makeClassList).not.toContain('short');
   });
 
   it('includes "add-new" when isAddNew', () => {
