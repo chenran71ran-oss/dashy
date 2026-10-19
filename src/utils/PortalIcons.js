@@ -32,6 +32,7 @@ export const portalIcons = [
   local('jellyfin', 'Jellyfin', [], ['jellyfin']), local('docker', 'Docker', [], ['docker']),
   local('homeassistant', 'Home Assistant', [], ['home assistant']), local('nextcloud', 'Nextcloud', [], ['nextcloud']),
   local('bitwarden', 'Bitwarden', [], ['bitwarden']), local('notion', 'Notion', ['notion.so']), local('youtube', 'YouTube', ['youtube.com', 'youtu.be']),
+  { ...local('paperless-gpt', 'Paperless-GPT / Paper-LLM', [], ['paper-llm', 'paperless-llm', 'paperless-gpt']), source: 'Paperless-GPT upstream logo' },
 ];
 export function matchPortalIcon(url = '', title = '') {
   let host = '';
@@ -39,6 +40,7 @@ export function matchPortalIcon(url = '', title = '') {
   // Longer host entries (Gemini, Cloudflare speed) precede broad brand matches.
   const byHost = portalIcons.find(e => e.hosts.some(domain => host === domain || (!e.exactHosts && host.endsWith(`.${domain}`))));
   if (byHost) return byHost;
+  if (host.split('.')[0] === 'paperless-gpt') return portalIcons.find(e => e.id === 'paperless-gpt');
   if (host.split('.')[0] === 'emby') return portalIcons.find(e => e.id === 'emby');
   const name = title.trim().toLowerCase();
   return portalIcons.find(e => e.aliases?.includes(name));
