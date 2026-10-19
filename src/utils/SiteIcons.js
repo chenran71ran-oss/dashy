@@ -1,5 +1,6 @@
 import { websiteFavicon } from './PortalIcons.js';
 import { officialSiteIcons } from '../../cloud/icon-catalog.mjs';
+import { iconCrossOrigin } from './IconImagePolicy.js';
 const cache=new Map();
 export function siteIconOrigin(url) {
   try { const u=new URL(url);if(u.protocol!=='https:' || u.username || u.password)return '';return u.origin; }
@@ -26,7 +27,7 @@ export async function discoverSiteIcon(url,{force=false,page=false,fetcher=fetch
   return promise;
 }
 
-// Use the same image route as the actual card, then its direct-browser fallback.
+// Use the same proxy and anonymous-only fallback as the actual card.
 // A byte signature alone cannot prove that Safari/Chrome can decode the image.
 export async function verifySiteIcon(icon,{imageFactory=()=>new Image()}={}) {
   const paths=typeof window!=='undefined' && window.__KH_CLOUD_AUTH && /^https:\/\//i.test(icon)
@@ -37,6 +38,7 @@ export async function verifySiteIcon(icon,{imageFactory=()=>new Image()}={}) {
       const finish=value=>{clearTimeout(timer);image.onload=null;image.onerror=null;resolve(value);};
       const timer=setTimeout(()=>finish(false),4000);
       image.referrerPolicy='no-referrer';
+      const mode=iconCrossOrigin(path);if(mode)image.crossOrigin=mode;
       image.onload=()=>finish(image.naturalWidth>0 && image.naturalHeight>0);
       image.onerror=()=>finish(false);image.src=path;
     });

@@ -13,7 +13,7 @@
       <path v-if="siPath" :d="siPath" />
     </svg>
     <!-- Standard image asset icon -->
-    <img v-else-if="iconPath && !broken" :src="imageSource" :alt="title ? `${title} 图标` : ''" @error="onImageError" loading="lazy" referrerpolicy="no-referrer"
+    <img v-else-if="iconPath && !broken" :crossorigin="imageCrossOrigin" :src="imageSource" :alt="title ? `${title} 图标` : ''" @error="onImageError" loading="lazy" referrerpolicy="no-referrer"
       :class="`tile-icon ${size} ${broken ? 'broken' : ''}`"
     />
     <!-- Icon could not load/ broken url -->
@@ -25,6 +25,7 @@
 import { matchPortalIcon, portalIconPath, websiteFavicon, websiteIcon } from '@/utils/PortalIcons';
 import { builtinIconPath } from '@/utils/BuiltinIcons';
 import { discoverSiteIcon } from '@/utils/SiteIcons';
+import { iconCrossOrigin } from '@/utils/IconImagePolicy';
 import BrokenImage from '@/assets/interface-icons/broken-icon.svg';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import EmojiUnicodeRegex from '@/utils/EmojiUnicodeRegex';
@@ -89,6 +90,7 @@ export default {
       const path=this.iconPath;
       return window.__KH_CLOUD_AUTH && !this.attemptedFallback && /^https:\/\//i.test(path||'') ? `/api/icon-image?url=${encodeURIComponent(path)}` : path;
     },
+    imageCrossOrigin() { return iconCrossOrigin(this.imageSource); },
   },
   data() {
     return {
@@ -310,7 +312,8 @@ export default {
       const iconType = this.iconType || '';
       if (this.isBrand && this.resolvedIcon.startsWith('/portal-icons/')) return websiteFavicon(this.url) || undefined;
       // A site may refuse server-side favicon requests. Prefer its bundled brand;
-      // other custom images get one direct-browser retry, preserving the saved URL.
+      // Other custom images get one anonymous/CORS-only browser retry. Protected
+      // images must fail quietly rather than invoke a browser password dialog.
       if (window.__KH_CLOUD_AUTH && /^https:\/\//i.test(this.resolvedIcon)) return matchPortalIcon(this.url, this.title)?.src || this.resolvedIcon;
       if (this.icon === 'auto' && this.discoveredIcon && this.discoveredIcon !== websiteFavicon(this.url)) return websiteFavicon(this.url) || undefined;
       if (iconType.includes('favicon')) return this.getFavicon(this.url, 'local');
