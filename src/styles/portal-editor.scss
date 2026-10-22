@@ -15,4 +15,23 @@
 .editor-hint { font-size: 0.8rem; opacity: 0.8; }
 .editor-error { border: 1px solid currentColor; padding: 0.6rem; font-weight: 600; }
 .required { color: inherit; }
+
+/* One layout for website dialogs opened from any view. Keep the icon library
+ * full width; compact dialogs (including a resized desktop modal) stack fields. */
+.portal-item-editor { container: website-editor / inline-size; text-align: left; }
+.portal-item-editor .entry-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 1rem;
+  margin-top: 1rem;
+  > label { display: block; margin: 0; min-width: 0; }
+  > .entry-field-wide { grid-column: 1 / -1; }
+}
+@container website-editor (max-width: 32rem) {
+  .portal-item-editor .entry-fields { grid-template-columns: minmax(0, 1fr); }
+}
+@media(max-width:600px) {
+  .portal-item-editor .entry-fields { grid-template-columns: minmax(0, 1fr); }
+}
 @media(max-width:600px) { .portal-editor { padding-left: 1rem; padding-right: 1rem; } .portal-editor .save-cancel-btn-container button { flex: 1; min-width: 0; margin: 0.75rem 0.25rem; padding: 0.6rem 0.9rem; } }

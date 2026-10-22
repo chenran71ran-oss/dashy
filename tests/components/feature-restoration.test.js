@@ -3,6 +3,7 @@ import { reactive, nextTick } from 'vue';
 import Minimal from '@/views/Minimal.vue';
 import MinimalSection from '@/components/MinimalView/MinimalSection.vue';
 import Workspace from '@/views/Workspace.vue';
+import Home from '@/views/Home.vue';
 import MultiTasking from '@/components/Workspace/MultiTaskingWebComtent.vue';
 import EditWidget from '@/components/InteractiveEditor/EditWidget.vue';
 import EditItem from '@/components/InteractiveEditor/EditItem.vue';
@@ -96,6 +97,20 @@ describe('restored views and editor capabilities preserve the current UI', () =>
     wrapper.vm.launchApp({ target: 'workspace', url: 'https://example.com' }); await nextTick();
     expect(wrapper.findAllComponents(SettingsContainer)).toHaveLength(1);
     wrapper.unmount(); opened.mockRestore();
+  });
+  it('Workspace opens the shared website editor and returns to the previously selected app', async () => {
+    const store = makeStore();
+    const wrapper = shallowMount(Workspace, { global: options(store) });
+    wrapper.vm.launchApp({ target: 'workspace', url: 'https://example.com/docs' });
+    store.state.editMode = true;
+    await nextTick();
+    expect(wrapper.findComponent(Home).exists()).toBe(true);
+    expect(wrapper.findComponent(SideBar).exists()).toBe(false);
+    store.state.editMode = false;
+    await nextTick();
+    expect(wrapper.findComponent(Home).exists()).toBe(false);
+    expect(wrapper.findComponent({ name: 'WebContent' }).props('url')).toBe('https://example.com/docs');
+    wrapper.unmount();
   });
   it('Workspace category headings have one keyboard target and still launch their widgets', async () => {
     const wrapper = mount(SideBar, { props: { sections }, global: { ...options(makeStore()), stubs: { routerLink: true, SideBarSection: true, Icon: true } } });
