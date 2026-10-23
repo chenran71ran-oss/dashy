@@ -929,3 +929,26 @@ describe('Template rendering', () => {
     expect(wrapper.find('a.item').attributes('id')).toBe('link-test-1');
   });
 });
+
+
+describe('native context menu event ordering', () => {
+  it('opens only on contextmenu, cancels its default, and ignores right mouseup', async () => {
+    const { wrapper } = mountItem();
+    const target = wrapper.find('a');
+    await target.trigger('mouseup', { button: 2 });
+    expect(wrapper.vm.contextMenuOpen).toBe(false);
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 120, clientY: 80 });
+    target.element.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(wrapper.vm.contextMenuOpen).toBe(true);
+    wrapper.unmount();
+  });
+  it('keeps the browser menu available when custom menus are disabled', () => {
+    const { wrapper } = mountItem({ appConfig: { disableContextMenu: true } });
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    wrapper.find('a').element.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+    expect(wrapper.vm.contextMenuOpen).toBe(false);
+    wrapper.unmount();
+  });
+});

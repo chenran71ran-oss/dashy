@@ -1,9 +1,8 @@
 <template ref="container">
   <div class="sub-item-wrapper">
     <a @click="itemClicked"
-      @contextmenu="preventNativeContextMenu"
+      @contextmenu.stop="handleContextMenu"
       @long-press="openContextMenu"
-      @mouseup.right="openContextMenu"
       v-longPress="true"
       :href="hyperLinkHref"
       :aria-label="item.title"

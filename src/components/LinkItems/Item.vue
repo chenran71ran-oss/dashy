@@ -2,8 +2,7 @@
   <div :class="`item-wrapper wrap-size-${size} span-${makeColumnCount}`">
     <a @click="itemClicked"
       @long-press="openContextMenu"
-      @contextmenu="preventNativeContextMenu"
-      @mouseup.right="openContextMenu"
+      @contextmenu.stop="handleContextMenu"
       @mouseenter="startTitleScroll"
       @mouseleave="endTitleScroll"
       @focus="startTitleScroll"

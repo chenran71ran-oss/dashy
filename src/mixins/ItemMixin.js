@@ -365,6 +365,11 @@ export default {
     closeContextMenu() {
       this.contextMenuOpen = false;
     },
+    handleContextMenu(e) {
+      if (this.appConfig.disableContextMenu) return;
+      e.preventDefault();
+      this.openContextMenu(e);
+    },
     /* Suppress the native right-click menu, unless the custom menu is disabled */
     preventNativeContextMenu(e) {
       if (!this.appConfig.disableContextMenu) e.preventDefault();

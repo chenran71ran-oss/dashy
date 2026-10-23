@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {fileURLToPath} from 'node:url';
 import * as sass from 'sass';
 import {themeLabels} from '../src/utils/ThemeCatalog.js';
-import {themeMenuPalette} from '../src/utils/ThemeMenuPalette.js';
+import {themeMenuPalette, contextMenuPalette} from '../src/utils/ThemeMenuPalette.js';
 import {contrastRatio} from '../src/utils/ThemeContrast.js';
 import {themeAuditDom} from '../scripts/lib/theme-audit-dom.mjs';
 
@@ -24,6 +24,10 @@ test('all 54 real Sass palettes produce opaque, readable normal, hover and selec
     for (const theme of Object.keys(themeLabels)) {
       if (theme === 'default') page.document.documentElement.removeAttribute('data-theme');
       else page.document.documentElement.dataset.theme = theme;
+      const context = contextMenuPalette();
+      for (const [fg, bg] of [['color', 'background'], ['hover-color', 'highlight']]) {
+        assert.ok(contrastRatio(rgb(context[`--context-menu-${fg}`]), rgb(context[`--context-menu-${bg}`])) >= 4.45, `${theme}: context ${fg}`);
+      }
       const colors = themeMenuPalette(); backgrounds.add(colors['--theme-menu-background']);
       for (const [foreground, background, minimum] of [
         ['color','background',4.45], ['muted','background',4.45], ['accent','background',4.45],
