@@ -23,3 +23,16 @@ export function themeMenuPalette() {
     '--theme-menu-border': cssColor(readableColor(surface, [compositeColor([...text, .35], surface)], 3)),
   };
 }
+
+// Context menus retain their theme's own surface and highlight, with readable text.
+export function contextMenuPalette() {
+  const surface = themeSurface('--context-menu-background');
+  const preferred = [readThemeColor('--context-menu-color'), readThemeColor('--foreground')];
+  const hover = compositeColor(readThemeColor('--context-menu-secondary-color'), surface);
+  return {
+    '--context-menu-background': cssColor(surface),
+    '--context-menu-color': cssColor(readableColor(surface, preferred)),
+    '--context-menu-highlight': cssColor(hover),
+    '--context-menu-hover-color': cssColor(readableColor(hover, preferred)),
+  };
+}

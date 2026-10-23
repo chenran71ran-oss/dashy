@@ -2,8 +2,8 @@
   <Teleport to="body">
     <Transition name="context-menu-fade">
       <div v-if="show" ref="menu" v-bind="$attrs" class="context-menu"
-        :style="{ left: `${left}px`, top: `${top}px`, visibility: ready ? 'visible' : 'hidden' }"
-        v-click-outside="closeMenu">
+        :style="{ ...palette, left: `${left}px`, top: `${top}px`, visibility: ready ? 'visible' : 'hidden' }"
+        v-click-outside="closeMenu" @contextmenu.prevent.stop>
         <slot />
       </div>
     </Transition>
@@ -11,6 +11,7 @@
 </template>
 
 <script>
+import { contextMenuPalette } from '@/utils/ThemeMenuPalette';
 export default {
   name: 'ContextMenuSurface',
   inheritAttrs: false,
@@ -20,7 +21,7 @@ export default {
     posY: { type: Number, default: 0 },
   },
   emits: ['close'],
-  data: () => ({ left: 8, top: 8, ready: false }),
+  data: () => ({ left: 8, top: 8, ready: false, palette: {} }),
   watch: {
     show: 'syncMenu',
     posX: 'syncMenu',
@@ -30,19 +31,25 @@ export default {
     if (typeof ResizeObserver !== 'undefined') this.sizeObserver = new ResizeObserver(this.placeMenu);
     window.addEventListener('resize', this.placeMenu);
     window.addEventListener('scroll', this.closeMenu);
+    this.themeObserver = new MutationObserver(this.refreshPalette);
     this.syncMenu();
   },
   beforeUnmount() {
     this.sizeObserver?.disconnect();
+    this.themeObserver?.disconnect();
     window.removeEventListener('resize', this.placeMenu);
     window.removeEventListener('scroll', this.closeMenu);
   },
   methods: {
+    refreshPalette() { if (this.show) this.palette = contextMenuPalette(); },
     syncMenu() {
+      this.themeObserver?.disconnect();
       this.ready = false;
       this.sizeObserver?.disconnect();
       this.$nextTick(() => {
         if (!this.show || !this.$refs.menu) return;
+        this.refreshPalette();
+        this.themeObserver?.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'style'] });
         this.placeMenu();
         this.sizeObserver?.observe(this.$refs.menu);
       });
@@ -79,7 +86,7 @@ div.context-menu {
   border: 1px solid var(--context-menu-secondary-color);
   border-radius: var(--curve-factor);
   box-shadow: var(--context-menu-shadow);
-  opacity: .98;
+  opacity: 1;
 
   ul.menu-section {
     list-style: none;
@@ -96,15 +103,18 @@ div.context-menu {
       line-height: 1.4;
       text-align: left;
       &:not(:last-child) { border-bottom: 1px solid var(--context-menu-secondary-color); }
-      &:hover:not(.section-title) { background: var(--context-menu-secondary-color); }
+      &:hover:not(.section-title) {
+        background: var(--context-menu-highlight);
+        color: var(--context-menu-hover-color);
+      }
       &.section-title { cursor: default; font-weight: bold; justify-content: center; }
       svg { width: 1rem; height: 1rem; flex: 0 0 1rem; path { fill: currentColor; } }
-      span { min-width: 0; overflow-wrap: break-word; }
+      span { color: inherit; min-width: 0; overflow-wrap: break-word; }
     }
     &.disabled li:not(.section-title) {
       cursor: not-allowed;
       opacity: var(--dimming-factor);
-      &:hover { background: var(--context-menu-background); }
+      &:hover { background: var(--context-menu-background); color: var(--context-menu-color); }
     }
   }
 }

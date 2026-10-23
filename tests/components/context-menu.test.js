@@ -77,6 +77,13 @@ describe('context menus stay readable outside narrow or positioned view containe
     expect(wrapper.emitted('close')).toHaveLength(1);
   });
 
+  it('suppresses the browser menu when right-clicking the popup itself', async () => {
+    const menu = await openMenu();
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    menu.querySelector('li').dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
   it('keeps the selected opening method when clicking inside the menu', async () => {
     const menu = await openMenu();
     [...menu.querySelectorAll('li')].find(li => li.textContent.includes('在新标签页打开')).click();

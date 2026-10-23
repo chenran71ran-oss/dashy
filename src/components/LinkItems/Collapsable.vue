@@ -14,7 +14,7 @@
       tabIndex="-1"
     >
     <div class="section-header"
-      @mouseup.right="openRightClickMenu" @contextmenu="preventNativeContextMenu"
+      @contextmenu.stop="handleContextMenu"
       @long-press="openRightClickMenu" v-longPress="500">
       <label :for="sectionKey" class="collapse-toggle"
         v-tooltip="toggleTooltip()" :aria-label="$t('context-menus.section.expand-collapse')">
@@ -27,7 +27,7 @@
         v-tooltip="openTooltip()" class="header-action" />
       <EditModeIcon v-if="isEditMode" @click="openEditModal"
         v-tooltip="editTooltip()" class="header-action" />
-      <EllipseIcon @click.prevent.stop="openContextMenu" @contextmenu="preventNativeContextMenu"
+      <EllipseIcon @click.prevent.stop="openContextMenu" @contextmenu.stop="handleContextMenu"
         v-tooltip="optionsTooltip()" class="header-action" />
     </div>
     <div class="collapsible-content">
@@ -175,6 +175,11 @@ export default {
     /* Right-click / long-press is skipped when disabled by user */
     openRightClickMenu(e) {
       if (this.disableContextMenu) return;
+      this.openContextMenu(e);
+    },
+    handleContextMenu(e) {
+      if (this.disableContextMenu) return;
+      e.preventDefault();
       this.openContextMenu(e);
     },
     /* Prevent the native right-click menu, unless user disabled custom context menus */
