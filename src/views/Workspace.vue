@@ -1,6 +1,5 @@
 <template>
-  <HomeEditor v-if="isEditMode" />
-  <div v-else class="work-space">
+  <div class="work-space">
     <SideBar
       :sections="sections"
       @launch-app="launchApp"
@@ -23,7 +22,6 @@
 <script>
 import SettingsContainer from '@/components/Settings/SettingsContainer.vue';
 import HomeMixin from '@/mixins/HomeMixin';
-import HomeEditor from '@/views/Home.vue';
 import SideBar from '@/components/Workspace/SideBar';
 import WebContent from '@/components/Workspace/WebContent';
 import WidgetView from '@/components/Workspace/WidgetView';
@@ -52,7 +50,6 @@ export default {
     },
   },
   components: {
-    HomeEditor,
     SettingsContainer,
     SideBar,
     WebContent,
