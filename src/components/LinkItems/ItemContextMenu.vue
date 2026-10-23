@@ -1,7 +1,5 @@
 <template>
-  <transition name="slide">
-    <div class="context-menu" v-if="show"
-      :style="posX && posY ? `top:${posY}px;left:${posX}px;` : ''">
+  <ContextMenuSurface :show="show" :posX="posX" :posY="posY" @close="$emit('close')">
       <!-- Open Options -->
       <ul class="menu-section">
         <li class="section-title">
@@ -50,11 +48,11 @@
           <span>{{ $t('context-menus.item.remove-item') }}</span>
         </li>
       </ul>
-    </div>
-  </transition>
+  </ContextMenuSurface>
 </template>
 
 <script>
+import ContextMenuSurface from '@/components/FormElements/ContextMenu.vue';
 // Import icons for each element
 import EditIcon from '@/assets/interface-icons/config-edit-json.svg';
 import BinIcon from '@/assets/interface-icons/interactive-editor-remove.svg';
@@ -69,6 +67,7 @@ import NewWindowOpenIcon from '@/assets/interface-icons/open-new-window.svg';
 export default {
   name: 'ContextMenu',
   components: {
+    ContextMenuSurface,
     EditIcon,
     MoveIcon,
     BinIcon,
@@ -85,7 +84,7 @@ export default {
     show: Boolean, // Should show or hide the menu
     disableEdit: Boolean, // Disable editing for certain items
   },
-  emits: ['launchItem', 'openItemSettings', 'openMoveItemMenu', 'openDeleteItem'],
+  emits: ['launchItem', 'openItemSettings', 'openMoveItemMenu', 'openDeleteItem', 'close'],
   computed: {
     isEditMode() {
       return this.$store.state.editMode;
@@ -119,66 +118,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss">
-
-div.context-menu {
-  position: absolute;
-  margin: 0;
-  padding: 0;
-  z-index: 8;
-  background: var(--context-menu-background);
-  color: var(--context-menu-color);
-  border: 1px solid var(--context-menu-secondary-color);
-  border-radius: var(--curve-factor);
-  box-shadow: var(--context-menu-shadow);
-  opacity: 0.98;
-
-  ul.menu-section {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    &:not(:last-child) {
-      border-bottom: 1px solid var(--context-menu-color);
-    }
-    li {
-      cursor: pointer;
-      padding: 0.5rem 1rem;
-      display: flex;
-      flex-direction: row;
-      font-size: 1rem;
-      &:not(:last-child) {
-        border-bottom: 1px solid var(--context-menu-secondary-color);
-      }
-      &:hover:not(.section-title) {
-        background: var(--context-menu-secondary-color);
-      }
-      &.section-title {
-        cursor: default;
-        font-weight: bold;
-        justify-content: center;
-      }
-      svg {
-        width: 1rem;
-         margin-right: 0.5rem;
-          path { fill: currentColor; }
-      }
-    }
-    &.disabled li:not(.section-title) {
-      cursor: not-allowed;
-      opacity: var(--dimming-factor);
-      &:hover {
-        background: var(--context-menu-background);
-      }
-    }
-  }
-}
-
-// Define enter and leave transitions
-.slide-enter-active { animation: slide-in .1s; }
-.slide-leave-active { animation: slide-in .1s reverse; }
-@keyframes slide-in {
-  0% { transform: scaleY(0.5) scaleX(0.8) translateY(-50px); }
-  100% { transform: scaleY(1) translateY(0) translateY(0); }
-}
-</style>

@@ -21,7 +21,7 @@
     <!-- Right-click context menu -->
     <ContextMenu
       :show="contextMenuOpen && !isAddNew"
-      v-click-outside="closeContextMenu"
+      @close="closeContextMenu"
       :posX="contextPos.posX"
       :posY="contextPos.posY"
       :id="`context-menu-${id}`"
