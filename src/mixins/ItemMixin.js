@@ -354,10 +354,10 @@ export default {
       if (this.appConfig.disableContextMenu) return; // Right-click menu disabled in config
       this.contextMenuOpen = !this.contextMenuOpen;
       if (e && window) {
-        // Calculate placement based on cursor and scroll position
+        // Menus are fixed to the viewport, so use the pointer's client coordinates.
         this.contextPos = {
-          posX: e.clientX + window.pageXOffset,
-          posY: e.clientY + window.pageYOffset,
+          posX: e.clientX,
+          posY: e.clientY,
         };
       }
     },

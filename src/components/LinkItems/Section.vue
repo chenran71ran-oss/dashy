@@ -73,7 +73,7 @@
       :posX="contextPos.posX"
       :posY="contextPos.posY"
       :id="`context-menu-${groupId}`"
-      v-click-outside="closeContextMenu"
+      @close="closeContextMenu"
       @openEditSection="openEditSection"
       @navigateToSection="navigateToSection"
       @expandCollapseSection="expandCollapseSection"
@@ -297,8 +297,8 @@ export default {
       const sectionEl = document.getElementById(sectionOuterId);
       const sectionPosition = sectionEl ? sectionEl.getBoundingClientRect() : { right: 0, top: 0 };
       this.contextPos = {
-        posX: (e.clientX || sectionPosition.right - 10) + window.pageXOffset,
-        posY: (e.clientY || sectionPosition.top + 30) + window.pageYOffset,
+        posX: e?.clientX ?? sectionPosition.right - 10,
+        posY: e?.clientY ?? sectionPosition.top + 30,
       };
     },
     /* Hide the right-click context menu */

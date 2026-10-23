@@ -691,8 +691,8 @@ describe('Methods: openContextMenu / closeContextMenu', () => {
     const { wrapper } = mountItem();
     wrapper.vm.openContextMenu({ clientX: 100, clientY: 200 });
     expect(wrapper.vm.contextMenuOpen).toBe(true);
-    expect(wrapper.vm.contextPos.posX).toBe(100 + window.pageXOffset);
-    expect(wrapper.vm.contextPos.posY).toBe(200 + window.pageYOffset);
+    expect(wrapper.vm.contextPos.posX).toBe(100);
+    expect(wrapper.vm.contextPos.posY).toBe(200);
   });
 
   it('closeContextMenu sets false', () => {
