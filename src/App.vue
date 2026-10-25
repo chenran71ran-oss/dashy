@@ -266,6 +266,7 @@ html[data-theme-switching] *::after { transition: none !important; }
 @import '@/styles/color-themes.scss';
 @import '@/styles/typography.scss';
 @import '@/styles/portal-layout.scss';
+@import '@/styles/theme-readability.scss';
 @import '@/styles/user-defined-themes.scss';
 
 </style>
