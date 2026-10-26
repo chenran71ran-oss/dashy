@@ -13,3 +13,8 @@ export const officialSiteIcons = Object.freeze({
 export const officialApplicationIcons = Object.freeze({
   komari: 'https://raw.githubusercontent.com/komari-monitor/komari-web/d54ce1288df41ead08aa19f8700186e68028a889/public/favicon.png',
 });
+
+// Explicit local service artwork, not claimed to be an official fetched favicon.
+export const localServiceIcons = Object.freeze({
+  'spark.chenran71ran.cc': '/portal-icons/fluent/fire.svg',
+});

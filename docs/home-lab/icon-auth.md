@@ -24,3 +24,19 @@
 由于当前浏览器已有分站登录状态，不能以一次无弹窗浏览证明全新未登录环境已经验收；不清理用户保存的凭据来强行重现。最终无凭据环境由用户复核。
 
 HTTP 检测可独立配置，但不等同于自动登录；真实 ICMP Ping 仍需接入 `DASHY_BACKEND_URL` 主机探针。
+
+
+## 2026-10-26：SparkFlow 与 Access 保护站点
+
+`抖音-续火花` 对应 SparkFlow。匿名首页请求返回 Cloudflare Access 登录重定向；已登录页面未声明真实 favicon。此种站点没有可以匿名抓取的站点图标，不能将登录页图标误认为业务图标。
+
+- 为明确的 SparkFlow 主机添加本地服务图标映射，使用现有 Fluent UI `fire.svg`（既有图标库许可），不冒称官方抓取结果，不把其他包含“抖音”字样的网站误识别为抖音官网。
+- 卡片自动匹配与读取按钮共用该服务图标；手动指定的图标仍优先。读取结果明确显示“本地服务图标”。
+- 对其他站点，识别 Cloudflare Access 登录重定向，停止抓取登录页并返回 `authentication-required`；编辑器解释需要登录/Access 保护的原因。
+- 保持站点认证，不读取或转发访问 Cookie，不引入第三方抓取服务。
+
+本次为已有网站在云端配置中设置该本地图标，并补充英文说明：
+
+> Automatically maintain Douyin chat streaks and track daily sending status.
+
+验证：37 项 Node 图标测试、12 项编辑器/匿名图片策略测试及生产构建通过。新增测试覆盖本地图标免网络返回、前端接受服务图标、Access 重定向不请求登录页。分支：`fix/site-icon-discovery-20261026`。

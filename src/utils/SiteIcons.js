@@ -1,5 +1,5 @@
 import { websiteFavicon } from './PortalIcons.js';
-import { officialSiteIcons } from '../../cloud/icon-catalog.mjs';
+import { officialSiteIcons, localServiceIcons } from '../../cloud/icon-catalog.mjs';
 import { iconCrossOrigin } from './IconImagePolicy.js';
 const cache=new Map();
 export function siteIconOrigin(url) {
@@ -17,7 +17,7 @@ export async function discoverSiteIcon(url,{force=false,page=false,fetcher=fetch
       const response=await fetcher('/api/icon-discovery',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(page?{origin,page:target.href}:{origin}),signal:AbortSignal.timeout(page?23000:8000)});
       if(!response.ok)return {icon:'',source:'unavailable',reason:response.status===401?'login-required':`http-${response.status}`,verified:false};const data=await response.json();
       let icon='';try{const u=new URL(data.icon);if(u.protocol==='https:' && !u.username && !u.password)icon=u.href;}catch{}
-      if(typeof data.icon==='string' && data.icon.startsWith('/portal-icons/') && Object.values(officialSiteIcons).includes(data.icon))icon=data.icon;
+      if(typeof data.icon==='string' && data.icon.startsWith('/portal-icons/') && [...Object.values(officialSiteIcons),...Object.values(localServiceIcons)].includes(data.icon))icon=data.icon;
       return {icon:icon||websiteFavicon(url),source:icon?data.source:'unavailable',reason:data.reason,verified:!!icon && data.verified===true};
     }catch{return {icon:websiteFavicon(url),source:'unavailable',reason:'request',verified:false};}
   })();

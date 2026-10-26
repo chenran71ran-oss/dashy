@@ -1,5 +1,5 @@
 // Reads public homepage icon metadata. Never forwards session cookies or site URL tokens.
-import { officialSiteIcons, officialApplicationIcons } from './icon-catalog.mjs';
+import { officialSiteIcons, officialApplicationIcons, localServiceIcons } from './icon-catalog.mjs';
 const dnsCache = new Map();
 const blockedHost = /(^|\.)(localhost|local|internal|home|lan|invalid)$/i;
 export function publicIconUrl(value, base) {
@@ -129,6 +129,7 @@ export async function discoverIcon(value, fetcher=fetch, {page=false,onImage}={}
   const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),page?20000:6500);
   let stage='dns';
   try {
+    if(localServiceIcons[root.hostname])return {icon:localServiceIcons[root.hostname],source:'local-service',verified:true};
     // Verified bundled brand assets do not depend on remote metadata availability.
     const bundled=officialSiteIcons[root.hostname] || (root.hostname==='www.nodeseek.com'?officialSiteIcons['nodeseek.com']:'');
     if(bundled?.startsWith('/portal-icons/'))return {icon:bundled,source:'catalog',verified:true};
@@ -147,7 +148,11 @@ export async function discoverIcon(value, fetcher=fetch, {page=false,onImage}={}
       const location=response.headers.get('location');await response.body?.cancel();
       if(!location || redirects===2)throw new Error('Redirect unavailable');
       // Public redirects may select a locale path. Queries never come from the user's bookmark.
-      target=publicIconUrl(location,target);target.search='';
+      const redirected=publicIconUrl(location,target);
+      if(redirected.hostname.endsWith('.cloudflareaccess.com') || redirected.pathname.startsWith('/cdn-cgi/access/login')) {
+        return {icon:'',source:'unavailable',verified:false,reason:'authentication-required'};
+      }
+      target=redirected;target.search='';
     }
     let reason='', candidates=[],hasScripts=false;
     const seen=new Set();
@@ -198,7 +203,7 @@ export async function discoverIcon(value, fetcher=fetch, {page=false,onImage}={}
         }catch(error){if(controller.signal.aborted)throw error;}
       }
     } else {
-      reason=response.ok?'not-html':`http-${response.status}`;
+      reason=response.status===401?'authentication-required':response.ok?'not-html':`http-${response.status}`;
       await response.body?.cancel();
     }
     const known=officialSiteIcons[root.hostname];

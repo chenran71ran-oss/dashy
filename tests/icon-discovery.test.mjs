@@ -252,3 +252,19 @@ test('runtime configuration cannot introduce private icons or follow unvalidated
     assert.equal(result.verified,false);assert.ok(calls.every(c=>!c.includes('127.0.0.1')));
   }
 });
+
+test('protected SparkFlow uses explicit local service artwork without a remote request',async()=>{
+  const result=await discoverIcon('https://spark.chenran71ran.cc/',async()=>{throw new Error('must not fetch protected service');});
+  assert.equal(result.icon,'/portal-icons/fluent/fire.svg');assert.equal(result.source,'local-service');assert.equal(result.verified,true);
+  const client=await discoverSiteIcon('https://spark.chenran71ran.cc/',{force:true,fetcher:async()=>Response.json(result)});
+  assert.equal(client.icon,result.icon);assert.equal(client.verified,true);
+});
+test('Cloudflare Access redirect is identified without fetching a login page favicon',async()=>{
+  const calls=[];
+  const result=await discoverIcon('https://protected-app.example/',async(url)=>{
+    calls.push(url);if(url.includes('/dns-query?'))return dns();
+    return new Response('',{status:302,headers:{location:'https://team.cloudflareaccess.com/cdn-cgi/access/login/protected-app.example'}});
+  });
+  assert.equal(result.reason,'authentication-required');assert.equal(result.verified,false);assert.equal(result.icon,'');
+  assert.equal(calls.some(u=>u.includes('team.cloudflareaccess.com')),false);
+});
