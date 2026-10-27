@@ -3,6 +3,7 @@ import { officialSiteIcons } from '../../cloud/icon-catalog.mjs';
 const qx = (id, title, file, hosts = [], aliases = []) => ({ id, title, src: `/portal-icons/qx/${file}.png`, hosts, aliases, source: 'QX' });
 const local = (id, title, hosts = [], aliases = []) => ({ id, title, src: `/portal-icons/${id}.svg`, hosts, aliases, source: 'Simple Icons' });
 export const portalIcons = [
+  { id: 'brog-hub', title: 'Brog Hub', src: '/portal-icons/brog-hub.svg', hosts: ['aileader.chenran71ran.cc'], exactHosts: true, aliases: ['brog hub'], source: 'Owner-provided artwork' },
   { id: 'aistudio', title: 'Google AI Studio / Gemini API', src: officialSiteIcons['aistudio.google.com'], hosts: ['aistudio.google.com'], aliases: ['google api', 'google ai studio', 'gemini api'], source: 'Official AI Studio product icon' },
   { id: 'deepseek', title: 'DeepSeek / DeepSeek API', src: officialSiteIcons['platform.deepseek.com'], hosts: ['deepseek.com'], aliases: ['deepseek', 'deepseek api', '深度求索'], source: 'Official platform favicon' },
   { id: 'nodeseek', title: 'NodeSeek', src: officialSiteIcons['nodeseek.com'], hosts: ['nodeseek.com'], aliases: ['nodeseek', 'node seek'], source: 'Official favicon' },
@@ -53,6 +54,8 @@ const legacyPlaceholders = new Set(['🧠', '🌐', '🔗', '🖥️', '☁️',
 export function websiteIcon(item = {}, defaultIcon = '') {
   const configured = item.icon || defaultIcon;
   const match = matchPortalIcon(item.url, item.title);
+  // Replace only the temporary book placeholder used for Brog Hub.
+  if (match?.id === 'brog-hub' && ['lucide-book', '/portal-icons/lucide/book.svg'].includes(configured)) return 'portal-brog-hub';
   if (match && (!configured || legacyPlaceholders.has(configured))) return `portal-${match.id}`;
   if (configured === '✋' && /(^|\.)manus\.im$/.test((() => { try { return new URL(item.url).hostname; } catch { return ''; } })())) return 'auto';
   return configured || 'auto';
