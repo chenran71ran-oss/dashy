@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { matchPortalIcon, websiteFavicon, websiteIcon, portalIconPath } from '../src/utils/PortalIcons.js';
+test('Brog Hub replaces its temporary book icon while preserving later custom choices', () => {
+  const url = 'https://aileader.chenran71ran.cc/';
+  assert.equal(matchPortalIcon(url).id, 'brog-hub');
+  assert.equal(portalIconPath(websiteIcon({ url, icon: 'lucide-book' })), '/portal-icons/brog-hub.svg');
+  assert.equal(websiteIcon({ url, icon: '/my-next-icon.png' }), '/my-next-icon.png');
+  assert.equal(websiteIcon({ url: 'https://other.example/', icon: 'lucide-book' }), 'lucide-book');
+  assert.equal(matchPortalIcon('https://sub.aileader.chenran71ran.cc/'), undefined);
+  assert.equal(matchPortalIcon('https://aileader.chenran71ran.cc.evil.example/'), undefined);
+});
 test('Google AI Studio keeps its own product identity, while unknown Google apps are not assigned Google Search',()=>{
   assert.equal(matchPortalIcon('https://aistudio.google.com/usage').id,'aistudio');
   assert.equal(matchPortalIcon('https://unknown-app.google.com/'),undefined);
