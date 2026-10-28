@@ -1,5 +1,5 @@
 <template>
-  <div v-if="effectiveIcon" :class="[`item-icon wrapper-${size}`, {'brand-icon': isBrand}]">
+  <div v-if="effectiveIcon" :class="[`item-icon wrapper-${size}`, {'brand-icon': isBrand, 'monochrome-brand': isMonochromeBrand}]">
     <span v-if="isGlyph" :class="`glyph-icon ${size}`" :style="{maskImage: `url(${resolvedIcon})`, WebkitMaskImage: `url(${resolvedIcon})`}" aria-hidden="true"></span>
     <!-- Font-Awesome Icon -->
     <i v-else-if="iconType === 'font-awesome'" :class="`${effectiveIcon} ${size}`" ></i>
@@ -68,9 +68,9 @@ export default {
       if (this.effectiveIcon === 'auto') return matchPortalIcon(this.url, this.title)?.src || this.discoveredIcon || cachedSiteIcon(this.url,{page:true}) || websiteFavicon(this.url);
       return builtinIconPath(this.effectiveIcon) || portalIconPath(this.effectiveIcon) || this.effectiveIcon;
     },
-    // The official DeepSeek favicon is a black silhouette. Use its original
-    // shape as a mask so it remains visible in both light and dark themes.
-    isGlyph() { return this.resolvedIcon.startsWith('/portal-icons/lucide/') || this.resolvedIcon === '/portal-icons/deepseek.svg'; },
+    // Theme foreground masks are for UI glyphs; brand artwork keeps its colors.
+    isGlyph() { return this.resolvedIcon.startsWith('/portal-icons/lucide/'); },
+    isMonochromeBrand() { return ['/portal-icons/chatgpt-official.svg', '/portal-icons/deepseek.svg'].includes(this.resolvedIcon); },
     isBrand() { return this.resolvedIcon.startsWith('/portal-icons/') || this.resolvedIcon === matchPortalIcon(this.url, this.title)?.src; },
     monogram() {
       const label = this.title || this.getHostName(this.url).replace(/^www\./, '') || '?';
@@ -422,4 +422,5 @@ export default {
 <style scoped>
 .icon-monogram { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: 8px; background: var(--primary-transparent-60, #8882); font-family: sans-serif; font-weight: 700; line-height: 1; }
 .brand-icon img.tile-icon { object-fit: contain; filter: none !important; padding: 0 !important; }
+.monochrome-brand img.tile-icon { background: #fff !important; border-radius: 12% !important; }
 </style>
