@@ -13,7 +13,7 @@
       <path v-if="siPath" :d="siPath" />
     </svg>
     <!-- Standard image asset icon -->
-    <img v-else-if="iconPath && !broken" :crossorigin="imageCrossOrigin" :src="imageSource" :alt="title ? `${title} 图标` : ''" @error="onImageError" loading="lazy" referrerpolicy="no-referrer"
+    <img v-else-if="iconPath && !broken" :crossorigin="imageCrossOrigin" :src="imageSource" :alt="title ? `${title} 图标` : ''" @error="onImageError" loading="eager" decoding="async" referrerpolicy="no-referrer"
       :class="`tile-icon ${size} ${broken ? 'broken' : ''}`"
     />
     <!-- Icon could not load/ broken url -->
@@ -24,7 +24,7 @@
 <script>
 import { matchPortalIcon, portalIconPath, websiteFavicon, websiteIcon } from '@/utils/PortalIcons';
 import { builtinIconPath } from '@/utils/BuiltinIcons';
-import { discoverSiteIcon } from '@/utils/SiteIcons';
+import { discoverSiteIcon, cachedSiteIcon } from '@/utils/SiteIcons';
 import { iconCrossOrigin } from '@/utils/IconImagePolicy';
 import BrokenImage from '@/assets/interface-icons/broken-icon.svg';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
@@ -65,7 +65,7 @@ export default {
       return this.url ? websiteIcon({ icon: this.icon, url: this.url, title: this.title }) : this.icon;
     },
     resolvedIcon() {
-      if (this.effectiveIcon === 'auto') return matchPortalIcon(this.url, this.title)?.src || this.discoveredIcon || websiteFavicon(this.url);
+      if (this.effectiveIcon === 'auto') return matchPortalIcon(this.url, this.title)?.src || this.discoveredIcon || cachedSiteIcon(this.url,{page:true}) || websiteFavicon(this.url);
       return builtinIconPath(this.effectiveIcon) || portalIconPath(this.effectiveIcon) || this.effectiveIcon;
     },
     // The official DeepSeek favicon is a black silhouette. Use its original
