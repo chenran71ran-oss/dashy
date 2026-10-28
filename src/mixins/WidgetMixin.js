@@ -3,6 +3,7 @@
  * Manages loading state, error handling, data updates and user options
  */
 import { Progress } from 'rsup-progress';
+import { markRaw } from 'vue';
 import request from '@/utils/request';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import { serviceEndpoints } from '@/utils/config/defaults';
@@ -15,11 +16,13 @@ const WidgetMixin = {
     },
   },
   data: () => ({
-    progress: new Progress({ color: 'var(--progress-bar)' }),
+    progress: markRaw(new Progress({ color: 'var(--progress-bar)' })),
     overrideProxyChoice: false,
     overrideUpdateInterval: null,
     disableLoader: false, // Prevent ever showing the loader
     updater: null, // Stores interval
+    progressEndTimer: null,
+    widgetDisposed: false,
     defaultTimeout: 50000,
   }),
   /* When component mounted, fetch initial data */
@@ -31,6 +34,9 @@ const WidgetMixin = {
     }
   },
   beforeUnmount() {
+    this.widgetDisposed = true;
+    clearTimeout(this.progressEndTimer);
+    this.progress.end(true);
     if (this.updater) {
       clearInterval(this.updater);
     }
@@ -76,6 +82,8 @@ const WidgetMixin = {
     },
     /* If continuous updates enabled, create interval */
     continuousUpdates() {
+      if (this.updater) clearInterval(this.updater);
+      if (this.widgetDisposed || !this.updateInterval) return;
       this.updater = setInterval(() => { this.update(); }, this.updateInterval);
     },
     /* Called when an error occurs. Logs to handler, and passes to parent component */
@@ -87,6 +95,7 @@ const WidgetMixin = {
     },
     /* When a data request update starts, show loader */
     startLoading() {
+      if (this.widgetDisposed) return;
       if (!this.disableLoader) {
         this.$emit('loading', true);
         this.progress.start();
@@ -94,8 +103,10 @@ const WidgetMixin = {
     },
     /* When a data request finishes, hide loader */
     finishLoading() {
+      if (this.widgetDisposed) return;
       this.$emit('loading', false);
-      setTimeout(() => { this.progress.end(); }, 500);
+      clearTimeout(this.progressEndTimer);
+      this.progressEndTimer = setTimeout(() => { this.progress.end(); this.progressEndTimer = null; }, 500);
     },
     /* Overridden by child component. Will make network request, then end loader */
     fetchData() {
