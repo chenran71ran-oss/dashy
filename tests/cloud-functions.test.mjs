@@ -6,6 +6,15 @@ import { readWeather } from '../cloud/weather.mjs';
 import { configPath } from '../cloud/config-storage.mjs';
 
 const dns = () => Response.json({ Status: 0, Answer: [{ type: 1, data: '8.8.8.8' }] });
+test('bundled image responses are cacheable without caching missing assets or HTML', async () => {
+  const env={ASSETS:{fetch:async req=>new URL(req.url).pathname.endsWith('missing.svg')?new Response('missing',{status:404}):new Response('asset',{headers:{'content-type':new URL(req.url).pathname==='/'?'text/html':'image/svg+xml'}})}};
+  const icon=await worker.fetch(new Request('https://home.example/portal-icons/chatgpt-hq.svg'),env);
+  assert.equal(icon.headers.get('cache-control'),'public, max-age=3600');
+  const missing=await worker.fetch(new Request('https://home.example/portal-icons/missing.svg'),env);
+  assert.notEqual(missing.headers.get('cache-control'),'public, max-age=3600');
+  const html=await worker.fetch(new Request('https://home.example/'),env);
+  assert.equal(html.headers.get('cache-control'),'no-store');
+});
 const fixture = async () => {
   const values = new Map([['kenneth-home:dashy:v1', JSON.stringify(DEFAULT_CONFIG)]]);
   const env = { ADMIN_TOKEN: 'test-password', HOME_KV: { get: async k => values.get(k) ?? null, put: async (k, v) => values.set(k, v) }, ASSETS: { fetch: async () => new Response('shell') } };

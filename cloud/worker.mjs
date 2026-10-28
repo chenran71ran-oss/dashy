@@ -326,6 +326,7 @@ export default {
       headers.set('x-content-type-options', 'nosniff');
       headers.set('referrer-policy', 'no-referrer');
       headers.set('x-frame-options', 'DENY');
+      if (response.status===200 && /^\/portal-icons\/.+\.(?:svg|png|jpg|webp)$/.test(u.pathname)) headers.set('cache-control','public, max-age=3600');
       if (headers.get('content-type')?.includes('text/html')) headers.set('cache-control', 'no-store');
       return new Response(response.body, { status: response.status, headers });
     } catch (e) {

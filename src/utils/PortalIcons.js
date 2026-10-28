@@ -9,9 +9,9 @@ export const portalIcons = [
   { id: 'nodeseek', title: 'NodeSeek', src: officialSiteIcons['nodeseek.com'], hosts: ['nodeseek.com'], aliases: ['nodeseek', 'node seek'], source: 'Official favicon' },
   { id: 'awsconsole', title: 'AWS Management Console', src: officialSiteIcons['console.aws.amazon.com'], hosts: ['console.aws.amazon.com'], aliases: ['aws', 'aws控制面板'], source: 'AWS Architecture Icons' },
   { id: 'linuxdo', title: 'LINUX DO', src: officialSiteIcons['linux.do'], hosts: ['linux.do'], aliases: ['linux do', 'linuxdo'], source: 'Official favicon' },
-  qx('chatgpt', 'ChatGPT / GPT', 'ChatGPT', ['chatgpt.com', 'chat.openai.com'], ['chatgpt', 'gpt']),
-  qx('claude', 'Claude', 'Claude', ['claude.ai'], ['claude']),
-  qx('gemini', 'Google Gemini', 'Gemini', ['gemini.google.com'], ['google gemini', 'gemini']),
+  { ...qx('chatgpt', 'ChatGPT / GPT', 'ChatGPT', ['chatgpt.com', 'chat.openai.com'], ['chatgpt', 'gpt']), src: '/portal-icons/chatgpt-hq.svg', source: 'Lobe Icons / OpenAI' },
+  { ...qx('claude', 'Claude', 'Claude', ['claude.ai'], ['claude']), src: '/portal-icons/claude-hq.svg', source: 'Simple Icons / Claude' },
+  { ...qx('gemini', 'Google Gemini', 'Gemini', ['gemini.google.com'], ['google gemini', 'gemini']), src: '/portal-icons/gemini-hq.svg', source: 'Lobe Icons / Gemini' },
   qx('emby', 'Emby', 'Emby', ['app.emby.media'], ['emby']),
   qx('github', 'GitHub', 'GitHub', ['github.com'], ['github', '总站源码']),
   qx('speedtest', 'Speedtest', 'Speedtest', ['speedtest.net'], ['speedtest']),
@@ -54,6 +54,15 @@ const legacyPlaceholders = new Set(['🧠', '🌐', '🔗', '🖥️', '☁️',
 export function websiteIcon(item = {}, defaultIcon = '') {
   const configured = item.icon || defaultIcon;
   const match = matchPortalIcon(item.url, item.title);
+  if (match?.id==='chatgpt' && ['si-openai','si-chatgpt'].includes(configured)) return 'portal-chatgpt';
+  // Saved official favicons should not bypass the bundled AI brand assets.
+  if (['chatgpt', 'claude', 'gemini'].includes(match?.id)) {
+    try {
+      const image=new URL(configured);
+      const official=match.hosts.some(host=>image.hostname===host || image.hostname.endsWith(`.${host}`));
+      if (official && /(?:^|\/)(?:favicon[^/]*|apple-touch-icon[^/]*)$/i.test(image.pathname)) return `portal-${match.id}`;
+    } catch { /* Keep manual icons and local paths. */ }
+  }
   // Replace only the temporary book placeholder used for Brog Hub.
   if (match?.id === 'brog-hub' && ['lucide-book', '/portal-icons/lucide/book.svg'].includes(configured)) return 'portal-brog-hub';
   if (match && (!configured || legacyPlaceholders.has(configured))) return `portal-${match.id}`;
