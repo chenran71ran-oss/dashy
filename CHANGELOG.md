@@ -4,6 +4,12 @@
 
 此日志记录本 fork 的定制工作。日期按 Asia/Shanghai；条目依据真实 GitHub 提交整理，合并日期与开发日期分别标注。不为已有改动重新制造旧提交，也不将包版本 `4.7.17` 当作本 fork 的发布编号。代码已合并不代表对应版本已完成线上部署。
 
+## 2026-10-28 · 按官网校准品牌图标
+
+- ChatGPT 撤销自定义绿色，使用 OpenAI 官方仓库黑白 SVG；NotebookLM 更新为 Google 官网 v6 彩色 SVG。
+- DeepSeek API 官网实际使用黑色鲸鱼；取消主题前景色蒙版，保留官网图形与颜色，并提供白底保障深色主题可见性。
+- 保留内置资源和缓存优化。[官网依据、来源与验证范围](docs/home-lab/official-brand-calibration.md)。
+
 ## 2026-10-28 · AI 高清图标与小组件资源清理分支
 
 - GPT、Claude、Gemini 使用独立高清 SVG；旧 GPT Simple Icons 配置及可识别的官网 favicon 复用内置资源，减少远程读取与整包加载。

@@ -3,13 +3,14 @@ import { officialSiteIcons } from '../../cloud/icon-catalog.mjs';
 const qx = (id, title, file, hosts = [], aliases = []) => ({ id, title, src: `/portal-icons/qx/${file}.png`, hosts, aliases, source: 'QX' });
 const local = (id, title, hosts = [], aliases = []) => ({ id, title, src: `/portal-icons/${id}.svg`, hosts, aliases, source: 'Simple Icons' });
 export const portalIcons = [
+  { id: 'notebooklm', title: 'NotebookLM / Gemini Notebook', src: '/portal-icons/notebooklm-official.svg', hosts: ['notebooklm.google.com', 'notebooklm.google', 'notebook.google'], exactHosts: true, aliases: ['notebooklm', 'notebook lm', 'gemini notebook'], source: 'Google official v6 favicon' },
   { id: 'brog-hub', title: 'Brog Hub', src: '/portal-icons/brog-hub.svg', hosts: ['aileader.chenran71ran.cc'], exactHosts: true, aliases: ['brog hub'], source: 'Owner-provided artwork' },
   { id: 'aistudio', title: 'Google AI Studio / Gemini API', src: officialSiteIcons['aistudio.google.com'], hosts: ['aistudio.google.com'], aliases: ['google api', 'google ai studio', 'gemini api'], source: 'Official AI Studio product icon' },
   { id: 'deepseek', title: 'DeepSeek / DeepSeek API', src: officialSiteIcons['platform.deepseek.com'], hosts: ['deepseek.com'], aliases: ['deepseek', 'deepseek api', '深度求索'], source: 'Official platform favicon' },
   { id: 'nodeseek', title: 'NodeSeek', src: officialSiteIcons['nodeseek.com'], hosts: ['nodeseek.com'], aliases: ['nodeseek', 'node seek'], source: 'Official favicon' },
   { id: 'awsconsole', title: 'AWS Management Console', src: officialSiteIcons['console.aws.amazon.com'], hosts: ['console.aws.amazon.com'], aliases: ['aws', 'aws控制面板'], source: 'AWS Architecture Icons' },
   { id: 'linuxdo', title: 'LINUX DO', src: officialSiteIcons['linux.do'], hosts: ['linux.do'], aliases: ['linux do', 'linuxdo'], source: 'Official favicon' },
-  { ...qx('chatgpt', 'ChatGPT / GPT', 'ChatGPT', ['chatgpt.com', 'chat.openai.com'], ['chatgpt', 'gpt']), src: '/portal-icons/chatgpt-hq.svg', source: 'Lobe Icons / OpenAI' },
+  { ...qx('chatgpt', 'ChatGPT / GPT', 'ChatGPT', ['chatgpt.com', 'chat.openai.com'], ['chatgpt', 'gpt']), src: '/portal-icons/chatgpt-official.svg', source: 'OpenAI official cookbook logomark' },
   { ...qx('claude', 'Claude', 'Claude', ['claude.ai'], ['claude']), src: '/portal-icons/claude-hq.svg', source: 'Simple Icons / Claude' },
   { ...qx('gemini', 'Google Gemini', 'Gemini', ['gemini.google.com'], ['google gemini', 'gemini']), src: '/portal-icons/gemini-hq.svg', source: 'Lobe Icons / Gemini' },
   qx('emby', 'Emby', 'Emby', ['app.emby.media'], ['emby']),
@@ -54,9 +55,12 @@ const legacyPlaceholders = new Set(['🧠', '🌐', '🔗', '🖥️', '☁️',
 export function websiteIcon(item = {}, defaultIcon = '') {
   const configured = item.icon || defaultIcon;
   const match = matchPortalIcon(item.url, item.title);
+  if (match?.id==='chatgpt' && configured==='/portal-icons/chatgpt-hq.svg') return 'portal-chatgpt';
+  if (match?.id==='deepseek' && configured==='si-deepseek') return 'portal-deepseek';
+  if (match?.id==='notebooklm' && ['si-notebooklm','portal-notebooklm'].includes(configured)) return 'portal-notebooklm';
   if (match?.id==='chatgpt' && ['si-openai','si-chatgpt'].includes(configured)) return 'portal-chatgpt';
   // Saved official favicons should not bypass the bundled AI brand assets.
-  if (['chatgpt', 'claude', 'gemini'].includes(match?.id)) {
+  if (['chatgpt', 'claude', 'gemini', 'notebooklm', 'deepseek'].includes(match?.id)) {
     try {
       const image=new URL(configured);
       const official=match.hosts.some(host=>image.hostname===host || image.hostname.endsWith(`.${host}`));

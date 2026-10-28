@@ -27,7 +27,7 @@ test('automatic icons use the catalog while preserving explicit custom images', 
   assert.equal(websiteIcon({ url: 'https://chatgpt.com/', icon: '/custom.png' }), '/custom.png');
   assert.equal(websiteIcon({ url: 'https://example.com/', icon: '🚀' }), '🚀');
   assert.equal(websiteIcon({ url: 'https://example.com/' }), 'auto');
-  assert.equal(portalIconPath('portal-chatgpt'), '/portal-icons/chatgpt-hq.svg');
+  assert.equal(portalIconPath('portal-chatgpt'), '/portal-icons/chatgpt-official.svg');
 });
 test('favicon lookup omits paths, query strings and fragments, and rejects unsafe URLs', () => {
   assert.equal(websiteFavicon('https://example.com/private/path?token=test-only#secret'), 'https://example.com/favicon.ico');
