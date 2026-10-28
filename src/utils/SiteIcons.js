@@ -2,6 +2,17 @@ import { websiteFavicon } from './PortalIcons.js';
 import { officialSiteIcons } from '../../cloud/icon-catalog.mjs';
 import { iconCrossOrigin } from './IconImagePolicy.js';
 const cache=new Map();
+const CACHE_LIMIT=512;
+function discoveryKey(url,page) {
+  const origin=siteIconOrigin(url);if(!origin)return '';
+  const target=new URL(url);target.search='';target.hash='';
+  return page?target.href:origin;
+}
+// Render a warm result synchronously, before a remounted card's first paint.
+export function cachedSiteIcon(url,{page=false}={}) {
+  const stored=cache.get(discoveryKey(url,page));
+  return stored?.expires>Date.now() && stored.result?.verified ? stored.result.icon : '';
+}
 export function siteIconOrigin(url) {
   try { const u=new URL(url);if(u.protocol!=='https:' || u.username || u.password)return '';return u.origin; }
   catch { return ''; }
@@ -10,7 +21,7 @@ export async function discoverSiteIcon(url,{force=false,page=false,fetcher=fetch
   const origin=siteIconOrigin(url);if(!origin)return {icon:websiteFavicon(url),source:'favicon',verified:false};
   // Explicit reads may inspect the bookmarked page, but never its query or fragment.
   const target=new URL(url);target.search='';target.hash='';
-  const key=page?target.href:origin;
+  const key=discoveryKey(url,page);
   const stored=cache.get(key);if(!force && stored?.expires>Date.now())return stored.promise;
   const promise=(async()=>{
     try {
@@ -21,9 +32,9 @@ export async function discoverSiteIcon(url,{force=false,page=false,fetcher=fetch
       return {icon:icon||websiteFavicon(url),source:icon?data.source:'unavailable',reason:data.reason,verified:!!icon && data.verified===true};
     }catch{return {icon:websiteFavicon(url),source:'unavailable',reason:'request',verified:false};}
   })();
-  if(cache.size>=64)cache.delete(cache.keys().next().value);
+  if(!cache.has(key) && cache.size>=CACHE_LIMIT)cache.delete(cache.keys().next().value);
   cache.set(key,{promise,expires:Date.now()+600000});
-  promise.then(result=>{if(cache.get(key)?.promise===promise)cache.get(key).expires=Date.now()+(result.verified?600000:5000);});
+  promise.then(result=>{if(cache.get(key)?.promise===promise){cache.get(key).result=result;cache.get(key).expires=Date.now()+(result.verified?600000:5000);}});
   return promise;
 }
 

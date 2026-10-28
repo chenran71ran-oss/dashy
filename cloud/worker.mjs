@@ -269,7 +269,9 @@ export default {
           // Cache contention must never turn a successfully fetched image into an error.
           if(env.HOME_KV)try { await env.HOME_KV.put(key,JSON.stringify(data),{expirationTtl:86400}); } catch { /* Return the image even when the cache write is unavailable. */ }
         }
-        return new Response(Uint8Array.from(atob(data.body),c=>c.charCodeAt(0)),{headers:{...BASE_HEADERS,'content-type':data.mime,'content-security-policy':"default-src 'none'; sandbox",'x-frame-options':'DENY'}});
+        // Only validated public image bytes may be reused by this browser.
+        // Authentication errors, configuration and discovery responses remain no-store.
+        return new Response(Uint8Array.from(atob(data.body),c=>c.charCodeAt(0)),{headers:{...BASE_HEADERS,'cache-control':'private, max-age=3600','vary':'Cookie','content-type':data.mime,'content-security-policy':"default-src 'none'; sandbox",'x-frame-options':'DENY'}});
       }
       if (['/conf.yml', '/api/config'].includes(u.pathname) && method === 'GET') {
         await authorize(req, env);

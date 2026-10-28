@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import IconPicker from '@/components/InteractiveEditor/IconPicker.vue';
 import ItemIcon from '@/components/LinkItems/ItemIcon.vue';
 import { discoverSiteIcon, verifySiteIcon } from '@/utils/SiteIcons';
-vi.mock('@/utils/SiteIcons',()=>({discoverSiteIcon:vi.fn(),verifySiteIcon:vi.fn()}));
+vi.mock('@/utils/SiteIcons',()=>({discoverSiteIcon:vi.fn(),cachedSiteIcon:vi.fn(()=>''),verifySiteIcon:vi.fn()}));
 vi.mock('@/assets/interface-icons/broken-icon.svg',()=>({default:{template:'<span />'}}));
 it('does not replace an existing icon with an image the browser cannot decode',async()=>{
   discoverSiteIcon.mockResolvedValue({icon:'https://site.example/broken.png',verified:true,source:'site'});
