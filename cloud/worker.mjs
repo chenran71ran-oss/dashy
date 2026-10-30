@@ -27,6 +27,15 @@ function json(data, status=200, extraHeaders={}) {
 }
 function fail(message,status=400) { const e=new Error(message);e.status=status;throw e; }
 const SESSION_SECONDS=12*60*60;
+// One isolate serves many concurrent requests. Share an in-flight icon fetch
+// between them; entries are removed when settled, so the map cannot grow.
+const iconFetches=new Map();
+function sharedIconFetch(href) {
+  let task=iconFetches.get(href);
+  if(!task){task=fetchPublicIcon(href).finally(()=>iconFetches.delete(href));iconFetches.set(href,task);}
+  return task;
+}
+const toBase64=bytes=>{let binary='';for(let at=0;at<bytes.length;at+=8192)binary+=String.fromCharCode(...bytes.slice(at,at+8192));return btoa(binary);};
 const encoder=new TextEncoder();
 function requirePassword(env){
   if(typeof env.ADMIN_TOKEN!=='string'||!env.ADMIN_TOKEN) fail('请检查 ADMIN_TOKEN，当前未读取到管理员密码',503);
@@ -168,7 +177,7 @@ async function readConfig(env) {
   return structuredClone(DEFAULT_CONFIG);
 }
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     try {
       const u = new URL(req.url), method = req.method;
       if (u.protocol === 'http:' && !['localhost', '127.0.0.1', '[::1]'].includes(u.hostname)) {
@@ -260,18 +269,20 @@ export default {
         if(!value||value.length>4096)fail('图标地址无效');
         const target=publicIconUrl(value);
         const key=await iconCacheKey(target.href);
-        const cached=await env.HOME_KV?.get(key);let data;
-        if(cached)data=JSON.parse(cached);
+        const cached=await env.HOME_KV?.get(key);let body,mime;
+        if(cached){const data=JSON.parse(cached);mime=data.mime;body=Uint8Array.from(atob(data.body),c=>c.charCodeAt(0));}
         else {
-          const {bytes,mime}=await fetchPublicIcon(target.href);
-          let binary='';for(let at=0;at<bytes.length;at+=8192)binary+=String.fromCharCode(...bytes.slice(at,at+8192));
-          data={mime,body:btoa(binary)};
-          // Cache contention must never turn a successfully fetched image into an error.
-          if(env.HOME_KV)try { await env.HOME_KV.put(key,JSON.stringify(data),{expirationTtl:86400}); } catch { /* Return the image even when the cache write is unavailable. */ }
+          ({bytes:body,mime}=await sharedIconFetch(target.href));
+          // Cache contention must never turn a successfully fetched image into an error,
+          // and the response does not wait for the KV write.
+          if(env.HOME_KV) {
+            const write=Promise.resolve().then(()=>env.HOME_KV.put(key,JSON.stringify({mime,body:toBase64(body)}),{expirationTtl:86400})).catch(()=>{});
+            if(ctx?.waitUntil)ctx.waitUntil(write);else await write;
+          }
         }
         // Only validated public image bytes may be reused by this browser.
         // Authentication errors, configuration and discovery responses remain no-store.
-        return new Response(Uint8Array.from(atob(data.body),c=>c.charCodeAt(0)),{headers:{...BASE_HEADERS,'cache-control':'private, max-age=3600','vary':'Cookie','content-type':data.mime,'content-security-policy':"default-src 'none'; sandbox",'x-frame-options':'DENY'}});
+        return new Response(body,{headers:{...BASE_HEADERS,'cache-control':'private, max-age=3600','vary':'Cookie','content-type':mime,'content-security-policy':"default-src 'none'; sandbox",'x-frame-options':'DENY'}});
       }
       if (['/conf.yml', '/api/config'].includes(u.pathname) && method === 'GET') {
         await authorize(req, env);
@@ -327,6 +338,8 @@ export default {
       headers.set('referrer-policy', 'no-referrer');
       headers.set('x-frame-options', 'DENY');
       if (response.status===200 && /^\/portal-icons\/.+\.(?:svg|png|jpg|webp)$/.test(u.pathname)) headers.set('cache-control','public, max-age=3600');
+      // Vite output under /assets/ carries a content hash, so a changed file always has a new name.
+      if (response.status===200 && /^\/assets\/[^/]+-[\w-]{8}\.(?:js|css|woff2?|ttf|png|svg|jpg|webp)$/.test(u.pathname)) headers.set('cache-control','public, max-age=31536000, immutable');
       if (headers.get('content-type')?.includes('text/html')) headers.set('cache-control', 'no-store');
       return new Response(response.body, { status: response.status, headers });
     } catch (e) {

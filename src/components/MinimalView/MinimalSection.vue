@@ -2,7 +2,8 @@
   <div
     :class="`minimal-section-inner ${selected ? 'selected' : ''} ${showAll ? 'show-all': ''}`"
     :style="dynamicStyle">
-    <div class="section-items" :style="gridStyle" v-if="items && (selected || showAll)">
+    <!-- A visited category stays mounted while hidden, so switching back reuses its icons -->
+    <div class="section-items" :style="gridStyle" v-if="items && (visited || showAll)" v-show="selected || showAll">
       <template v-for="(item) in sortedItems" :key="item.id">
         <SubItemGroup
           v-if="item.subItems"
@@ -61,6 +62,10 @@ export default {
     showAll: Boolean,
   },
   emits: ['itemClicked', 'sectionSelected'],
+  data: () => ({ visited: false }),
+  watch: {
+    selected: { immediate: true, handler(value) { if (value) this.visited = true; } },
+  },
   computed: {
     appConfig() {
       return this.$store.getters.appConfig;

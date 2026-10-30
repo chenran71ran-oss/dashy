@@ -25,7 +25,7 @@
 import { matchPortalIcon, portalIconPath, websiteFavicon, websiteIcon } from '@/utils/PortalIcons';
 import { builtinIconPath } from '@/utils/BuiltinIcons';
 import { discoverSiteIcon, cachedSiteIcon } from '@/utils/SiteIcons';
-import { iconCrossOrigin } from '@/utils/IconImagePolicy';
+import { iconCrossOrigin, iconImageSource } from '@/utils/IconImagePolicy';
 import BrokenImage from '@/assets/interface-icons/broken-icon.svg';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import EmojiUnicodeRegex from '@/utils/EmojiUnicodeRegex';
@@ -86,9 +86,11 @@ export default {
       if (this.attemptedFallback) return this.getFallbackIcon();
       return this.getIconPath(this.resolvedIcon, this.url);
     },
-    imageSource() {
-      const path=this.iconPath;
-      return window.__KH_CLOUD_AUTH && !this.attemptedFallback && /^https:\/\//i.test(path||'') ? `/api/icon-image?url=${encodeURIComponent(path)}` : path;
+    imageSource() { return iconImageSource(this.iconPath, { fallback: this.attemptedFallback }); },
+    // Discovery depends only on these inputs; renaming a manual icon's title must not refetch.
+    discoveryTarget() {
+      if (this.effectiveIcon !== 'auto' || !this.url || matchPortalIcon(this.url, this.title)) return '';
+      return this.url;
     },
     imageCrossOrigin() { return iconCrossOrigin(this.imageSource); },
   },
@@ -99,21 +101,33 @@ export default {
       siPath: '', // Resolved SVG path for simple-icons (set async)
       discoveredIcon: '',
       iconRequest: 0,
+      discoveryTimer: null,
     };
   },
   watch: {
     resolvedIcon: { immediate: true, handler: 'resolveSimpleIcon' },
-    url: { immediate: true, handler: 'discoverAutoIcon' },
-    icon: 'discoverAutoIcon',
-    title: 'discoverAutoIcon',
+    discoveryTarget: {
+      immediate: true,
+      handler(target, previous) {
+        clearTimeout(this.discoveryTimer);
+        const request = ++this.iconRequest;
+        this.discoveredIcon = '';
+        if (!target) return;
+        // First render reads at once; edits wait until typing pauses, so partial
+        // addresses in the editor do not each start a slow server-side page read.
+        if (previous === undefined) this.discoverAutoIcon(request, target);
+        else this.discoveryTimer = setTimeout(() => this.discoverAutoIcon(request, target), 450);
+      },
+    },
   },
-  beforeUnmount() { this.iconRequest += 1; },
+  beforeUnmount() { this.iconRequest += 1; clearTimeout(this.discoveryTimer); this.discoveryTimer = null; },
   methods: {
-    async discoverAutoIcon() {
-      const request=++this.iconRequest; this.discoveredIcon='';
-      if(this.effectiveIcon!=='auto' || !this.url || matchPortalIcon(this.url,this.title))return;
-      const result=await discoverSiteIcon(this.url,{page:true});
-      if(request===this.iconRequest)this.discoveredIcon=result.icon;
+    async discoverAutoIcon(request, target) {
+      let host;
+      try { host = new URL(target).hostname; } catch { return; }
+      if (!host.includes('.')) return;
+      const result = await discoverSiteIcon(target, { page: true });
+      if (request === this.iconRequest) this.discoveredIcon = result.icon;
     },
     /* Determine icon type, e.g. local or remote asset, SVG, favicon, font-awesome, etc */
     determineImageType(img) {
