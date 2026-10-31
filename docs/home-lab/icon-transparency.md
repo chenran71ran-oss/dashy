@@ -8,6 +8,17 @@
 - 彩色标志保持品牌色：DeepSeek 为官方蓝色，Google 为四色 G，Instagram 为渐变。Telegram、Reddit、Emby 在镂空处垫白色，Spotify 垫黑色，与官方图形一致。
 - 原 QX 圆形徽章（108px 位图）保留在 `qx/`，DMIT、GlobalSpeed、海獭、RN-VPS、月兔仍使用它们。
 
+### 已保存的品牌图标副本
+
+内置矢量图是 dashy 中清晰度最高的品牌图标。卡片如果保存的是品牌 Logo 的位图副本，会改为显示内置矢量图（配置本身不改）。副本指以下几类：
+
+- 品牌自己网站上的 favicon 或 apple-touch-icon
+- App Store 原图（`mzstatic.com`）
+- QX-icons 图标库或内置 `qx/` 徽章中的同名文件
+- 文件名就是品牌名或别名的图片，如 `TikTok.jpg`、`小红书.png`
+
+其他自选图片（如头像、自定义插画）保持不变。新增 Manus、Grok（lobe-icons，跟随主题色）和 muse.ai（官方 SVG）。
+
 ## 网站自身图标
 
 自动读取或手动填写的位图图标（PNG/JPG/ICO/WebP），会在浏览器中做一次背景透明化：
