@@ -43,3 +43,19 @@ test('DeepSeek API and chat share the verified brand catalog without replacing m
   assert.equal(websiteIcon({url:'https://platform.deepseek.com/',icon:'/custom.png'}), '/custom.png');
   assert.equal(matchPortalIcon('https://deepseek.com.untrusted.example/'), undefined);
 });
+test('saved raster copies of a brand logo use the bundled vector mark, other custom images are kept', () => {
+  const vector = (url, icon) => portalIconPath(websiteIcon({ url, icon }));
+  assert.equal(vector('https://www.douyin.com/', 'https://raw.githubusercontent.com/chenran71ran-oss/QX-icons/main/icons/apps/TikTok.jpg'), '/portal-icons/brand/tiktok.svg');
+  assert.equal(vector('https://www.douyin.com/', 'https://is1-ssl.mzstatic.com/image/thumb/Purple/v4/a/AppIcon.png/512x512bb.jpg'), '/portal-icons/brand/tiktok.svg');
+  assert.equal(vector('https://www.xiaohongshu.com/explore', 'https://cdn.example.com/icons/小红书.png'), '/portal-icons/xiaohongshu.svg');
+  assert.equal(vector('https://www.xiaohongshu.com/', 'https://cdn.example.com/icons/xiaohongshu-512x512.png'), '/portal-icons/xiaohongshu.svg');
+  assert.equal(vector('https://github.com/', '/portal-icons/qx/GitHub.png'), '/portal-icons/brand/github.svg');
+  assert.equal(vector('https://t.me/', 'https://telegram.org/favicon.ico'), '/portal-icons/brand/telegram.svg');
+  assert.equal(vector('https://manus.im/app', 'https://raw.githubusercontent.com/chenran71ran-oss/QX-icons/main/icons/clash/apps/Manus-transparent-v1.png'), '/portal-icons/brand/manus.svg');
+  assert.equal(vector('https://manus.im/', '✋'), '/portal-icons/brand/manus.svg');
+  assert.equal(vector('https://grok.com/', ''), '/portal-icons/brand/grok.svg');
+  assert.equal(websiteIcon({ url: 'https://muse.ai/', icon: 'auto' }), 'auto'); // the card resolves 'auto' to the bundled mark itself
+  assert.equal(websiteIcon({ url: 'https://github.com/', icon: 'https://cdn.example.com/me.png' }), 'https://cdn.example.com/me.png');
+  assert.equal(websiteIcon({ url: 'https://example.com/', icon: 'https://cdn.example.com/tiktok.png' }), 'https://cdn.example.com/tiktok.png');
+  assert.equal(websiteIcon({ url: 'https://www.douyin.com/', icon: 'javascript:alert(1)//TikTok.png' }), 'javascript:alert(1)//TikTok.png');
+});

@@ -16,13 +16,16 @@ export const portalIcons = [
   { ...qx('claude', 'Claude', 'Claude', ['claude.ai'], ['claude']), src: '/portal-icons/claude-hq.svg', source: 'Simple Icons / Claude' },
   { ...qx('gemini', 'Google Gemini', 'Gemini', ['gemini.google.com'], ['google gemini', 'gemini']), src: '/portal-icons/gemini-hq.svg', source: 'Lobe Icons / Gemini' },
   brand(qx('emby', 'Emby', 'Emby', ['app.emby.media'], ['emby']), 'emby'),
+  { id: 'manus', title: 'Manus', src: '/portal-icons/brand/manus.svg', mono: true, hosts: ['manus.im'], aliases: ['manus'], source: 'lobe-icons (MIT), via QX-icons' },
+  { id: 'grok', title: 'Grok', src: '/portal-icons/brand/grok.svg', mono: true, hosts: ['grok.com'], aliases: ['grok'], source: 'lobe-icons (MIT), via QX-icons' },
+  { id: 'muse', title: 'muse.ai', src: '/portal-icons/brand/muse.svg', hosts: ['muse.ai'], aliases: ['muse', 'muse.ai'], source: 'muse.ai official logo, via QX-icons' },
   brand(qx('github', 'GitHub', 'GitHub', ['github.com'], ['github', '总站源码']), 'github', { mono: true }),
   brand(qx('speedtest', 'Speedtest', 'Speedtest', ['speedtest.net'], ['speedtest']), 'speedtest', { mono: true }),
   brand(qx('netflix', 'Netflix', 'Netflix', ['netflix.com']), 'netflix'),
   { ...brand(qx('google', 'Google', 'Google', ['google.com', 'www.google.com']), 'google'), exactHosts: true },
   brand(qx('spotify', 'Spotify', 'Spotify', ['spotify.com']), 'spotify'),
   brand(qx('telegram', 'Telegram', 'Telegram', ['telegram.org', 'web.telegram.org', 't.me']), 'telegram'),
-  brand(qx('tiktok', 'TikTok / 抖音', 'TikTok', ['tiktok.com', 'douyin.com'], ['抖音', 'tiktok']), 'tiktok', { mono: true, under: '/portal-icons/brand/tiktok-under.svg' }),
+  brand(qx('tiktok', 'TikTok / 抖音', 'TikTok', ['tiktok.com', 'douyin.com'], ['抖音', 'tiktok', 'douyin']), 'tiktok', { mono: true, under: '/portal-icons/brand/tiktok-under.svg' }),
   brand(qx('instagram', 'Instagram', 'Instagram', ['instagram.com']), 'instagram'),
   brand(qx('reddit', 'Reddit', 'Reddit', ['reddit.com']), 'reddit'),
   brand(qx('x', 'X / Twitter', 'X', ['x.com', 'twitter.com']), 'x', { mono: true }),
@@ -32,7 +35,7 @@ export const portalIcons = [
   qx('haita', '海獭', 'Haita', [], ['海獭']), { ...qx('liangxin', '良心云', 'Liangxin', [], ['良心云']), src: '/portal-icons/liangxin-transparent.png', source: 'Official logo, background removed' }, qx('yuetutu', '月兔', 'Yuetutu', [], ['月兔']),
   local('cloudflare', 'Cloudflare', ['dash.cloudflare.com', 'speed.cloudflare.com', 'cloudflare.com']),
   local('fast', 'Fast.com', ['fast.com']), local('bilibili', '哔哩哔哩 / Bilibili', ['bilibili.com']),
-  local('xiaohongshu', '小红书', ['xiaohongshu.com']), { ...local('dashy', 'Dashy', ['demo.dashy.to'], ['dashy 演示']), src: '/portal-icons/dashy.png', source: 'Dashy' },
+  local('xiaohongshu', '小红书', ['xiaohongshu.com', 'xhslink.com'], ['小红书', 'rednote', 'xhs']), { ...local('dashy', 'Dashy', ['demo.dashy.to'], ['dashy 演示']), src: '/portal-icons/dashy.png', source: 'Dashy' },
   local('jellyfin', 'Jellyfin', [], ['jellyfin']), local('docker', 'Docker', [], ['docker']),
   local('homeassistant', 'Home Assistant', [], ['home assistant']), local('nextcloud', 'Nextcloud', [], ['nextcloud']),
   local('bitwarden', 'Bitwarden', [], ['bitwarden']), local('notion', 'Notion', ['notion.so']), local('youtube', 'YouTube', ['youtube.com', 'youtu.be']),
@@ -59,6 +62,22 @@ export function websiteFavicon(url = '') {
   try { const u = new URL(url); if (!['https:', 'http:'].includes(u.protocol) || u.username || u.password) return ''; return `${u.origin}/favicon.ico`; } catch { return ''; }
 }
 const legacyPlaceholders = new Set(['🧠', '🌐', '🔗', '🖥️', '☁️', '📐', '✋', 'si-claude', 'si-googlegemini', 'si-github', 'si-tiktok', 'si-netflix', 'si-speedtest', 'si-cloudflare', 'si-bilibili', 'si-xiaohongshu']);
+const stem = value => value.toLowerCase().replace(/\.[a-z0-9]+$/, '').replace(/[-_](?:transparent|circle|v\d+|\d+x\d+|light|dark|logo|icon)\b/g, '').replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
+// A copy is the brand's own favicon or touch icon, its App Store artwork, an
+// icon-library copy (QX-icons or the bundled QX badges) or an image named after
+// the brand. Other custom images, such as avatars, are kept as chosen.
+function isBrandCopy(configured, match) {
+  if (!configured || !match.hosts?.length) return false;
+  let image;
+  try { image = new URL(configured, 'https://local.invalid/'); } catch { return false; }
+  if (!['https:', 'http:'].includes(image.protocol)) return false;
+  const onBrandHost = match.hosts.some(host => image.hostname === host || image.hostname.endsWith(`.${host}`));
+  if (onBrandHost && /(?:^|\/)(?:favicon[^/]*|apple-touch-icon[^/]*)$/i.test(image.pathname)) return true;
+  if (/^is\d+-ssl\.mzstatic\.com$/i.test(image.hostname)) return true;
+  if (!/\.(?:png|jpe?g|webp|gif|ico|avif)$/i.test(image.pathname)) return false;
+  const names = new Set([match.id, ...(match.aliases || []), ...match.title.split(/\s*\/\s*/)].map(stem).filter(Boolean));
+  return names.has(stem(decodeURIComponent(image.pathname.split('/').pop())));
+}
 export function websiteIcon(item = {}, defaultIcon = '') {
   const configured = item.icon || defaultIcon;
   const match = matchPortalIcon(item.url, item.title);
@@ -66,17 +85,10 @@ export function websiteIcon(item = {}, defaultIcon = '') {
   if (match?.id==='deepseek' && configured==='si-deepseek') return 'portal-deepseek';
   if (match?.id==='notebooklm' && ['si-notebooklm','portal-notebooklm'].includes(configured)) return 'portal-notebooklm';
   if (match?.id==='chatgpt' && ['si-openai','si-chatgpt'].includes(configured)) return 'portal-chatgpt';
-  // Saved official favicons should not bypass the bundled AI brand assets.
-  if (['chatgpt', 'claude', 'gemini', 'notebooklm', 'deepseek'].includes(match?.id)) {
-    try {
-      const image=new URL(configured);
-      const official=match.hosts.some(host=>image.hostname===host || image.hostname.endsWith(`.${host}`));
-      if (official && /(?:^|\/)(?:favicon[^/]*|apple-touch-icon[^/]*)$/i.test(image.pathname)) return `portal-${match.id}`;
-    } catch { /* Keep manual icons and local paths. */ }
-  }
+  // Saved raster copies of a brand's logo use the bundled vector mark instead.
+  if (match && isBrandCopy(configured, match)) return `portal-${match.id}`;
   // Replace only the temporary book placeholder used for Brog Hub.
   if (match?.id === 'brog-hub' && ['lucide-book', '/portal-icons/lucide/book.svg'].includes(configured)) return 'portal-brog-hub';
   if (match && (!configured || legacyPlaceholders.has(configured))) return `portal-${match.id}`;
-  if (configured === '✋' && /(^|\.)manus\.im$/.test((() => { try { return new URL(item.url).hostname; } catch { return ''; } })())) return 'auto';
   return configured || 'auto';
 }
