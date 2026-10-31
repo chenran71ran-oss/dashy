@@ -169,6 +169,7 @@ const defaults = {
     EDIT_PAGE_INFO: 'EDIT_PAGE_INFO',
     EDIT_APP_CONFIG: 'EDIT_APP_CONFIG',
     EDIT_MULTI_PAGES: 'EDIT_MULTI_PAGES',
+    COMPLETE_SITE_INFO: 'COMPLETE_SITE_INFO',
     MOVE_ITEM_TO: 'MOVE_ITEM_TO',
   },
   /* Key names for the top-level objects in conf.yml */

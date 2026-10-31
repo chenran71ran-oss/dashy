@@ -124,6 +124,77 @@ async function limitedHtml(response) {
   finally { await reader.cancel().catch(()=>{}); }
   const bytes=new Uint8Array(size);let at=0;for(const part of chunks){bytes.set(part,at);at+=part.length;}return new TextDecoder().decode(bytes);
 }
+// Reads the first 64 KiB of a public page, following at most two public redirects.
+async function openPublicPage(root,fetcher,signal,onStage=()=>{}) {
+  let target=root, response;
+  for(let redirects=0;redirects<=2;redirects++){
+    onStage('dns');
+    await checkDns(target.hostname,fetcher,signal,fetcher===fetch);
+    onStage('request');
+    response=await fetcher(target.href,{method:'GET',redirect:'manual',credentials:'omit',signal,headers:{Accept:'text/html',Range:'bytes=0-65535'}});
+    if(![301,302,303,307,308].includes(response.status))break;
+    const location=response.headers.get('location');await response.body?.cancel();
+    if(!location || redirects===2)throw new Error('Redirect unavailable');
+    // Public redirects may select a locale path. Queries never come from the user's bookmark.
+    target=publicIconUrl(location,target);target.search='';
+  }
+  return {target,response};
+}
+const entities={amp:'&',lt:'<',gt:'>',quot:'"',apos:"'",nbsp:' '};
+function decodeText(text) {
+  return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi,(match,code)=>{
+    if(code[0]==='#'){const n=code[1].toLowerCase()==='x'?parseInt(code.slice(2),16):Number(code.slice(1));return n>0&&n<0x110000?String.fromCodePoint(n):match;}
+    return entities[code.toLowerCase()]??match;
+  });
+}
+// A description is offered only when the site itself publishes it in English.
+// Nothing is translated or generated, so the text always matches the site's own wording.
+export function englishDescription(text='') {
+  const clean=decodeText(String(text)).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+  if(clean.length<12 || /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/.test(clean))return '';
+  const letters=clean.match(/\p{L}/gu)||[];
+  if(letters.length<8 || letters.filter(c=>/[a-z]/i.test(c)).length/letters.length<0.9)return '';
+  if(clean.length<=160)return clean;
+  const sentence=clean.match(/^.{20,160}?[.!?](?=\s|$)/);
+  return sentence?sentence[0]:`${clean.slice(0,157).replace(/\s+\S*$/,'')}…`;
+}
+export function extractDescriptions(html) {
+  // Node test fallback. Production uses the Worker's HTMLRewriter below.
+  const head=html.split(/<body[\s>]/i)[0].replace(/<!--[\s\S]*?-->|<(script|style|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
+  return [...head.matchAll(/<meta\b[^>]*>/gi)].map(m=>attrs(m[0])).map(a=>({key:(a.property||a.name||'').toLowerCase(),content:a.content||''}));
+}
+async function parseDescriptions(html) {
+  if(typeof HTMLRewriter==='undefined')return extractDescriptions(html);
+  const metas=[];
+  await new HTMLRewriter().on('head meta',{element(e){metas.push({key:(e.getAttribute('property')||e.getAttribute('name')||'').toLowerCase(),content:e.getAttribute('content')||''});}})
+    .transform(new Response(html,{headers:{'content-type':'text/html'}})).text();
+  return metas;
+}
+const descriptionOrder=['og:description','description','twitter:description'];
+export async function discoverDescription(value, fetcher=fetch) {
+  const root=publicIconUrl(value);root.search='';
+  const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),15000);
+  let stage='dns';
+  try {
+    const {response}=await openPublicPage(root,fetcher,controller.signal,next=>{stage=next;});
+    if(!response.ok || !(response.headers.get('content-type')||'').toLowerCase().includes('html')) {
+      await response.body?.cancel();
+      return {description:'',reason:response.ok?'not-html':`http-${response.status}`};
+    }
+    stage='html';
+    const metas=await parseDescriptions(await limitedHtml(response));
+    let found=false;
+    for(const key of descriptionOrder) {
+      for(const meta of metas.filter(m=>m.key===key && m.content.trim())) {
+        found=true;
+        const description=englishDescription(meta.content);
+        if(description)return {description,source:key};
+      }
+    }
+    return {description:'',reason:found?'not-english':'no-description'};
+  } catch(error) { error.iconReason=controller.signal.aborted?'timeout':stage;throw error; }
+  finally { clearTimeout(timer); }
+}
 export async function discoverIcon(value, fetcher=fetch, {page=false,onImage}={}) {
   const root=publicIconUrl(value); if(!page)root.pathname='/';root.search='';
   const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),page?20000:6500);
@@ -137,18 +208,7 @@ export async function discoverIcon(value, fetcher=fetch, {page=false,onImage}={}
       try {const asset=await fetchPublicIcon(consoleIcon,fetcher,{signal:controller.signal});try{await onImage?.(consoleIcon,asset);}catch{}return {icon:consoleIcon,source:'catalog',verified:true};}
       catch(error){if(controller.signal.aborted)throw error;}
     }
-    let target=root, response;
-    for(let redirects=0;redirects<=2;redirects++){
-      stage='dns';
-      await checkDns(target.hostname,fetcher,controller.signal,fetcher===fetch);
-      stage='request';
-      response=await fetcher(target.href,{method:'GET',redirect:'manual',credentials:'omit',signal:controller.signal,headers:{Accept:'text/html',Range:'bytes=0-65535'}});
-      if(![301,302,303,307,308].includes(response.status))break;
-      const location=response.headers.get('location');await response.body?.cancel();
-      if(!location || redirects===2)throw new Error('Redirect unavailable');
-      // Public redirects may select a locale path. Queries never come from the user's bookmark.
-      target=publicIconUrl(location,target);target.search='';
-    }
+    const {target,response}=await openPublicPage(root,fetcher,controller.signal,value=>{stage=value;});
     let reason='', candidates=[],hasScripts=false;
     const seen=new Set();
     const probe=async entries=>{

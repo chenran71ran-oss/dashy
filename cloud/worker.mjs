@@ -4,7 +4,7 @@ import validSchema from './config-validator.cjs';
 import configSchema from '../src/utils/config/ConfigSchema.json' with { type: 'json' };
 import { parse as parseYaml } from 'yaml';
 import { readWeather } from './weather.mjs';
-import { discoverIcon, fetchPublicIcon, publicIconUrl } from './icon-discovery.mjs';
+import { discoverDescription, discoverIcon, fetchPublicIcon, publicIconUrl } from './icon-discovery.mjs';
 import { iconCacheKey, cacheIconAsset } from './icon-cache.mjs';
 import { publicLoginAppearance } from './login-appearance.mjs';
 import { themeLabels } from '../src/utils/ThemeCatalog.js';
@@ -298,6 +298,12 @@ export default {
           return json(await discoverIcon(page?.href||body.origin,fetch,{page:!!page,onImage:(url,asset)=>cacheIconAsset(env.HOME_KV,url,asset)}));
         }
         catch (error) { return json({ icon: '', source: 'unavailable', reason: ['dns','request','html','timeout'].includes(error.iconReason)?error.iconReason:'public-site-required' }); }
+      }
+      if (u.pathname === '/api/site-description' && method === 'POST') {
+        sameOrigin(req, u); await authorize(req, env);
+        const body = await limitedBody(req, 4096);
+        try { return json(await discoverDescription(body.page)); }
+        catch (error) { return json({ description: '', reason: ['dns','request','html','timeout'].includes(error.iconReason)?error.iconReason:'public-site-required' }); }
       }
       if (['/api/config', '/config-manager/save'].includes(u.pathname) && ['POST', 'PUT'].includes(method)) {
         sameOrigin(req, u); await authorize(req, env);
