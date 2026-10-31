@@ -8,3 +8,8 @@ export function iconCrossOrigin(source) {
   } catch { /* Invalid images are handled by the normal broken-image fallback. */ }
   return undefined;
 }
+// The address a card actually loads, so prefetches warm the same browser cache entry.
+export function iconImageSource(path, { fallback = false } = {}) {
+  if (typeof window === 'undefined') return path;
+  return window.__KH_CLOUD_AUTH && !fallback && /^https:\/\//i.test(path || '') ? `/api/icon-image?url=${encodeURIComponent(path)}` : path;
+}

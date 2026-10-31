@@ -3,6 +3,23 @@ import { officialSiteIcons } from '../../cloud/icon-catalog.mjs';
 import { iconCrossOrigin } from './IconImagePolicy.js';
 const cache=new Map();
 const CACHE_LIMIT=512;
+const VERIFIED_TTL=600000;
+// Transient failures retry soon; a site without public icon metadata is not
+// re-read by every remounted card or category switch for five minutes.
+const RETRY_TTL=5000;
+const MISSING_TTL=300000;
+const transientReasons=new Set(['request','timeout','dns','login-required','http-429']);
+const resultTtl=result=>result.verified?VERIFIED_TTL:(transientReasons.has(result.reason)||/^http-5/.test(result.reason||'')?RETRY_TTL:MISSING_TTL);
+function remember(key,entry) {
+  if(cache.has(key))cache.delete(key);
+  else if(cache.size>=CACHE_LIMIT) {
+    // Drop expired entries first, then the oldest one, so the map stays bounded.
+    const now=Date.now();
+    for(const [stale,value] of cache)if(value.result && value.expires<=now)cache.delete(stale);
+    if(cache.size>=CACHE_LIMIT)cache.delete(cache.keys().next().value);
+  }
+  cache.set(key,entry);
+}
 function discoveryKey(url,page) {
   const origin=siteIconOrigin(url);if(!origin)return '';
   const target=new URL(url);target.search='';target.hash='';
@@ -32,9 +49,8 @@ export async function discoverSiteIcon(url,{force=false,page=false,fetcher=fetch
       return {icon:icon||websiteFavicon(url),source:icon?data.source:'unavailable',reason:data.reason,verified:!!icon && data.verified===true};
     }catch{return {icon:websiteFavicon(url),source:'unavailable',reason:'request',verified:false};}
   })();
-  if(!cache.has(key) && cache.size>=CACHE_LIMIT)cache.delete(cache.keys().next().value);
-  cache.set(key,{promise,expires:Date.now()+600000});
-  promise.then(result=>{if(cache.get(key)?.promise===promise){cache.get(key).result=result;cache.get(key).expires=Date.now()+(result.verified?600000:5000);}});
+  remember(key,{promise,expires:Date.now()+VERIFIED_TTL});
+  promise.then(result=>{const entry=cache.get(key);if(entry?.promise===promise){entry.result=result;entry.expires=Date.now()+resultTtl(result);}});
   return promise;
 }
 

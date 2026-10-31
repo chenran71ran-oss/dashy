@@ -37,12 +37,14 @@ export default {
     const onPointerUp = () => {
       clearTimeout(parseInt(el.dataset.longPressTimeout, 10));
       document.removeEventListener('pointerup', onPointerUp);
+      el.removeEventListener('pointermove', onPointerMove);
     };
 
-    const onPointerMove = () => {
+    // Registered on the element, so remove it from the element (not document).
+    function onPointerMove() {
       clearTimeout(parseInt(el.dataset.longPressTimeout, 10));
-      document.removeEventListener('pointermove', onPointerMove);
-    };
+      el.removeEventListener('pointermove', onPointerMove);
+    }
 
     const onPointerDown = (e) => {
       // If event was right-click, then immediately trigger
@@ -58,11 +60,19 @@ export default {
       e.preventDefault();
     };
     el.$longPressHandler = onPointerDown;
+    el.$longPressCleanup = () => {
+      document.removeEventListener('pointerup', onPointerUp);
+      el.removeEventListener('pointermove', onPointerMove);
+      el.removeEventListener('click', swallowClick);
+    };
     el.addEventListener('pointerdown', onPointerDown);
   },
   unmounted(el) {
     startTime = null;
     clearTimeout(parseInt(el.dataset.longPressTimeout, 10));
     el.removeEventListener('pointerdown', el.$longPressHandler);
+    if (el.$longPressCleanup) el.$longPressCleanup();
+    delete el.$longPressHandler;
+    delete el.$longPressCleanup;
   },
 };

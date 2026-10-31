@@ -200,6 +200,12 @@ export default {
       };
     },
     /* Measure whether the title is truncated in its tile */
+    /* Periodic checks pause in background tabs and in kept-alive hidden categories */
+    isOnScreen() {
+      if (typeof document !== 'undefined' && document.hidden) return false;
+      // v-show hides a kept category with an inline display: none on an ancestor
+      return !this.$el?.closest?.('[style*="display: none"]');
+    },
     checkTitleTruncation() {
       const title = this.$refs.titleText;
       this.titleTruncated = !!title && title.scrollWidth > title.clientWidth;
@@ -282,7 +288,7 @@ export default {
       this.checkPingStatus();
       // If continious ping checking is enabled, then start ever-lasting loop
       if (this.pingCheckInterval > 0) {
-        this.pingIntervalId = setInterval(this.checkPingStatus, this.pingCheckInterval * 1000);
+        this.pingIntervalId = setInterval(() => { if (this.isOnScreen()) this.checkPingStatus(); }, this.pingCheckInterval * 1000);
       }
     }
     // If status checking is enabled, then check service status
@@ -290,7 +296,7 @@ export default {
       this.checkWebsiteStatus();
       // If continious status checking is enabled, then start ever-lasting loop
       if (this.statusCheckInterval > 0) {
-        this.intervalId = setInterval(this.checkWebsiteStatus, this.statusCheckInterval * 1000);
+        this.intervalId = setInterval(() => { if (this.isOnScreen()) this.checkWebsiteStatus(); }, this.statusCheckInterval * 1000);
       }
     }
   },
@@ -299,6 +305,7 @@ export default {
     if (this.pingIntervalId) clearInterval(this.pingIntervalId);
     if (this.intervalId) clearInterval(this.intervalId);
     if (this.titleObserver) this.titleObserver.disconnect();
+    this.titleObserver = null;
     clearTimeout(this.titleScrollTimer);
     cancelAnimationFrame(this.titleScrollRaf);
   },

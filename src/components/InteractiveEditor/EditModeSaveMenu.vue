@@ -57,6 +57,15 @@
         {{ $t('interactive-editor.menu.edit-pages-btn') }}
         <MultiPagesIcon />
       </Button>
+      <!-- Button to fill missing website icons and English descriptions -->
+      <Button
+        :click="openCompleteSiteInfo"
+        :disallow="!permissions.allowViewConfig"
+        v-tooltip="tooltip('读取网站自身的图标与英文描述，预览后再应用')"
+      >
+        补齐图标与说明
+        <PageInfoIcon />
+      </Button>
     </div>
 
     <div class="edit-banner-section empty-space"></div>
@@ -103,6 +112,7 @@
     <EditPageInfo />
     <EditAppConfig />
     <EditMultiPages />
+    <CompleteSiteInfo />
     <ConfirmDialog
       v-model:open="showSaveLocallyConfirm"
       :title="$t('interactive-editor.menu.save-locally-btn')"
@@ -120,6 +130,7 @@ import StoreKeys from '@/utils/StoreMutations';
 import EditPageInfo from '@/components/InteractiveEditor/EditPageInfo';
 import EditAppConfig from '@/components/InteractiveEditor/EditAppConfig';
 import EditMultiPages from '@/components/InteractiveEditor/EditMultiPages';
+import CompleteSiteInfo from '@/components/InteractiveEditor/CompleteSiteInfo.vue';
 import { modalNames } from '@/utils/config/defaults';
 import AccessError from '@/components/Configuration/AccessError';
 import SaveLocallyIcon from '@/assets/interface-icons/interactive-editor-save-locally.svg';
@@ -140,6 +151,7 @@ export default {
     EditPageInfo,
     EditAppConfig,
     EditMultiPages,
+    CompleteSiteInfo,
     SaveLocallyIcon,
     SaveToDiskIcon,
     ExportIcon,
@@ -178,6 +190,10 @@ export default {
     openExportConfigMenu() {
       this.$store.commit(StoreKeys.CONF_MENU_INDEX, 2);
       this.$modal.show(modalNames.CONF_EDITOR);
+      this.$store.commit(StoreKeys.SET_MODAL_OPEN, true);
+    },
+    openCompleteSiteInfo() {
+      this.$modal.show(modalNames.COMPLETE_SITE_INFO);
       this.$store.commit(StoreKeys.SET_MODAL_OPEN, true);
     },
     openEditPageInfo() {

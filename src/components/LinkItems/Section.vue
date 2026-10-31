@@ -375,10 +375,9 @@ export default {
     }
   },
   beforeUnmount() {
-    // If resize observer set, and element still present, then de-register
-    if (this.resizeObserver && this.$refs[this.sectionRef]) {
-      this.resizeObserver.unobserve(this.$refs[this.sectionRef].$el);
-    }
+    // Disconnect even if the ref is already gone, so the observer and its callback are released
+    if (this.resizeObserver) this.resizeObserver.disconnect();
+    this.resizeObserver = null;
   },
 };
 </script>

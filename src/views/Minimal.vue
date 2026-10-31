@@ -74,6 +74,7 @@ import EditModeSaveMenu from '@/components/InteractiveEditor/EditModeSaveMenu.vu
 import Button from '@/components/FormElements/Button';
 import { makePageName, resolveRouteIntent } from '@/utils/config/ConfigHelpers';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
+import { prefetchItemIcons, scheduleIdle } from '@/utils/IconPrefetch';
 
 export default {
   name: 'Minimal',
@@ -94,6 +95,7 @@ export default {
     canScrollLeft: false,
     canScrollRight: false,
     tabResizeObserver: null,
+    stopIconPrefetch: null,
   }),
   computed: {
     /* Just the items to display, filtered by search term */
@@ -114,7 +116,7 @@ export default {
       handler() { this.syncSelectedFromRoute(); },
       immediate: true,
     },
-    sections() { this.syncSelectedFromRoute(); },
+    sections() { this.syncSelectedFromRoute(); this.warmOtherCategories(); },
   },
   methods: {
     sectionSelected(index) {
@@ -133,6 +135,18 @@ export default {
       const idx = this.sections.findIndex((s) => makePageName(s.name || '') === sectionSlug);
       if (idx >= 0) { this.selectedSection = idx; return; }
       ErrorHandler(`No section named '${sectionSlug}' was found in the current config`);
+    },
+    /* While idle, discover and cache icons of the categories that are not shown yet */
+    warmOtherCategories() {
+      if (this.stopIconPrefetch) this.stopIconPrefetch();
+      let stopWarm = null;
+      const cancelIdle = scheduleIdle(() => {
+        const others = this.filteredSections.filter((_, index) => index !== this.selectedSection);
+        stopWarm = prefetchItemIcons(others.flatMap(section => section.filteredItems || []), {
+          defaultIcon: this.appConfig?.defaultIcon,
+        });
+      });
+      this.stopIconPrefetch = () => { cancelIdle(); if (stopWarm) stopWarm(); };
     },
     /* Clears input field, once a searched item is opened */
     finishedSearching() {
@@ -170,9 +184,12 @@ export default {
         this.tabResizeObserver = new ResizeObserver(this.updateTabScroll);
         this.tabResizeObserver.observe(this.$refs.tabsStrip);
       }
+      this.warmOtherCategories();
     });
   },
   beforeUnmount() {
+    if (this.stopIconPrefetch) this.stopIconPrefetch();
+    this.stopIconPrefetch = null;
     if (this.tabResizeObserver) {
       this.tabResizeObserver.disconnect();
       this.tabResizeObserver = null;

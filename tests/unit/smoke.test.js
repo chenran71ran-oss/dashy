@@ -33,7 +33,7 @@ describe('Smoke Tests - Project Files', () => {
     const packageJsonPath = path.resolve(__dirname, '../../package.json');
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
-    expect(packageJson.name).toBe('dashy');
+    expect(packageJson.name).toBe('kenneth-dashy-home'); // Home Lab fork of Dashy
     expect(packageJson.version).toBeDefined();
     expect(packageJson.license).toBe('MIT');
   });

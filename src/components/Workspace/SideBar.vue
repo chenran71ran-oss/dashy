@@ -40,6 +40,7 @@ import IconMinimalView from '@/assets/interface-icons/application-minimal.svg';
 import { getCurrentUser, isLoggedInAsGuest } from '@/utils/auth/Auth';
 import { isVisibleToUser } from '@/utils/IsVisibleToUser';
 import { makeRoutePath, resolveRouteIntent } from '@/utils/config/ConfigHelpers';
+import { prefetchItemIcons, scheduleIdle } from '@/utils/IconPrefetch';
 
 export default {
   name: 'SideBar',
@@ -69,6 +70,7 @@ export default {
       if (newLength !== currentLength) {
         this.isOpen = new Array(newLength).fill(false);
       }
+      this.warmSectionIcons();
     },
   },
   components: {
@@ -110,6 +112,20 @@ export default {
       return allTiles.filter((tile) => !tile.displayData?.hideFromWorkspace
         && isVisibleToUser(tile.displayData || {}, currentUser, isGuest));
     },
+    /* Closed sections mount their items on open; warm their icons while idle */
+    warmSectionIcons() {
+      this.stopIconWarm();
+      let stopWarm = null;
+      const cancelIdle = scheduleIdle(() => {
+        const items = this.filteredSections.flatMap(section => this.visibleItems(section.items));
+        stopWarm = prefetchItemIcons(items, { defaultIcon: this.$store?.getters.appConfig?.defaultIcon });
+      });
+      this.cancelIconWarm = () => { cancelIdle(); if (stopWarm) stopWarm(); };
+    },
+    stopIconWarm() {
+      if (this.cancelIconWarm) this.cancelIconWarm();
+      this.cancelIconWarm = null;
+    },
     /* Build a URL for the given view, preserving the current sub-page and section */
     pathFor(view) {
       const { pageId, sectionSlug } = resolveRouteIntent(this.$route, this.$store);
@@ -124,6 +140,10 @@ export default {
     } else { // Otherwise, see if user set a default section, and open that
       this.openDefaultSection();
     }
+    this.warmSectionIcons();
+  },
+  beforeUnmount() {
+    this.stopIconWarm();
   },
 };
 </script>

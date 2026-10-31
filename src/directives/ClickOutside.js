@@ -5,7 +5,9 @@
  * Dashy: Licensed under MIT - (C) Alicia Sykes 2024
  */
 
-const instances = []; // List of click event instances
+// Keyed by element, so removing one instance can never detach another's listener,
+// and an unmounted element (with its closure) is released with it.
+const handlers = new WeakMap();
 
 /* Trigger action when click anywhere, except target elem */
 function onDocumentClick(event, elem, action) {
@@ -17,25 +19,26 @@ function onDocumentClick(event, elem, action) {
 
 export default {
   /* Add event listeners */
-  mounted(element, binding) {
-    const elem = element;
-    elem.dataset.outsideClickIndex = instances.length;
-
-    const action = binding.value;
-    const click = (event) => {
-      onDocumentClick(event, elem, action);
+  mounted(elem, binding) {
+    const state = { action: binding.value };
+    state.click = (event) => {
+      if (typeof state.action === 'function') onDocumentClick(event, elem, state.action);
     };
-
-    document.addEventListener('click', click);
-    document.addEventListener('touchstart', click);
-    instances.push(click);
+    document.addEventListener('click', state.click);
+    document.addEventListener('touchstart', state.click, { passive: true });
+    handlers.set(elem, state);
+  },
+  /* Keep the latest handler without re-registering document listeners */
+  updated(elem, binding) {
+    const state = handlers.get(elem);
+    if (state) state.action = binding.value;
   },
   /* Remove event listeners */
   unmounted(elem) {
-    if (!elem.dataset) return;
-    const index = elem.dataset.outsideClickIndex;
-    const handler = instances[index];
-    document.removeEventListener('click', handler);
-    instances.splice(index, 1);
+    const state = handlers.get(elem);
+    if (!state) return;
+    document.removeEventListener('click', state.click);
+    document.removeEventListener('touchstart', state.click);
+    handlers.delete(elem);
   },
 };
