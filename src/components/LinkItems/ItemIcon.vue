@@ -1,6 +1,9 @@
 <template>
-  <div v-if="effectiveIcon" :class="[`item-icon wrapper-${size}`, {'brand-icon': isBrand, 'monochrome-brand': isMonochromeBrand}]">
-    <span v-if="isGlyph" :class="`glyph-icon ${size}`" :style="{maskImage: `url(${resolvedIcon})`, WebkitMaskImage: `url(${resolvedIcon})`}" aria-hidden="true"></span>
+  <div v-if="effectiveIcon" :class="[`item-icon wrapper-${size}`, {'brand-icon': isBrand}]">
+    <!-- Single-colour marks follow the theme text colour; optional brand layer underneath -->
+    <span v-if="isGlyph" class="glyph-stack" :style="glyphUnder ? {backgroundImage: `url(${glyphUnder})`} : undefined" aria-hidden="true">
+      <span :class="`glyph-icon ${size}`" :style="{maskImage: `url(${resolvedIcon})`, WebkitMaskImage: `url(${resolvedIcon})`}"></span>
+    </span>
     <!-- Font-Awesome Icon -->
     <i v-else-if="iconType === 'font-awesome'" :class="`${effectiveIcon} ${size}`" ></i>
     <!-- Emoji Icon -->
@@ -13,8 +16,12 @@
       <path v-if="siPath" :d="siPath" />
     </svg>
     <!-- Standard image asset icon -->
-    <img v-else-if="iconPath && !broken" :crossorigin="imageCrossOrigin" :src="imageSource" :alt="title ? `${title} 图标` : ''" @error="onImageError" loading="eager" decoding="async" referrerpolicy="no-referrer"
-      :class="`tile-icon ${size} ${broken ? 'broken' : ''}`"
+    <!-- Dark single-colour website logo, background removed: follows the theme text colour -->
+    <span v-else-if="iconPath && !broken && transparent?.mono" class="glyph-stack" aria-hidden="true">
+      <span :class="`glyph-icon ${size}`" :style="{maskImage: `url(${transparent.src})`, WebkitMaskImage: `url(${transparent.src})`}"></span>
+    </span>
+    <img v-else-if="iconPath && !broken" :crossorigin="imageCrossOrigin" :src="transparent?.src || imageSource" :alt="title ? `${title} 图标` : ''" @error="onImageError" loading="eager" decoding="async" referrerpolicy="no-referrer"
+      :class="['tile-icon', size, { broken, 'awaiting-transparency': transparent === undefined && !showOriginal }]"
     />
     <!-- Icon could not load/ broken url -->
     <span v-if="broken || iconType === 'none'" class="icon-monogram" aria-hidden="true">{{ monogram }}</span>
@@ -22,10 +29,11 @@
 </template>
 
 <script>
-import { matchPortalIcon, portalIconPath, websiteFavicon, websiteIcon } from '@/utils/PortalIcons';
+import { matchPortalIcon, portalIconPath, portalIconStyle, websiteFavicon, websiteIcon } from '@/utils/PortalIcons';
 import { builtinIconPath } from '@/utils/BuiltinIcons';
 import { discoverSiteIcon, cachedSiteIcon } from '@/utils/SiteIcons';
 import { iconCrossOrigin, iconImageSource } from '@/utils/IconImagePolicy';
+import { canMakeTransparent, makeTransparent, transparentIcon } from '@/utils/IconTransparency';
 import BrokenImage from '@/assets/interface-icons/broken-icon.svg';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import EmojiUnicodeRegex from '@/utils/EmojiUnicodeRegex';
@@ -68,9 +76,9 @@ export default {
       if (this.effectiveIcon === 'auto') return matchPortalIcon(this.url, this.title)?.src || this.discoveredIcon || cachedSiteIcon(this.url,{page:true}) || websiteFavicon(this.url);
       return builtinIconPath(this.effectiveIcon) || portalIconPath(this.effectiveIcon) || this.effectiveIcon;
     },
-    // Theme foreground masks are for UI glyphs; brand artwork keeps its colors.
-    isGlyph() { return this.resolvedIcon.startsWith('/portal-icons/lucide/'); },
-    isMonochromeBrand() { return ['/portal-icons/chatgpt-official.svg', '/portal-icons/deepseek.svg'].includes(this.resolvedIcon); },
+    // UI glyphs and single-colour brand marks follow the theme text colour; colour artwork keeps its colours.
+    isGlyph() { return this.resolvedIcon.startsWith('/portal-icons/lucide/') || portalIconStyle(this.resolvedIcon).mono; },
+    glyphUnder() { return portalIconStyle(this.resolvedIcon).under; },
     isBrand() { return this.resolvedIcon.startsWith('/portal-icons/') || this.resolvedIcon === matchPortalIcon(this.url, this.title)?.src; },
     monogram() {
       const label = this.title || this.getHostName(this.url).replace(/^www\./, '') || '?';
@@ -102,10 +110,30 @@ export default {
       discoveredIcon: '',
       iconRequest: 0,
       discoveryTimer: null,
+      transparent: null, // undefined while a light background is being removed
+      showOriginal: false,
+      transparentTimer: null,
     };
   },
   watch: {
     resolvedIcon: { immediate: true, handler: 'resolveSimpleIcon' },
+    imageSource: {
+      immediate: true,
+      handler(source) {
+        clearTimeout(this.transparentTimer);
+        this.showOriginal = false;
+        const known = transparentIcon(source);
+        if (known !== undefined || !canMakeTransparent(source)) { this.transparent = known ?? null; return; }
+        // Briefly hold the original so a white square does not flash before its transparent version.
+        this.transparent = undefined;
+        this.transparentTimer = setTimeout(() => { this.showOriginal = true; }, 350);
+        makeTransparent(source).then((result) => {
+          if (this.imageSource !== source) return;
+          clearTimeout(this.transparentTimer);
+          this.transparent = result;
+        });
+      },
+    },
     discoveryTarget: {
       immediate: true,
       handler(target, previous) {
@@ -120,7 +148,10 @@ export default {
       },
     },
   },
-  beforeUnmount() { this.iconRequest += 1; clearTimeout(this.discoveryTimer); this.discoveryTimer = null; },
+  beforeUnmount() {
+    this.iconRequest += 1; clearTimeout(this.discoveryTimer); this.discoveryTimer = null;
+    clearTimeout(this.transparentTimer); this.transparentTimer = null;
+  },
   methods: {
     async discoverAutoIcon(request, target) {
       let host;
@@ -436,5 +467,6 @@ export default {
 <style scoped>
 .icon-monogram { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border-radius: 8px; background: var(--primary-transparent-60, #8882); font-family: sans-serif; font-weight: 700; line-height: 1; }
 .brand-icon img.tile-icon { object-fit: contain; filter: none !important; padding: 0 !important; }
-.monochrome-brand img.tile-icon { background: #fff !important; border-radius: 12% !important; }
+.tile-icon.awaiting-transparency { opacity: 0; }
+.glyph-stack { display: inline-grid; place-items: center; background-size: contain; background-repeat: no-repeat; background-position: center; }
 </style>

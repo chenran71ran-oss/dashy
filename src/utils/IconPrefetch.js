@@ -4,6 +4,7 @@
 import { discoverSiteIcon } from './SiteIcons.js';
 import { matchPortalIcon, websiteIcon } from './PortalIcons.js';
 import { iconCrossOrigin, iconImageSource } from './IconImagePolicy.js';
+import { makeTransparent } from './IconTransparency.js';
 
 const WARMED_LIMIT = 512;
 const warmed = new Set(); // Image addresses already requested in this tab
@@ -47,16 +48,21 @@ function flatten(items = []) {
 }
 
 // Warm the discovery result and image address that this item's card will load.
-async function warmItem(item, defaultIcon, { discover, preload }) {
+async function warmItem(item, defaultIcon, { discover, preload, transparent }) {
   if (!item?.url) return;
   const icon = websiteIcon(item, defaultIcon);
+  let source = '';
   if (icon === 'auto') {
     if (matchPortalIcon(item.url, item.title)) return;
     const result = await discover(item.url, { page: true });
-    if (result?.verified && result.icon) await preload(iconImageSource(result.icon));
+    if (result?.verified && result.icon) source = iconImageSource(result.icon);
   } else if (/^https:\/\//i.test(icon)) {
-    await preload(iconImageSource(icon));
+    source = iconImageSource(icon);
   }
+  if (!source) return;
+  await preload(source);
+  // Background removal is done ahead too, so a switched-to category shows the final icon at once.
+  await transparent(source);
 }
 
 /**
@@ -64,14 +70,14 @@ async function warmItem(item, defaultIcon, { discover, preload }) {
  * Returns a cancel function; cancelled work stops before its next item.
  */
 export function prefetchItemIcons(items, {
-  defaultIcon = '', concurrency = 3, discover = discoverSiteIcon, preload = preloadImage,
+  defaultIcon = '', concurrency = 3, discover = discoverSiteIcon, preload = preloadImage, transparent = makeTransparent,
 } = {}) {
   const queue = flatten(items).filter(item => item?.url);
   let cancelled = false;
   const worker = async () => {
     while (!cancelled && queue.length) {
       const item = queue.shift();
-      try { await warmItem(item, defaultIcon, { discover, preload }); } catch { /* Cards keep their own fallbacks. */ }
+      try { await warmItem(item, defaultIcon, { discover, preload, transparent }); } catch { /* Cards keep their own fallbacks. */ }
     }
   };
   const done = Promise.all(Array.from({ length: Math.max(1, concurrency) }, worker));

@@ -167,7 +167,7 @@ test('DeepSeek official sites use a bundled brand icon even when homepage reques
     const result=await discoverIcon(`https://${host}/settings?token=secret`,async(url)=>{
       calls.push(url);return url.includes('/dns-query?')?dns():new Response('',{status:403});
     },{page:true});
-    assert.deepEqual(result,{icon:'/portal-icons/deepseek.svg',source:'catalog',verified:true});
+    assert.deepEqual(result,{icon:'/portal-icons/brand/deepseek.svg',source:'catalog',verified:true});
     assert.deepEqual(calls,[]);
   }
 });
@@ -176,8 +176,8 @@ test('DeepSeek brand fallback does not accept lookalike hostnames',async()=>{
   assert.equal(result.icon,'');assert.equal(result.verified,false);
 });
 test('explicit reads accept the registered bundled DeepSeek icon',async()=>{
-  const result=await discoverSiteIcon('https://platform.deepseek.com/',{force:true,page:true,fetcher:async()=>Response.json({icon:'/portal-icons/deepseek.svg',source:'catalog',verified:true})});
-  assert.equal(result.icon,'/portal-icons/deepseek.svg');assert.equal(result.verified,true);
+  const result=await discoverSiteIcon('https://platform.deepseek.com/',{force:true,page:true,fetcher:async()=>Response.json({icon:'/portal-icons/brand/deepseek.svg',source:'catalog',verified:true})});
+  assert.equal(result.icon,'/portal-icons/brand/deepseek.svg');assert.equal(result.verified,true);
 });
 test('browser accepts only registered local brand assets returned by discovery',async()=>{
   const good=await discoverSiteIcon('https://www.nodeseek.com/',{force:true,fetcher:async()=>Response.json({icon:'/portal-icons/nodeseek.png',source:'catalog',verified:true})});

@@ -124,6 +124,15 @@ async function limitedHtml(response) {
   finally { await reader.cancel().catch(()=>{}); }
   const bytes=new Uint8Array(size);let at=0;for(const part of chunks){bytes.set(part,at);at+=part.length;}return new TextDecoder().decode(bytes);
 }
+// Sharpest first: vector, then the largest declared raster. A bare rel=icon is
+// usually a 16/32 px favicon, so it no longer outranks a 180 px touch icon.
+function iconScore(entry,url) {
+  if(/svg/i.test(entry.type||url.pathname))return 10000;
+  if(/\bany\b/i.test(entry.sizes||''))return 512;
+  const declared=Math.max(0,...[...(entry.sizes||'').matchAll(/(\d+)\s*x\s*\d+/gi)].map(m=>Number(m[1])));
+  const size=declared||(/apple-touch-icon/i.test(entry.rel)?180:32);
+  return Math.min(size,512)*2+(/(^|\s)icon(\s|$)/i.test(entry.rel)?1:0);
+}
 // Reads the first 64 KiB of a public page, following at most two public redirects.
 async function openPublicPage(root,fetcher,signal,onStage=()=>{}) {
   let target=root, response;
@@ -230,8 +239,7 @@ export async function discoverIcon(value, fetcher=fetch, {page=false,onImage}={}
       let base=target;try { if(metadata.base)base=publicIconUrl(metadata.base,target); }catch{}
       const links=metadata.entries.filter(e=>!/(^|\s)manifest(\s|$)/i.test(e.rel));
       candidates=links.map(entry=>{
-        try { const url=publicIconUrl(entry.href.replace(/&amp;/g,'&'),base);return {...entry,icon:url.href,source:'site',
-          score:(/(^|\s)icon(\s|$)/i.test(entry.rel)?300:0)+(/svg/i.test(entry.type||url.pathname)?128:0)+Math.min(parseInt(entry.sizes)||0,192)}; }
+        try { const url=publicIconUrl(entry.href.replace(/&amp;/g,'&'),base);return {...entry,icon:url.href,source:'site',score:iconScore(entry,url)}; }
         catch { return null; }
       }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,5);
       // Optional manifest/config requests must not delay a working declared icon.

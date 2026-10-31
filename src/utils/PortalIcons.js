@@ -1,6 +1,8 @@
 // Public brand assets only. Website lists and credentials stay in the user's KV.
 import { officialSiteIcons } from '../../cloud/icon-catalog.mjs';
 const qx = (id, title, file, hosts = [], aliases = []) => ({ id, title, src: `/portal-icons/qx/${file}.png`, hosts, aliases, source: 'QX' });
+// Transparent marks from simple-icons (scripts/sync-brand-icons.mjs); QX artwork stays in the repository.
+const brand = (entry, file, extra = {}) => ({ ...entry, src: `/portal-icons/brand/${file}.svg`, source: 'simple-icons (CC0) official mark', ...extra });
 const local = (id, title, hosts = [], aliases = []) => ({ id, title, src: `/portal-icons/${id}.svg`, hosts, aliases, source: 'Simple Icons' });
 export const portalIcons = [
   { id: 'notebooklm', title: 'NotebookLM / Gemini Notebook', src: '/portal-icons/notebooklm-official.svg', hosts: ['notebooklm.google.com', 'notebooklm.google', 'notebook.google'], exactHosts: true, aliases: ['notebooklm', 'notebook lm', 'gemini notebook'], source: 'Google official v6 favicon' },
@@ -10,20 +12,20 @@ export const portalIcons = [
   { id: 'nodeseek', title: 'NodeSeek', src: officialSiteIcons['nodeseek.com'], hosts: ['nodeseek.com'], aliases: ['nodeseek', 'node seek'], source: 'Official favicon' },
   { id: 'awsconsole', title: 'AWS Management Console', src: officialSiteIcons['console.aws.amazon.com'], hosts: ['console.aws.amazon.com'], aliases: ['aws', 'aws控制面板'], source: 'AWS Architecture Icons' },
   { id: 'linuxdo', title: 'LINUX DO', src: officialSiteIcons['linux.do'], hosts: ['linux.do'], aliases: ['linux do', 'linuxdo'], source: 'Official favicon' },
-  { ...qx('chatgpt', 'ChatGPT / GPT', 'ChatGPT', ['chatgpt.com', 'chat.openai.com'], ['chatgpt', 'gpt']), src: '/portal-icons/chatgpt-official.svg', source: 'OpenAI official cookbook logomark' },
+  { ...qx('chatgpt', 'ChatGPT / GPT', 'ChatGPT', ['chatgpt.com', 'chat.openai.com'], ['chatgpt', 'gpt']), src: '/portal-icons/chatgpt-official.svg', mono: true, source: 'OpenAI official cookbook logomark' },
   { ...qx('claude', 'Claude', 'Claude', ['claude.ai'], ['claude']), src: '/portal-icons/claude-hq.svg', source: 'Simple Icons / Claude' },
   { ...qx('gemini', 'Google Gemini', 'Gemini', ['gemini.google.com'], ['google gemini', 'gemini']), src: '/portal-icons/gemini-hq.svg', source: 'Lobe Icons / Gemini' },
-  qx('emby', 'Emby', 'Emby', ['app.emby.media'], ['emby']),
-  qx('github', 'GitHub', 'GitHub', ['github.com'], ['github', '总站源码']),
-  qx('speedtest', 'Speedtest', 'Speedtest', ['speedtest.net'], ['speedtest']),
-  qx('netflix', 'Netflix', 'Netflix', ['netflix.com']),
-  { ...qx('google', 'Google', 'Google', ['google.com', 'www.google.com']), exactHosts: true },
-  qx('spotify', 'Spotify', 'Spotify', ['spotify.com']),
-  qx('telegram', 'Telegram', 'Telegram', ['telegram.org', 'web.telegram.org', 't.me']),
-  qx('tiktok', 'TikTok / 抖音', 'TikTok', ['tiktok.com', 'douyin.com'], ['抖音', 'tiktok']),
-  qx('instagram', 'Instagram', 'Instagram', ['instagram.com']),
-  qx('reddit', 'Reddit', 'Reddit', ['reddit.com']),
-  qx('x', 'X / Twitter', 'X', ['x.com', 'twitter.com']),
+  brand(qx('emby', 'Emby', 'Emby', ['app.emby.media'], ['emby']), 'emby'),
+  brand(qx('github', 'GitHub', 'GitHub', ['github.com'], ['github', '总站源码']), 'github', { mono: true }),
+  brand(qx('speedtest', 'Speedtest', 'Speedtest', ['speedtest.net'], ['speedtest']), 'speedtest', { mono: true }),
+  brand(qx('netflix', 'Netflix', 'Netflix', ['netflix.com']), 'netflix'),
+  { ...brand(qx('google', 'Google', 'Google', ['google.com', 'www.google.com']), 'google'), exactHosts: true },
+  brand(qx('spotify', 'Spotify', 'Spotify', ['spotify.com']), 'spotify'),
+  brand(qx('telegram', 'Telegram', 'Telegram', ['telegram.org', 'web.telegram.org', 't.me']), 'telegram'),
+  brand(qx('tiktok', 'TikTok / 抖音', 'TikTok', ['tiktok.com', 'douyin.com'], ['抖音', 'tiktok']), 'tiktok', { mono: true, under: '/portal-icons/brand/tiktok-under.svg' }),
+  brand(qx('instagram', 'Instagram', 'Instagram', ['instagram.com']), 'instagram'),
+  brand(qx('reddit', 'Reddit', 'Reddit', ['reddit.com']), 'reddit'),
+  brand(qx('x', 'X / Twitter', 'X', ['x.com', 'twitter.com']), 'x', { mono: true }),
   qx('globalspeed', 'GlobalSpeed', 'GlobalSpeed', [], ['globalspeed']),
   qx('dmit', 'DMIT', 'DMIT', ['dmit.io'], ['dmit', 'dmit 官网']),
   qx('racknerd', 'RackNerd / RN-VPS', 'RN-VPS', ['racknerd.com'], ['racknerd', 'rn-vps']),
@@ -46,6 +48,11 @@ export function matchPortalIcon(url = '', title = '') {
   if (host.split('.')[0] === 'emby') return portalIcons.find(e => e.id === 'emby');
   const name = title.trim().toLowerCase();
   return portalIcons.find(e => e.aliases?.includes(name));
+}
+// Single-colour marks follow the theme text colour; `under` is drawn beneath the mask.
+export function portalIconStyle(src = '') {
+  const entry = portalIcons.find(e => e.src === src);
+  return { mono: !!entry?.mono, under: entry?.under || '' };
 }
 export function portalIconPath(value) { return portalIcons.find(e => `portal-${e.id}` === value)?.src; }
 export function websiteFavicon(url = '') {
