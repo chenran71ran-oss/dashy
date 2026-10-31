@@ -39,7 +39,7 @@ test('DeepSeek API and chat share the verified brand catalog without replacing m
     assert.equal(matchPortalIcon(`https://${host}/`).id, 'deepseek');
     assert.equal(websiteIcon({url:`https://${host}/`,title:'DeepSeek API'}), 'portal-deepseek');
   }
-  assert.equal(portalIconPath('portal-deepseek'), '/portal-icons/deepseek.svg');
+  assert.equal(portalIconPath('portal-deepseek'), '/portal-icons/brand/deepseek.svg');
   assert.equal(websiteIcon({url:'https://platform.deepseek.com/',icon:'/custom.png'}), '/custom.png');
   assert.equal(matchPortalIcon('https://deepseek.com.untrusted.example/'), undefined);
 });
