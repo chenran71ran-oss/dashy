@@ -11,6 +11,8 @@ export const themeLabels = {
   tama: '塔玛', neomorphic: '新拟态', 'glass-2': '透明玻璃', 'night-bat': '夜蝠', 'tokyo-night': '东京之夜',
   gruvbox: '复古暖色', 'rose-pine': '玫瑰松林', parchment: '羊皮纸', aurora: '极光', zinc: '锌灰',
   'solarized-dark': '日光深色', 'solarized-light': '日光浅色', brutalist: '粗野主义', midnight: '午夜', catppuccin: '奶油猫',
+  'oblivion-blue': '遗忘之境·蓝', 'oblivion-mint': '遗忘之境·薄荷', 'oblivion-lemon': '遗忘之境·柠檬', 'oblivion-scotch': '遗忘之境·琥珀',
+  'hacker-girl': '黑客少女', 'glow-colorful': '缤纷辉光', 'blue-purple': '蓝紫',
 };
 export const favoriteThemesKey = 'home-lab:favorite-themes:v1';
 export function themeLabel(name) { return themeLabels[name] || '自定义主题'; }

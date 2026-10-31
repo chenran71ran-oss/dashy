@@ -7,7 +7,7 @@ import {themeMenuPalette, contextMenuPalette} from '../src/utils/ThemeMenuPalett
 import {contrastRatio} from '../src/utils/ThemeContrast.js';
 import {themeAuditDom} from '../scripts/lib/theme-audit-dom.mjs';
 
-test('all 54 real Sass palettes produce opaque, readable normal, hover and selected menus', async () => {
+test('all 61 real Sass palettes produce opaque, readable normal, hover and selected menus', async () => {
   const css = sass.compileString("@import 'src/styles/media-queries.scss';@import 'src/styles/color-palette.scss';@import 'src/styles/dimensions.scss';@import 'src/styles/color-themes.scss';", {
     silenceDeprecations: ['import','global-builtin','color-functions'],
     loadPaths: [fileURLToPath(new URL('../', import.meta.url)), fileURLToPath(new URL('../src/styles', import.meta.url))],
@@ -20,7 +20,7 @@ test('all 54 real Sass palettes produce opaque, readable normal, hover and selec
   const rgb = value => value.match(/[\d.]+/g).map(Number);
   const ratio = (colors, fg, bg) => contrastRatio(rgb(colors[`--theme-menu-${fg}`]), rgb(colors[`--theme-menu-${bg}`]));
   try {
-    assert.equal(Object.keys(themeLabels).length, 54);
+    assert.equal(Object.keys(themeLabels).length, 61);
     for (const theme of Object.keys(themeLabels)) {
       if (theme === 'default') page.document.documentElement.removeAttribute('data-theme');
       else page.document.documentElement.dataset.theme = theme;

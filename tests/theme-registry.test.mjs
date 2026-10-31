@@ -6,8 +6,6 @@ import defaults from '../src/utils/config/defaults.js';
 import { themeLabels } from '../src/utils/ThemeCatalog.js';
 import schema from '../src/utils/config/ConfigSchema.json' with { type: 'json' };
 
-// Selectors kept from upstream Dashy, but deliberately not offered in the theme menu.
-const unlisted = ['blue-purple', 'glow-colorful', 'hacker-girl', 'oblivion-blue', 'oblivion-lemon', 'oblivion-mint', 'oblivion-scotch'];
 const cssThemes = () => {
   const dir = new URL('../src/styles/', import.meta.url).pathname;
   const files = fs.readdirSync(dir, { recursive: true }).filter(f => f.endsWith('.scss'));
@@ -25,10 +23,10 @@ test('menu labels, built-in list and config schema name the same themes', () => 
   assert.deepEqual(schema.properties.appConfig.properties.theme.examples, builtIn);
 });
 
-test('every built-in theme has styles, and no other selector is silently unreachable', () => {
+test('every built-in theme has styles, and every theme selector is offered in the menu', () => {
   const css = cssThemes();
   css.delete('my-theme'); // Documented example in user-defined-themes.scss
   const builtIn = new Set(defaults.builtInThemes);
   assert.deepEqual(defaults.builtInThemes.filter(name => name !== 'default' && !css.has(name)), []);
-  assert.deepEqual([...css].filter(name => !builtIn.has(name)).sort(), unlisted);
+  assert.deepEqual([...css].filter(name => !builtIn.has(name)), []);
 });

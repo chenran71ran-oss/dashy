@@ -12,7 +12,7 @@ const components = {
  item:'src/components/LinkItems/Item.vue', collapsable:'src/components/LinkItems/Collapsable.vue',
  minimal:'src/views/Minimal.vue', section:'src/components/MinimalView/MinimalSection.vue', heading:'src/components/MinimalView/MinimalHeading.vue',
  sidebar:'src/components/Workspace/SideBar.vue', sideitem:'src/components/Workspace/SideBarItem.vue', sidesection:'src/components/Workspace/SideBarSection.vue',
- search:'src/components/Settings/SearchBar.vue',
+ search:'src/components/Settings/SearchBar.vue', workspaceView:'src/views/Workspace.vue',
 };
 const chunks=[];
 let css='body { background:var(--background);color:var(--foreground); }';
@@ -35,7 +35,7 @@ const attr=(html,id)=>html.replace(/<([a-z][\w-]*)(?=[\s>])/g,`<$1 data-v-${id}`
 function cards(){return Array.from({length:8},(_,i)=>attr(`<div class="item-wrapper"><a class="item size-large"><div class="tile-title"><span class="text" data-audit="title-${i}">Example site</span><p class="description" data-audit="description-${i}">English website description</p></div></a></div>`,'item')).join('');}
 const minimal=attr('<div class="minimal-home focus-home"><div class="item-group-container">','minimal')+attr('<div class="minimal-section-heading"><h3 class="section-title" data-audit="tab">Category</h3></div><div class="minimal-section-heading selected"><h3 class="section-title" data-audit="tab-selected">Selected</h3></div>','heading')+attr('<div class="minimal-section-inner focus-category"><div class="section-items">','section')+cards()+'</div></div></div>'+attr('<section class="filter-container"><form class="minimal"><div class="search-wrap"><input id="filter-tiles" data-audit="search" /></div></form></section>','search')+'</div>';
 const home=attr('<div class="home"><div class="collapsable"><div class="section-header"><h3 data-audit="heading">Category</h3></div><div class="collapsible-content"><div class="content-inner"><div class="section-items">','collapsable')+cards()+'</div></div></div></div></div>';
-const workspace=attr('<nav class="side-bar"><div class="side-bar-section">','sidebar')+attr('<div class="sub-side-bar">','sidesection')+attr('<div class="side-bar-item text-only"><p class="small-title" data-audit="sidebar-label">Website</p></div>','sideitem')+'</div></div></nav>';
+const workspace=attr('<div class="work-space">','workspaceView')+attr('<nav class="side-bar"><div class="side-bar-section">','sidebar')+attr('<div class="sub-side-bar">','sidesection')+attr('<div class="side-bar-item text-only"><p class="small-title" data-audit="sidebar-label">Website</p></div>','sideitem')+'</div></div></nav>'+attr('<main class="workspace-main"><div class="workspace-empty"><h2 data-audit="workspace-title">Workspace</h2><p data-audit="workspace-hint">Choose a website on the left.</p></div></main></div>','workspaceView');
 const cache=new Map();
 function color(value){
  value=(value||'transparent').trim();
@@ -52,6 +52,11 @@ function background(el){
  if(!el||el===doc.documentElement)return [255,255,255];
  const style=w.getComputedStyle(el);let bg=style.backgroundColor;
  if(bg.toLowerCase()==='currentcolor')bg=style.color;
+ // A page image or gradient has no single colour; approximate it with the theme's declared background.
+ if(el===doc.body && /url\(|gradient\(/.test(style.backgroundImage) && color(bg)[3]===0) {
+  limitations.add(`${doc.documentElement.dataset.theme||'default'}: background image/gradient requires visual verification`);
+  bg=w.getComputedStyle(doc.documentElement).getPropertyValue('--background')||bg;
+ }
  return compositeColor(color(bg),background(el.parentElement));
 }
 const rows=[];const limitations=new Set();

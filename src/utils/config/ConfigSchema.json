@@ -346,6 +346,10 @@
             "fallout",
             "whimsy",
             "oblivion",
+            "oblivion-blue",
+            "oblivion-mint",
+            "oblivion-lemon",
+            "oblivion-scotch",
             "adventure",
             "crayola",
             "deep-ocean",
@@ -354,12 +358,14 @@
             "thebe",
             "matrix",
             "matrix-red",
+            "hacker-girl",
             "color-block",
             "raspberry-jam",
             "bee",
             "tiger",
             "glow",
             "glow-dark",
+            "glow-colorful",
             "vaporware",
             "cyberpunk",
             "material-original",
@@ -382,7 +388,8 @@
             "solarized-light",
             "brutalist",
             "midnight",
-            "catppuccin"
+            "catppuccin",
+            "blue-purple"
           ]
         },
         "dayTheme": {

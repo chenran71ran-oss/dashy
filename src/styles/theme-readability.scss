@@ -33,11 +33,6 @@ html[data-theme='whimsy'] .collapsable .collapsible-content .item-wrapper > a.it
 html[data-theme='whimsy'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title p.description { color: #f6a9bb; }
 html[data-theme='whimsy'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title span.text { color: #f6a9bb; }
 html[data-theme='whimsy'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title p.description { color: #f6a9bb; }
-html[data-theme='adventure'] .collapsable .section-header h3 { color: #737373; }
-html[data-theme='adventure'] .collapsable .collapsible-content .item-wrapper > a.item:not(:hover) .tile-title span.text { color: #242424; }
-html[data-theme='adventure'] .collapsable .collapsible-content .item-wrapper > a.item:not(:hover) .tile-title p.description { color: #242424; }
-html[data-theme='adventure'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title span.text { color: #030303; }
-html[data-theme='adventure'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title p.description { color: #030303; }
 html[data-theme='crayola'] .collapsable .section-header h3 { color: #0a0e1e; }
 html[data-theme='crayola'] .collapsable .collapsible-content .item-wrapper > a.item:not(:hover) .tile-title span.text { color: #b98eed; }
 html[data-theme='crayola'] .collapsable .collapsible-content .item-wrapper > a.item:not(:hover) .tile-title p.description { color: #b98eed; }
@@ -139,3 +134,36 @@ html[data-theme='brutalist'] .minimal-home .minimal-section-inner .item-wrapper 
 html[data-theme='brutalist'] nav.side-bar div.side-bar-item p.small-title { color: #73716c; }
 /* The second rainbow accent loses contrast when the entire hovered card is dimmed. */
 html[data-theme='colorful'] .item-wrapper:nth-child(2) > a.item:hover { opacity: 1; }
+
+/* Previously unlisted upstream themes, added to the theme menu. Same hue, adjusted lightness. */
+html[data-theme='hacker-girl'] .collapsable .section-header h3 { color: #0b1021; }
+html[data-theme='hacker-girl'] .collapsable .collapsible-content .item-wrapper > a.item:not(:hover) .tile-title span.text { color: #eb69f5; }
+html[data-theme='hacker-girl'] .collapsable .collapsible-content .item-wrapper > a.item:not(:hover) .tile-title p.description { color: #eb69f5; }
+html[data-theme='hacker-girl'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title span.text { color: #ee7df6; }
+html[data-theme='hacker-girl'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title p.description { color: #ee7df6; }
+html[data-theme='hacker-girl'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title span.text { color: #e53ff2; }
+html[data-theme='hacker-girl'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title p.description { color: #e53ff2; }
+html[data-theme='blue-purple'] .collapsable .section-header h3 { color: #3829f1; }
+html[data-theme='blue-purple'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title span.text { color: #3829f1; }
+html[data-theme='blue-purple'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title p.description { color: #3829f1; }
+html[data-theme='blue-purple'] div.minimal-section-heading:not(.selected) h3.section-title { color: #aceefc; }
+html[data-theme='blue-purple'] div.minimal-section-heading.selected h3.section-title { color: #3829f1; }
+html[data-theme='blue-purple'] section.filter-container form.minimal input { color: #aceefc; }
+html[data-theme='blue-purple'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title span.text { color: #3829f1; }
+html[data-theme='blue-purple'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title p.description { color: #3829f1; }
+html[data-theme='blue-purple'] nav.side-bar div.side-bar-item p.small-title { color: #056e85; }
+
+/* Workspace empty-state text uses --primary directly; calibrated where it is too faint. */
+html[data-theme='material-dark'] main.workspace-main .workspace-empty { color: #08b5c0; }
+html[data-theme='dracula'] main.workspace-main .workspace-empty { color: #a9baed; }
+html[data-theme='minimal-light'] main.workspace-main .workspace-empty { color: #757575; }
+html[data-theme='color-block'] main.workspace-main .workspace-empty { color: #eb5770; }
+html[data-theme='material-original'] main.workspace-main .workspace-empty { color: #0772a3; }
+html[data-theme='material-dark-original'] main.workspace-main .workspace-empty { color: #09c2cf; }
+html[data-theme='night-bat'] main.workspace-main .workspace-empty { color: #5b8eff; }
+html[data-theme='solarized-dark'] main.workspace-main .workspace-empty { color: #3295da; }
+html[data-theme='solarized-light'] main.workspace-main .workspace-empty { color: #2074af; }
+html[data-theme='blue-purple'] main.workspace-main .workspace-empty { color: #056e85; }
+
+/* Adventure's remote background image: keep the theme's dark base if it fails to load. */
+html[data-theme='adventure'] body { background-color: var(--background); }
