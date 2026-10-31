@@ -10,6 +10,10 @@
       <label v-if="kind === 'link'">网址 <span class="required">*</span><input v-model="draft.url" type="url" aria-label="网址" placeholder="https://example.com" /></label>
       <IconPicker v-model="draft.icon" :url="kind === 'link' ? draft.url : ''" :siteTitle="draft.title" :allowAuto="kind === 'link'" />
       <label>说明<input v-model="draft.description" aria-label="说明" placeholder="可选，鼠标悬停时显示" /></label>
+      <div v-if="kind === 'link'" class="description-tools">
+        <button type="button" @click="readDescription" :disabled="readingDescription || !draft.url">{{ readingDescription ? '正在读取…' : '↻ 读取网站英文说明' }}</button>
+        <span v-if="descriptionNote" role="status">{{ descriptionNote }}</span>
+      </div>
       <label v-if="kind === 'link'">打开方式<select v-model="draft.target" aria-label="打开方式"><option value="newtab">新标签页</option><option value="sametab">当前标签页</option><option value="modal">弹窗</option><option value="workspace">工作台内打开</option><option value="newwindow">新窗口</option><option value="clipboard">复制网址</option><option value="parent">父级窗口</option><option value="top">顶层窗口</option></select></label>
       <SubItemsEditor v-if="kind === 'group'" v-model="draft.subItems" />
       <details><summary>更多选项</summary>
@@ -56,6 +60,7 @@
 </template>
 <script>
 import IconPicker from './IconPicker.vue';
+import { readSiteDescription } from '@/utils/SiteCompletion';
 import SubItemsEditor from './SubItemsEditor.vue';
 import SaveCancelButtons from './SaveCancelButtons';
 import AccessError from '@/components/Configuration/AccessError';
@@ -67,7 +72,7 @@ export default {
   components: { IconPicker, SubItemsEditor, SaveCancelButtons, AccessError },
   props: { itemId: { type: String, default: '' }, isNew: Boolean, parentSectionTitle: { type: String, default: '' } },
   emits: ['closeEditMenu'],
-  data: () => ({ modalName: modalNames.EDIT_ITEM, draft: {}, kind: 'link', tags: '', hidden: false, probeHeaders: '', advancedText: '{}', error: '' }),
+  data: () => ({ modalName: modalNames.EDIT_ITEM, draft: {}, kind: 'link', tags: '', hidden: false, probeHeaders: '', advancedText: '{}', error: '', readingDescription: false, descriptionNote: '', descriptionRequest: 0 }),
   computed: { allowViewConfig() { return this.$store.getters.permissions.allowViewConfig; } },
   mounted() {
     this.draft = safeClone(this.isNew ? {} : this.$store.getters.getItemById(this.itemId), {});
@@ -82,7 +87,25 @@ export default {
     this.advancedText = JSON.stringify(Object.fromEntries(fields.filter(k => this.draft[k] !== undefined).map(k => [k, this.draft[k]])), null, 2);
     this.$modal.show(this.modalName);
   },
+  watch: { 'draft.url'() { this.descriptionRequest += 1; this.readingDescription = false; this.descriptionNote = ''; } },
+  beforeUnmount() { this.descriptionRequest += 1; },
   methods: {
+    /* Uses the site's own English metadata only; the field stays editable */
+    async readDescription() {
+      const request = ++this.descriptionRequest;
+      this.readingDescription = true; this.descriptionNote = '';
+      const result = await readSiteDescription(this.draft.url);
+      if (request !== this.descriptionRequest) return;
+      this.readingDescription = false;
+      if (result.description) {
+        this.draft.description = result.description;
+        this.descriptionNote = '已填入网站自己的英文描述，可继续修改。';
+        return;
+      }
+      const reasons = { 'not-english': '网站描述不是英文', 'no-description': '网站未提供描述', 'login-required': '总站登录已过期，请重新登录', timeout: '读取超时', dns: '无法解析网站', request: '网站无法访问', 'public-site-required': '仅支持公开 HTTPS 网站', 'not-html': '网址不是网页' };
+      const problem = reasons[result.reason] || (result.reason?.startsWith('http-') ? `网站返回 HTTP ${result.reason.slice(5)}` : '未读取到描述');
+      this.descriptionNote = `${problem}，说明保持不变，可手动填写。`;
+    },
     saveItem() {
       this.error = '';
       const item = safeClone(this.draft, {});
@@ -143,4 +166,11 @@ export default {
 </script>
 <style lang="scss">
 @import '@/styles/portal-editor.scss';
+</style>
+<style scoped lang="scss">
+.description-tools { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: -0.25rem; }
+.description-tools span { font-size: 0.75rem; opacity: 0.85; }
+.description-tools button { padding: 0.25rem 0.5rem; min-height: 44px; font-size: 0.75rem; font-weight: 600; color: var(--interactive-editor-color); background: var(--interactive-editor-background); border: 1px solid currentColor; border-radius: var(--curve-factor-small); cursor: pointer; }
+.description-tools button:hover:not(:disabled), .description-tools button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.description-tools button:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>

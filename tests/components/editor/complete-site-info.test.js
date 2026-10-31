@@ -76,3 +76,28 @@ it('reads proposals, lets the user edit them, and commits the accepted sections'
   expect(hide).toHaveBeenCalled();
   vi.unstubAllGlobals();
 });
+
+it('single-site editor fills the description from the site and explains when it cannot', async () => {
+  const { default: EditItem } = await import('@/components/InteractiveEditor/EditItem.vue');
+  const fetcher = vi.fn()
+    .mockResolvedValueOnce(Response.json({ description: 'Shows WebRTC IP leaks.', source: 'description' }))
+    .mockResolvedValueOnce(Response.json({ description: '', reason: 'not-english' }));
+  vi.stubGlobal('fetch', fetcher);
+  const wrapper = mount(EditItem, {
+    props: { itemId: 'a' },
+    global: {
+      stubs: { modal: { template: '<div><slot /></div>' }, IconPicker: true, SubItemsEditor: true, SaveCancelButtons: true, AccessError: true },
+      mocks: { $store: { getters: { permissions: { allowViewConfig: true }, getItemById: () => ({ title: 'Web Rtc', url: 'https://browserleaks.com/webrtc?x=1' }) }, commit: vi.fn() }, $modal: { show: vi.fn(), hide: vi.fn() } },
+    },
+  });
+  await flushPromises();
+  const button = wrapper.find('.description-tools button');
+  await button.trigger('click'); await flushPromises();
+  expect(wrapper.find('input[aria-label="说明"]').element.value).toBe('Shows WebRTC IP leaks.');
+  expect(JSON.parse(fetcher.mock.calls[0][1].body).page).toBe('https://browserleaks.com/webrtc');
+  await wrapper.find('input[aria-label="说明"]').setValue('Kept');
+  await button.trigger('click'); await flushPromises();
+  expect(wrapper.find('input[aria-label="说明"]').element.value).toBe('Kept');
+  expect(wrapper.find('.description-tools [role=status]').text()).toContain('网站描述不是英文');
+  vi.unstubAllGlobals();
+});
