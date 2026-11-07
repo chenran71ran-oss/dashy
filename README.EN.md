@@ -4,79 +4,147 @@
 
 # Home Lab
 
-**Your websites, services and useful information. One personal entry point.**
+**One place for the websites, self-hosted services and information you use every day.**
 
-A Dashy frontend customization focused on Chinese localization, redesigned layouts and desktop/mobile usability
+A Chinese-first start page built on [Dashy](https://github.com/Lissy93/dashy) · Runs on Cloudflare Workers, so your desktop and phone share one configuration
 
-[中文](README.md) · [Deployment](docs/home-lab/deployment.md) · [Changelog](CHANGELOG.md) · [Maintenance](docs/home-lab/maintenance.md) · [MIT](LICENSE)
+[![MIT License](https://img.shields.io/badge/License-MIT-2563eb?style=flat-square)](LICENSE)
+[![Cloudflare Workers](https://img.shields.io/badge/Deploy-Cloudflare_Workers-f38020?style=flat-square&logo=cloudflare&logoColor=white)](docs/home-lab/deployment.md)
+[![Vue 3](https://img.shields.io/badge/Vue-3-42b883?style=flat-square&logo=vuedotjs&logoColor=white)](docs/home-lab/architecture.md)
+[![Themes](https://img.shields.io/badge/Built--in_themes-61-8b5cf6?style=flat-square)](docs/home-lab/theme-readability.md)
+[![Based on Dashy](https://img.shields.io/badge/Based_on-Dashy-0ea5e9?style=flat-square)](https://github.com/Lissy93/dashy)
+
+[Quick start](#-quick-start) · [Features](#-features) · [Usage](docs/home-lab/usage.md) · [FAQ](docs/home-lab/faq.md) · [Changelog](CHANGELOG.md) · [中文](README.md)
+
+<img src="docs/assets/home-lab/overview.png" alt="Home Lab overview: website cards grouped by category, Nord Frost theme" width="900">
 
 </div>
 
----
+> [!NOTE]
+> The interface and the linked guides are written in Chinese. This page summarizes them in English.
 
-## Overview
+## ✨ Features
 
-Maintained by Kenneth (`chenran71ran-oss`), Home Lab builds on Dashy's frontend. The main work is Chinese localization, layout and management interaction redesign, desktop/mobile adaptation, HTTP/Ping status presentation, and website icon discovery with consistent rendering. Cloudflare Workers + KV provides supporting deployment and data services.
+### 🧭 Three views, one set of bookmarks
 
-The repository retains the name `dashy` to preserve its fork relationship. This is a community derivative, not an official Dashy release.
+| Overview `/home` | Focus `/minimal` | Workspace `/workspace` |
+| --- | --- | --- |
+| Every category, group and widget on one page | Switch categories with tabs and see only that one | Navigation on the left, the website or widget opens on the right |
 
-The default branch is `master`, inherited from upstream; it serves the same role commonly called `main`. Icon reliability fixes and the responsive, theme-aware login have been merged through [PR #1](https://github.com/chenran71ran-oss/dashy/pull/1) and [PR #2](https://github.com/chenran71ran-oss/dashy/pull/2). A merged commit does not by itself confirm a successful Cloudflare deployment. See the [changelog](CHANGELOG.md) and [commit index](docs/home-lab/history.md) for this fork's history; package version `4.7.17` identifies its upstream base.
+<p align="center">
+  <img src="docs/assets/home-lab/focus.png" alt="Focus view with category tabs, Tokyo Night theme" width="640">
+  &nbsp;
+  <img src="docs/assets/home-lab/mobile.png" alt="Focus view on a phone, Catppuccin theme" width="195">
+</p>
 
-## Frontend customization
+### 🎨 Icons: transparent, sharp and theme-aware
 
-### Chinese localization and guidance
+- **Official vector marks for brands**: more than 40 brands, including GitHub, Telegram, TikTok, Instagram, ChatGPT, Claude and DeepSeek. Transparent backgrounds, sharp at any size.
+- **Single-colour marks follow the theme**: black-and-white logos such as GitHub, X, OpenAI and Manus turn light on dark themes and dark on light themes, with no white tile behind them.
+- **White backgrounds removed automatically**: when a website's favicon has a white background, it is removed in a background thread (Web Worker). Photos and avatars are left as they are.
+- **Sharper icon discovery**: vector icons and the largest declared size are preferred, so a 16 px favicon no longer wins.
+- **Built-in icon library**: more than 1,900 icons (387 in colour), searchable by category and by Chinese or English keyword.
 
-Chinese theme labels, widget purpose and data-source descriptions, and clearer guidance for probes, advanced settings and editing forms.
+### ⚡ Fast: no waiting for icons after switching categories
 
-### Layouts, cards and management interactions
+- Categories you have visited stay mounted, so switching back is instant.
+- While the browser is idle, icons of other categories are read and processed ahead of time.
+- Static assets are cached long-term by content hash, so a second visit downloads almost nothing.
 
-Reworked dashboard, focused and workspace layouts, category/subcategory presentation, search and configuration controls. Card text, icons and descriptions adapt to layout and size changes; widgets use more compact information layouts and integrated refresh controls.
+### ✍️ Manage everything without writing YAML
 
-### Separate desktop and mobile adaptations
+- Add, edit and drag to reorder websites and categories on the page, and preview before saving.
+- **Fill in icons and descriptions**: find websites that are missing an icon or a description, read each site's own icon and English description, then review and apply.
+- Every cloud save backs up the previous version, which you can restore from the configuration history.
 
-Desktop retains room for navigation and controls. Mobile adjusts title/search proportions, configuration button alignment, category navigation and toolbars. Work covers wrapping, spacing, overflow and theme contrast across views, layouts and sizes.
+### 🌗 61 themes, each checked for readability
 
-### HTTP and Ping status presentation
+- All upstream Dashy themes are included, each with a Chinese name, and you can star your favourites.
+- Every theme passes a contrast audit: site names, descriptions, category tabs, the search box and workspace text reach at least 4.5:1 in all themes.
+- The login page, theme menu, context menu and pixel mecha mark follow the current theme's colours.
 
-Improved indicators, online breathing animations, response details and HTTP/Ping labels on top of Dashy's existing checks. Independent checks are distinguished, with guidance for timeouts, failures and missing backend configuration. Presentation is adapted for desktop and touch interaction.
+### 📡 Service status and widgets
 
-HTTP checks can run in the Worker. Real ICMP Ping still requires a compatible host backend; animations do not represent individual network requests.
+- HTTP checks run in the Worker; ICMP ping and system information can use your own host backend.
+- All 94 upstream widgets (weather, calendar, RSS, custom API and more) are kept, with Chinese guidance on their data sources.
 
-### Website icon discovery and consistent rendering
+### ☁️ One configuration across devices
 
-Explicit discovery supports application paths, relative URLs, base URLs and PWA manifests, validates image formats, and provides verified fallbacks for recognized brands. Failed reads preserve the previous icon rather than reporting a monogram as a successful result.
+- Configuration, theme and favourites are stored in Cloudflare KV, so your desktop and phone open the same start page.
+- Admin password sign-in; the admin password and widget API keys are kept in Worker Secrets, never in frontend code.
 
-Cards, workspace navigation and editing previews share icon rendering. QX/brand assets and categorized selection include 387 colored SVGs for websites without dedicated branding.
+> [!NOTE]
+> Some features need more than the Worker: ICMP ping and host information require an optional backend; whether the workspace can embed a website depends on that site allowing iframes; widgets need their own services and credentials. See [feature boundaries](docs/home-lab/features.md) (Chinese).
 
-### Themes and pixel mecha identity
+## 🚀 Quick start
 
-Home Lab branding and theme-aware pixel mecha styling, improved current-theme positioning, Chinese labels, favorite ordering and readability. Theme favorites are stored in KV for retrieval across devices.
+All you need is a Cloudflare account. No server of your own is required.
 
-The login page uses the portal's theme palette. In cloud mode, normal theme selections and saved custom colors update shared root configuration rather than being overridden by stale browser or subpage themes. Visible login pages check every 15 seconds; authenticated pages check every 30 seconds and protect active edits. Focus also triggers refresh. KV propagation can add delay. Mobile branding is centered and its footer stays with the form; desktop columns use tighter spacing. Preview controls are excluded from the deployed login component.
+1. **Fork** this repository, then create a Workers project in Cloudflare and connect it to the repository.
+2. **Create a KV namespace** and put its ID in the build variable `HOME_KV_NAMESPACE_ID`.
+3. **Set the admin password** by adding the runtime Secret `ADMIN_TOKEN`.
+4. **Deploy**, and optionally bind a custom domain.
+5. **Sign in**, add categories and websites, click "保存到云端" (Save to cloud), then refresh on another device to see them.
 
-## Retained capabilities and deployment support
+Full steps, build commands and variables are in the [deployment guide](docs/home-lab/deployment.md) (Chinese).
 
-Dashy's navigation, widget catalog, launch methods, YAML import/export and multiple pages remain the foundation. Supporting additions include GitHub-connected Workers Builds, administrator password login, KV storage and configuration history.
+> [!TIP]
+> Do not commit your personal website list, cookies or API keys to a public repository. They belong in your own KV and Worker Secrets.
 
-Widgets require their own APIs and credentials. ICMP Ping and host information need an optional backend. Websites may block iframe embedding; use a new tab in those cases.
+<details>
+<summary><b>Local development</b></summary>
 
-## Documentation
+```bash
+npm ci
+npm run dev      # Vite dev server (frontend only), http://localhost:8080
+npm run build    # Production build into dist/
+npx vitest run && node --test tests/*.test.mjs   # Frontend and Worker tests
+node scripts/theme-audit/audit.mjs --fixed       # Contrast audit for all 61 themes
+```
 
-| Guide | Purpose |
+The full save and sign-in flow needs the Worker API; see the [maintenance guide](docs/home-lab/maintenance.md) (Chinese).
+
+</details>
+
+## 📚 Documentation
+
+The guides below are in Chinese.
+
+| I want to… | Read |
 | --- | --- |
-| [Deployment](docs/home-lab/deployment.md) | Workers Builds, KV, Secrets and domains |
-| [Usage](docs/home-lab/usage.md) | Websites, icons, widgets, themes and saving |
-| [Features](docs/home-lab/features.md) | Functionality and data requirements |
-| [Architecture](docs/home-lab/architecture.md) | Frontend, Worker and file structure |
-| [FAQ](docs/home-lab/faq.md) | Common problems |
-| [Changelog](CHANGELOG.md) / [History](docs/home-lab/history.md) | Milestones and verified commit references |
-| [Maintenance](docs/home-lab/maintenance.md) | Branches, checks, deployment and rollback |
-| [Contributing](CONTRIBUTING.md) | Development and review |
+| Deploy, set up KV and a custom domain | [Deployment guide](docs/home-lab/deployment.md) |
+| Add websites, change icons, use widgets | [Usage guide](docs/home-lab/usage.md) |
+| Know whether a feature needs an API or backend | [Feature boundaries](docs/home-lab/features.md) |
+| Troubleshoot saving, icons, weather or embedding | [FAQ](docs/home-lab/faq.md) |
+| Understand icon transparency and sharpness rules | [Icon transparency and sharpness](docs/home-lab/icon-transparency.md) |
+| See the theme contrast audit | [Theme readability audit](docs/home-lab/theme-readability.md) |
+| Understand the code layout | [Architecture and file map](docs/home-lab/architecture.md) |
+| Branch, verify, release and roll back | [Maintenance guide](docs/home-lab/maintenance.md) |
+| Look up every change | [Changelog](CHANGELOG.md) · [Commit index](docs/home-lab/history.md) |
+| Look up Dashy's original configuration fields | [Upstream docs index](docs/readme.md) (English) |
 
-Detailed guides are currently in Chinese. Do not commit personal configuration, cookies or API keys.
+## 🧱 Tech stack and layout
 
-## Credits and license
+**Vue 3 + Vite** frontend · **Cloudflare Workers + KV** backend and storage · **Vitest + node:test** tests
 
-Based on [Dashy](https://github.com/Lissy93/dashy), created by Alicia Sykes and upstream contributors. Its original introduction is preserved in [README_UPSTREAM.md](README_UPSTREAM.md).
+| Path | Contents |
+| --- | --- |
+| `src/` | Frontend: three views, themes, widgets, editor, icon processing |
+| `cloud/` | Worker: sign-in, KV configuration, icon discovery and proxy, site descriptions, weather, probes |
+| `public/portal-icons/` | Bundled brand icons and icon packs (sources in [SOURCES.md](public/portal-icons/SOURCES.md)) |
+| `scripts/` | Brand icon generation, icon pack sync, theme audit |
+| `tests/` | Frontend component, Worker API and utility tests |
+| `docs/home-lab/` | User and maintenance guides for this project |
 
-The upstream [MIT License](LICENSE) is retained. Third-party assets and trademarks follow their own licenses and ownership; see [icon sources](public/portal-icons/SOURCES.md).
+## 🤝 Contributing
+
+Issues and pull requests are welcome. Work on a separate branch and run the test commands above before submitting; the pull request template lists what to describe about your verification. See the [contributing guide](CONTRIBUTING.md).
+
+## 🙏 Acknowledgements
+
+- [Dashy](https://github.com/Lissy93/dashy) is the foundation of this project. Navigation, themes, widgets and the configuration system come from Alicia Sykes and the upstream contributors; the original introduction is kept in [README_UPSTREAM.md](README_UPSTREAM.md).
+- Icon sources: [Simple Icons](https://simpleicons.org/), [Lobe Icons](https://github.com/lobehub/lobe-icons), [Lucide](https://lucide.dev/), [Microsoft Fluent Emoji](https://github.com/microsoft/fluentui-emoji), [Icons8 Flat Color](https://github.com/icons8/flat-color-icons) and [QX-icons](https://github.com/chenran71ran-oss/QX-icons).
+
+## 📄 License
+
+[MIT](LICENSE), with the upstream copyright notice retained. Third-party icons, fonts and trademarks remain under their own licences and ownership. This is an independent fork of Dashy maintained by Kenneth ([@chenran71ran-oss](https://github.com/chenran71ran-oss)) and is not an official Dashy release.
