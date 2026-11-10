@@ -32,7 +32,11 @@
 </template>
 <script>
 import { portalIcons, websiteIcon } from '@/utils/PortalIcons';
-import { builtinIcons, builtinIconPath, iconCategories, isColoredIcon } from '@/utils/BuiltinIcons';
+import { builtinIconPath } from '@/utils/BuiltinIconPaths';
+// The searchable catalog is large; it is fetched when the library is first opened.
+const isColoredIcon = entry => ['Fluent Emoji', 'Icons8 Flat Color'].includes(entry.pack);
+let catalog;
+const loadCatalog = () => (catalog ||= import('@/utils/BuiltinIcons').catch((error) => { catalog = null; throw error; }));
 import { discoverSiteIcon, verifySiteIcon } from '@/utils/SiteIcons';
 import Icon from '@/components/LinkItems/ItemIcon.vue';
 // New manual choices must not be interpreted as the legacy emoji placeholders
@@ -42,13 +46,13 @@ const common = [ ['🔗','链接 link'], ['🌐','网站 网络 web network'], [
 let library;
 export default {
   components: { Icon }, props: { modelValue: { type: String, default: '' }, label: { type: String, default: '图标' }, url: { type: String, default: '' }, siteTitle: { type: String, default: '' }, allowAuto: Boolean }, emits: ['update:modelValue'],
-  data: () => ({ open: false, query: '', activeCategory: 'all', categories: iconCategories, visibleCount: 48, entries: [], loading: false, loadError: false, fetching: false, discoveryNote: '', discoveryReason: '', discoveryRequest: 0 }),
+  data: () => ({ open: false, query: '', activeCategory: 'all', categories: [], builtinIcons: [], visibleCount: 48, entries: [], loading: false, loadError: false, fetching: false, discoveryNote: '', discoveryReason: '', discoveryRequest: 0 }),
   watch: { url() { this.discoveryRequest += 1; this.fetching=false; this.discoveryNote=''; }, query() { this.visibleCount = 48; }, activeCategory() { this.visibleCount = 48; } },
   beforeUnmount() { this.discoveryRequest += 1; },
   computed: {
     usesAutomaticIcon() { const resolved = websiteIcon({ icon: this.modelValue, url: this.url, title: this.siteTitle }); return this.modelValue === 'auto' || resolved !== this.modelValue; },
-    builtinCount() { return builtinIcons.length; },
-    colorCount() { return builtinIcons.filter(isColoredIcon).length; },
+    builtinCount() { return this.builtinIcons.length; },
+    colorCount() { return this.builtinIcons.filter(isColoredIcon).length; },
     brandCount() { return this.brandEntries.length; },
     brandEntries() {
       const brands = portalIcons.map(e => ({...e, value: 'portal-' + e.id, slug: e.id, category: 'brand', tags: '品牌 QX ' + (e.tags || '')}));
@@ -57,7 +61,7 @@ export default {
     },
     matches() {
       const q = this.query.trim().toLowerCase().replace(/^si-/, '');
-      const all = [...this.brandEntries.slice(0, portalIcons.length), ...builtinIcons.filter(isColoredIcon), ...common.map(e => ({ ...e, category: 'tools', tags: '常用 工具' })), ...builtinIcons.filter(e => !isColoredIcon(e)), ...this.brandEntries.slice(portalIcons.length)];
+      const all = [...this.brandEntries.slice(0, portalIcons.length), ...this.builtinIcons.filter(isColoredIcon), ...common.map(e => ({ ...e, category: 'tools', tags: '常用 工具' })), ...this.builtinIcons.filter(e => !isColoredIcon(e)), ...this.brandEntries.slice(portalIcons.length)];
       const seen = new Set();
       const filtered = all.filter(e => {
         const matchesCategory = this.activeCategory === 'all' || (this.activeCategory === 'color' ? isColoredIcon(e) : e.category === this.activeCategory);
@@ -98,7 +102,13 @@ export default {
       this.open = !this.open;
       if (!this.open || this.entries.length) return;
       this.loading = true;
-      try { library ||= import('simple-icons'); const icons = await library; this.entries = Object.values(icons).filter(e => e && e.slug && e.path).map(e => ({...e, value: 'si-' + e.slug})); }
+      try { const { builtinIcons, iconCategories } = await loadCatalog(); this.builtinIcons = Object.freeze(builtinIcons); this.categories = iconCategories; }
+      catch { this.loadError = true; }
+      try {
+        // Built once and frozen: thousands of entries shared by every picker, never made reactive.
+        library ||= import('simple-icons').then(icons => Object.freeze(Object.values(icons).filter(e => e && e.slug && e.path).map(e => Object.freeze({ slug: e.slug, title: e.title, path: e.path, hex: e.hex, value: 'si-' + e.slug }))));
+        this.entries = await library;
+      }
       catch { this.loadError = true; library = null; }
       finally { this.loading = false; }
     },

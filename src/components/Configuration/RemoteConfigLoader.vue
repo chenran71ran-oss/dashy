@@ -31,7 +31,6 @@
 </template>
 
 <script>
-import { load as yamlLoad } from '@/utils/yaml';
 import request from '@/utils/request';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import StoreKeys from '@/utils/StoreMutations';
@@ -80,7 +79,7 @@ export default {
       }
       let parsed;
       try {
-        parsed = typeof response.data === 'string' ? yamlLoad(response.data) : response.data;
+        parsed = typeof response.data === 'string' ? (await import('@/utils/yaml')).load(response.data) : response.data;
       } catch (err) {
         this.fail(`Remote config YAML parse failed: ${url}`, 'error-parse', err);
         return;

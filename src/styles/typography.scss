@@ -1,19 +1,29 @@
-@font-face { font-family: 'NotoSansSC'; src: url('@/assets/fonts/NotoSansSC-Regular.woff2') format('woff2'); font-display: swap; }
+/* Chinese glyphs come from the system font where one exists (the family lists name PingFang SC and
+   Microsoft YaHei first; Android and Linux ship Noto Sans CJK), so the 1.1 MB file is a last resort. */
+@font-face {
+  font-family: 'NotoSansSC';
+  src: local('Noto Sans CJK SC'), local('Noto Sans SC'), local('Source Han Sans SC'), local('HarmonyOS Sans SC'), local('MiSans'),
+    url('@/assets/fonts/NotoSansSC-Regular.woff2') format('woff2');
+  font-display: swap;
+}
 
-/* Fonts used by the default theme, and bundled within the app */
+/* Fonts used by the default theme, and bundled within the app (WOFF2, same glyphs as the original TTF) */
 @font-face {
   font-family: 'Inconsolata';
-  src: url('@/assets/fonts/Inconsolata-Light.ttf');
+  src: url('@/assets/fonts/Inconsolata-Light.woff2') format('woff2');
+  font-display: swap;
 }
 
 @font-face {
   font-family: 'Raleway';
-  src: url('@/assets/fonts/Raleway-Variable.ttf');
+  src: url('@/assets/fonts/Raleway-Variable.woff2') format('woff2');
+  font-display: swap;
 }
 
 @font-face {
   font-family: 'PTMono';
-  src: url('@/assets/fonts/PTMono-Regular.ttf');
+  src: url('@/assets/fonts/PTMono-Regular.woff2') format('woff2');
+  font-display: swap;
 }
 
 html {

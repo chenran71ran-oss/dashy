@@ -1,5 +1,4 @@
-import { load as yamlLoad } from '@/utils/yaml';
-import request from '@/utils/request';
+import store from '@/store';
 import i18n from '@/utils/i18n';
 import { serviceEndpoints } from '@/utils/config/defaults';
 import { statusMsg, statusErrorMsg } from '@/utils/logging/CoolConsole';
@@ -10,16 +9,17 @@ const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000; // hourly
 const AUTH_PROXY_COMPAT_KEY = 'dashy-auth-proxy-compat'; // mirrors appConfig.enableAuthProxyCompat
 const AUTH_PROXY_RELOAD_KEY = 'dashy-auth-proxy-reloaded'; // one reload per tab, guards against loops
 
-/* Loads conf.yml and returns the parsed object, or null on failure */
-const loadAppConfig = async () => {
-  try {
-    const { data } = await request.get('/conf.yml');
-    return (typeof data === 'string' ? yamlLoad(data) : data) || null;
-  } catch (e) {
-    statusErrorMsg(SW_LABEL, 'Failed to load config for SW check', e);
-    return null;
-  }
-};
+/* Waits for the root config the store loads anyway, rather than fetching conf.yml a second time.
+ * Resolves null if it has not arrived in time, which leaves any existing SW alone */
+const loadAppConfig = () => new Promise((resolve) => {
+  if (store.state.rootConfig) { resolve(store.state.rootConfig); return; }
+  let stop = () => {};
+  const timer = setTimeout(() => { stop(); resolve(null); }, 20000);
+  stop = store.watch(state => state.rootConfig, (config) => {
+    if (!config) return;
+    clearTimeout(timer); stop(); resolve(config);
+  });
+});
 
 /* Best-effort cleanup of any prior service worker (used when user opts out) */
 const unregisterAll = async () => {

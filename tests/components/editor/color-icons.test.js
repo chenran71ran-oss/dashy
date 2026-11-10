@@ -23,7 +23,9 @@ describe('bundled color icon catalog', () => {
 
   it('lets the picker find color icons by category, Chinese name and English keyword, and emit the saved icon', async () => {
     const wrapper = shallowMount(IconPicker, { props: { modelValue: '' } });
-    await wrapper.setData({ open: true, activeCategory: 'color' });
+    expect(wrapper.vm.builtinIcons).toHaveLength(0); // The catalog is not loaded until the library opens
+    await wrapper.vm.toggle();
+    await wrapper.setData({ activeCategory: 'color' });
     expect(wrapper.vm.matches).toHaveLength(387);
     expect(wrapper.vm.matches.every(isColoredIcon)).toBe(true);
     await wrapper.setData({ query: '数据库' });
