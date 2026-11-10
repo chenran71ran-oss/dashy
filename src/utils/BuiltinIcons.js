@@ -1,9 +1,10 @@
+// Full searchable catalog (about 550 KB). Import it lazily; cards use BuiltinIconPaths.js.
 import entries from './builtin-icons.json';
 import colorEntries from './flat-color-icons.json';
+
 export const builtinIcons = [...colorEntries, ...entries];
 export function isColoredIcon(entry) { return ['Fluent Emoji', 'Icons8 Flat Color'].includes(entry.pack); }
-const paths = new Map(builtinIcons.map(entry => [entry.value, entry.src]));
-export function builtinIconPath(value) { return paths.get(value) || ''; }
+export { builtinIconPath } from './BuiltinIconPaths.js';
 export const iconCategories = [
   { id: 'all', label: '全部' }, { id: 'color', label: '彩色图标' }, { id: 'brand', label: 'QX 与品牌' },
   { id: 'infra', label: '服务器与网络' }, { id: 'security', label: '安全与隐私' },
