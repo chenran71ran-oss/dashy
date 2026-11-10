@@ -38,7 +38,7 @@
 
 <script>
 // Import components, and store-key identifiers
-import ConfigContainer from '@/components/Configuration/ConfigContainer';
+import { defineAsyncComponent } from 'vue';
 import LanguageSwitcher from '@/components/Settings/LanguageSwitcher';
 import AuthButtons from '@/components/Settings/AuthButtons';
 import Keys from '@/utils/StoreMutations';
@@ -51,6 +51,8 @@ import IconSpanner from '@/assets/interface-icons/config-editor.svg';
 import IconInteractiveEditor from '@/assets/interface-icons/interactive-editor-edit-mode.svg';
 import IconViewMode from '@/assets/interface-icons/application-change-view.svg';
 import IconNavLinks from '@/assets/interface-icons/config-pages.svg';
+
+const ConfigContainer = defineAsyncComponent(() => import('@/components/Configuration/ConfigContainer.vue'));
 
 export default {
   name: 'ConfigLauncher',

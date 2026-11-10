@@ -1,5 +1,5 @@
 import { createStore } from 'vuex';
-import { load as yamlLoad } from '@/utils/yaml';
+import { takeRootConfig } from '@/utils/BootConfig';
 import request from '@/utils/request';
 import Keys from '@/utils/StoreMutations';
 import {
@@ -464,11 +464,13 @@ const store = createStore({
     async [INITIALIZE_ROOT_CONFIG]({ commit }) {
       const configFilePath = import.meta.env.VITE_APP_CONFIG_PATH || '/conf.yml';
       try {
-        // Attempt to fetch the YAML file
-        const response = await request.get(configFilePath, makeBasicAuthHeaders());
+        // The cloud entry may already hold this response; otherwise fetch the file
+        const response = { data: await takeRootConfig() };
+        if (!response.data) Object.assign(response, await request.get(configFilePath, makeBasicAuthHeaders()));
         let data;
         try {
-          data = (typeof response.data === 'string' ? yamlLoad(response.data) : response.data);
+          // The YAML parser is only downloaded for deployments that serve YAML text
+          data = (typeof response.data === 'string' ? (await import('@/utils/yaml')).load(response.data) : response.data);
         } catch (parseError) {
           commit(CRITICAL_ERROR_MSG, `Failed to parse YAML: ${parseError.message}`);
           return { ...emptyConfig };
@@ -544,7 +546,7 @@ const store = createStore({
         }
         let subFile;
         try {
-          subFile = (typeof response.data === 'string' ? yamlLoad(response.data) : response.data) || {};
+          subFile = (typeof response.data === 'string' ? (await import('@/utils/yaml')).load(response.data) : response.data) || {};
         } catch (parseError) {
           commit(CRITICAL_ERROR_MSG, `Failed to parse sub-config YAML: ${parseError.message}`);
           return { ...emptyConfig };

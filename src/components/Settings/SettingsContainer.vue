@@ -49,16 +49,19 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue';
 import SearchBar from '@/components/Settings/SearchBar';
 import OptionsPanel from '@/components/Settings/OptionsPanel';
 import AppInfoModal from '@/components/Configuration/AppInfoModal';
-import ConfigContainer from '@/components/Configuration/ConfigContainer';
 import LanguageSwitcher from '@/components/Settings/LanguageSwitcher';
 import Keys from '@/utils/StoreMutations';
 import { topLevelConfKeys, localStorageKeys, modalNames } from '@/utils/config/defaults';
 import IconOptions from '@/assets/interface-icons/config-open-settings.svg';
 import ThemeContrastMixin from '@/mixins/ThemeContrastMixin';
 import { cssColor, readThemeColor, readableColor, themeSurface } from '@/utils/ThemeContrast';
+
+// The config dialog pulls in the YAML and schema tooling; fetch it when first opened.
+const ConfigContainer = defineAsyncComponent(() => import('@/components/Configuration/ConfigContainer.vue'));
 
 export default {
   name: 'SettingsContainer',

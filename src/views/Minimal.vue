@@ -65,16 +65,18 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue';
 import HomeMixin from '@/mixins/HomeMixin';
 import MinimalSection from '@/components/MinimalView/MinimalSection.vue';
 import MinimalHeading from '@/components/MinimalView/MinimalHeading.vue';
 import SettingsContainer from '@/components/Settings/SettingsContainer.vue';
 import PageTitle from '@/components/PageStrcture/PageTitle.vue';
-import EditModeSaveMenu from '@/components/InteractiveEditor/EditModeSaveMenu.vue';
 import Button from '@/components/FormElements/Button';
 import { makePageName, resolveRouteIntent } from '@/utils/config/ConfigHelpers';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import { prefetchItemIcons, scheduleIdle } from '@/utils/IconPrefetch';
+
+const EditModeSaveMenu = defineAsyncComponent(() => import('@/components/InteractiveEditor/EditModeSaveMenu.vue'));
 
 export default {
   name: 'Minimal',

@@ -29,17 +29,22 @@
 </template>
 
 <script>
+import { reactive } from 'vue';
 import { matchPortalIcon, portalIconPath, portalIconStyle, websiteFavicon, websiteIcon } from '@/utils/PortalIcons';
-import { builtinIconPath } from '@/utils/BuiltinIcons';
+import { builtinIconPath } from '@/utils/BuiltinIconPaths';
 import { discoverSiteIcon, cachedSiteIcon } from '@/utils/SiteIcons';
 import { iconCrossOrigin, iconImageSource } from '@/utils/IconImagePolicy';
 import { canMakeTransparent, makeTransparent, transparentIcon } from '@/utils/IconTransparency';
-import BrokenImage from '@/assets/interface-icons/broken-icon.svg';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import EmojiUnicodeRegex from '@/utils/EmojiUnicodeRegex';
-import emojiLookup from '@/utils/emojis.json';
 import { asciiHash } from '@/utils/MiscHelpers';
 import { faviconApi as defaultFaviconApi, faviconApiEndpoints, iconCdns } from '@/utils/config/defaults';
+
+// The shortcode table (:rocket:) is only needed by cards that use one; shared once loaded
+const emojiTable = reactive({ lookup: null, loading: null });
+const loadEmojiTable = () => {
+  emojiTable.loading ||= import('@/utils/emojis.json').then((mod) => { emojiTable.lookup = mod.default; }).catch(() => { emojiTable.loading = null; });
+};
 
 // simple-icons is heavy. So lazy load and then share across instances
 let simpleIconsPromise = null;
@@ -60,9 +65,6 @@ export default {
     title: { type: String, default: '' },
     url: { type: String, default: '' }, // Used for fetching the favicon
     size: { type: String, default: '' }, // Either small, medium or large
-  },
-  components: {
-    BrokenImage, // Used when the desired image returns a 404
   },
   computed: {
     /* Get appConfig from store */
@@ -221,8 +223,9 @@ export default {
     },
     /* Returns the corresponding emoji for a shortcode, or shows error if not found */
     getShortCodeEmoji(emojiCode) {
-      if (emojiLookup[emojiCode]) {
-        return emojiLookup[emojiCode];
+      if (!emojiTable.lookup) { loadEmojiTable(); return null; } // Re-renders when the table arrives
+      if (emojiTable.lookup[emojiCode]) {
+        return emojiTable.lookup[emojiCode];
       } else {
         // this.imageNotFound(`No emoji found with name '${emojiCode}'`);
         return null;
