@@ -17,7 +17,9 @@
 - QX-icons 图标库或内置 `qx/` 徽章中的同名文件
 - 文件名就是品牌名或别名的图片，如 `TikTok.jpg`、`小红书.png`
 
-其他自选图片（如头像、自定义插画）保持不变。新增 Manus、Grok（lobe-icons，跟随主题色）和 muse.ai（官方 SVG）。
+- 品牌自己图片 CDN 上的图标（如小红书的 `xhscdn.com`）
+
+只有内置图标是矢量图时才替换；DMIT、RackNerd 等内置为位图徽章的品牌，保留已保存的图标。其他自选图片（如头像、自定义插画）保持不变。纯 HTTP 网站的图标无法在 HTTPS 页面加载，「灯塔-党建在线」使用内置的灯塔图作为替代。新增 Manus、Grok（lobe-icons，跟随主题色）和 muse.ai（官方 SVG）。
 
 ## 网站自身图标
 
