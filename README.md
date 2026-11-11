@@ -4,129 +4,142 @@
 
 # Home Lab
 
-**把常用网站、分站和服务状态，放进一个属于自己的入口。**
+**一个入口，放下你的常用网站、自建服务和每天要看的信息。**
 
-基于 Dashy 的中文前端改造 · 布局重构 · PC / 移动端适配
+基于 [Dashy](https://github.com/Lissy93/dashy) 深度改造的中文导航主页 · 部署在 Cloudflare Workers，电脑和手机共用同一份配置
 
 [![MIT License](https://img.shields.io/badge/License-MIT-2563eb?style=flat-square)](LICENSE)
-[![Workers](https://img.shields.io/badge/Cloudflare-Workers-f38020?style=flat-square)](docs/home-lab/deployment.md)
-[![Vue 3](https://img.shields.io/badge/Frontend-Vue_3-42b883?style=flat-square)](docs/home-lab/architecture.md)
-[![Dashy](https://img.shields.io/badge/Based_on-Dashy-8b5cf6?style=flat-square)](https://github.com/Lissy93/dashy)
+[![Cloudflare Workers](https://img.shields.io/badge/Deploy-Cloudflare_Workers-f38020?style=flat-square&logo=cloudflare&logoColor=white)](docs/home-lab/deployment.md)
+[![Vue 3](https://img.shields.io/badge/Vue-3-42b883?style=flat-square&logo=vuedotjs&logoColor=white)](docs/home-lab/architecture.md)
+[![Themes](https://img.shields.io/badge/内置主题-61-8b5cf6?style=flat-square)](docs/home-lab/theme-readability.md)
+[![Based on Dashy](https://img.shields.io/badge/Based_on-Dashy-0ea5e9?style=flat-square)](https://github.com/Lissy93/dashy)
 
-[快速部署](docs/home-lab/deployment.md) · [使用指南](docs/home-lab/usage.md) · [变更日志](CHANGELOG.md) · [维护与回滚](docs/home-lab/maintenance.md) · [English](README.EN.md)
+[快速开始](#-快速开始) · [功能](#-功能亮点) · [使用指南](docs/home-lab/usage.md) · [常见问题](docs/home-lab/faq.md) · [变更日志](CHANGELOG.md) · [English](README.EN.md)
+
+<img src="docs/assets/home-lab/overview.png" alt="Home Lab 总站视图：按分类排列的网站卡片，北境霜蓝主题" width="900">
 
 </div>
 
----
+## ✨ 功能亮点
 
-## 项目定位
+### 🧭 三种视图，同一份书签
 
-Home Lab 将日常书签、自建服务和需要查看的信息集中在一起。打开浏览器后，可以搜索网站、按分类跳转，也可以在工作台里切换支持嵌入的服务。
-
-由 **Kenneth（chenran71ran-oss）** 维护，基于 Dashy 持续进行前端改造。主要工作集中在 **中文本地化、布局与管理交互重构、PC / 移动端适配、HTTP / Ping 状态展示，以及网站图标抓取与统一渲染**。Cloudflare Workers + KV 是配套部署与数据适配方案。
-
-项目名称是 **Home Lab**；仓库保留 fork 名称 `dashy`，便于追踪上游。Dashy 提供原有的导航、主题、小组件与配置基础，本项目在此基础上改进中文使用体验和前端交互。
-
-## 当前维护状态
-
-截至 2026-10-18，网站图标可靠性修复与主题联动登录页已分别通过 [PR #1](https://github.com/chenran71ran-oss/dashy/pull/1)、[PR #2](https://github.com/chenran71ran-oss/dashy/pull/2) 合并到 `master`。登录页复用总站配色，手机端居中并将页脚与卡片统一排布；正常浏览模式选择的主题和保存的配色使用云端配置供电脑、手机共同读取。
-
-`master` 是本仓库的默认主分支，与常见的 `main` 承担相同角色。它沿用上游的名称，功能试验在独立分支进行，确认后通过 PR 合并。GitHub 合并、Cloudflare 部署成功与线上验收是三个步骤，应分别确认。
-
-历史改动见 [变更日志](CHANGELOG.md)；逐条提交、中文说明与可核对的 SHA 见 [历史索引](docs/home-lab/history.md)。`package.json` 的 `4.7.17` 沿用上游基础版本，不能代替本 fork 的功能变更记录。
-
-## 核心改造
-
-### 中文本地化与配置说明
-
-补充主题中文标注、小组件用途与数据源说明，以及探针、高级设置和编辑表单的中文提示。让你在选择组件、配置接口和查看异常时，能理解选项的作用及前置条件。
-
-### 布局、卡片与管理交互重构
-
-围绕总站、专注、工作台三视图调整页面结构、分类与小分类、卡片排版、搜索和配置工具栏。针对不同布局与小 / 中 / 大尺寸分别调整文字、图标和说明的组织方式，并优化小组件的信息密度与内部刷新入口。
-
-### PC 与移动端分别适配
-
-桌面端保留更完整的导航和操作空间；移动端重点调整标题与搜索比例、配置按钮对齐、分类切换及工具栏排列。结合主题、布局、尺寸与视图变化处理换行、间距、溢出和颜色对比问题，而不是只缩放桌面界面。
-
-### HTTP / Ping 状态展示与交互
-
-在 Dashy 原有检测能力上，改进状态点、在线呼吸动画、响应信息提示和 HTTP / Ping 标识，区分两项独立检测，减少两个状态点同时出现时的歧义。补充未接入后端、超时与失败等状态的说明，并适配桌面和触屏查看。
-
-HTTP 检测可由 Worker 执行；真实 ICMP Ping 仍需兼容的主机后端。呼吸动画是显示效果，不代表每次动画都发起检测。
-
-### 网站图标抓取与统一显示
-
-改进“读取当前网站图标”：支持自定义网站路径、相对地址、`base` 地址与 PWA 应用清单，检查图片实际格式，并为可识别品牌提供核实的图标回退。读取失败保留原图标，避免把首字母占位误当成成功结果。
-
-结合 QX / 品牌目录与分类图标选择器，统一卡片、工作台侧栏和编辑预览的图标显示；补充 387 个彩色 SVG，让没有专用标识的网站也能按用途选择图标。
-
-### 主题与像素机甲风格
-
-加入 Home Lab 标识与像素机甲主题联动，调整主题菜单的当前项定位、中文名称、收藏排序及可读性。主题收藏通过 KV 同步，桌面和移动端读取同一份收藏。
-
-登录页与总站共享内置主题和安全自定义颜色。云端部署中，正常浏览模式选择主题、保存或重置配色会写入根配置；旧浏览器偏好和分页面主题不会覆盖共享外观。登录页在可见期间每 15 秒、已登录页面每 30 秒检查更新，重新聚焦也会刷新；编辑或弹窗期间保护草稿。KV 跨地区传播可能额外延迟。布局等其他偏好不因此全部变成跨设备同步。
-
-## 一个入口，三种使用方式
-
-| 总站 | 专注 | 工作台 |
+| 总站 `/home` | 专注 `/minimal` | 工作台 `/workspace` |
 | --- | --- | --- |
-| 分类卡片、小分类和小组件集中展示 | 分类标签切换，查看当前分类的网站与小组件 | 左侧导航，右侧打开网页或小组件 |
-| 浏览完整导航和服务信息 | 快速找到这一类入口 | 在支持嵌入的服务之间切换 |
-| `/home` | `/minimal` | `/workspace` |
+| 所有分类、小分类和小组件一次铺开 | 按分类标签切换，只看当前这一类 | 左侧导航，右侧直接打开网页或小组件 |
 
-## 保留的基础能力与部署支持
+<p align="center">
+  <img src="docs/assets/home-lab/focus.png" alt="专注视图：按分类标签切换，东京之夜主题" width="640">
+  &nbsp;
+  <img src="docs/assets/home-lab/mobile.png" alt="手机上的专注视图，奶油猫主题" width="195">
+</p>
 
-- 保留 Dashy 的网站管理、小分类、打开方式、YAML 编辑与导入导出、多页面及小组件目录。
-- 配套 Cloudflare Workers Builds 云端构建、管理员密码登录、KV 配置保存与历史备份。
-- 外部网站和自建分站都可添加，默认不预填私人网站；组件按各自的数据源与授权配置。
+### 🎨 图标：透明、清晰、跟随主题
+
+- **品牌图标用官方矢量图**：GitHub、Telegram、抖音、Instagram、ChatGPT、Claude、DeepSeek 等 40 余个品牌，背景透明，任何尺寸都清晰。
+- **单色标志跟随主题色**：GitHub、X、OpenAI、Manus 这类黑白标志，深色主题下是浅色，浅色主题下是深色，不再垫白底。
+- **网站图标自动去白底**：自动读取的 favicon 如果是白底，会在后台线程（Web Worker）里去掉背景。照片和头像不处理。
+- **读取更清晰的图标**：优先选择矢量图和尺寸最大的图标，不会被 16px 的小 favicon 抢先。
+- **自选图库**：1900 多个内置图标（含 387 个彩色图标），按分类和中英文关键词搜索。
+
+### ⚡ 快：切换分类不再等图标
+
+- 访问过的分类保持挂载，切回来直接显示。
+- 浏览器空闲时，提前读取并处理其他分类的图标。
+- 静态资源按内容哈希长期缓存，第二次打开几乎不用重新下载。
+
+### ✍️ 不写 YAML 也能管理
+
+- 页面内直接添加、编辑、拖拽排序网站和分类，保存前可预览。
+- **补齐图标与说明**：一键找出缺图标、缺说明的网站，读取网站自己的图标和英文描述，预览确认后再应用。
+- 保存到云端时自动备份上一版，可从配置历史恢复。
+
+### 🌗 61 个主题，每个都校准过可读性
+
+- 包含上游 Dashy 的全部主题，均有中文名称，可收藏常用主题。
+- 每个主题都经过对比度审查：网站名、说明、分类标签、搜索框、工作台文字在所有主题下都不低于 4.5:1。
+- 登录页、主题菜单、右键菜单和像素机甲标识的配色跟随当前主题。
+
+### 📡 服务状态与小组件
+
+- HTTP 检测由 Worker 执行；ICMP Ping 和系统信息可接入自己的主机后端。
+- 保留上游的 94 种小组件（天气、日历、RSS、自定义 API 等），并补充中文说明和数据源提示。
+
+### ☁️ 一份配置，多台设备
+
+- 配置、主题和收藏保存在 Cloudflare KV，电脑和手机打开的是同一个主页。
+- 管理员密码登录；管理员密码和小组件的 API 密钥存放在 Worker Secret 中，不进前端代码。
 
 > [!NOTE]
-> 小组件类型存在不代表相应服务已经部署。ICMP Ping、主机系统信息需要可选后端；工作台嵌入受目标网站策略限制。详见 [功能边界](docs/home-lab/features.md)。
+> 有些能力需要额外条件：ICMP Ping 和主机信息需要可选后端；工作台能否嵌入网页，取决于目标网站是否允许 iframe；小组件需要对应服务和授权。详见 [功能边界](docs/home-lab/features.md)。
 
-## 开始使用
+## 🚀 快速开始
 
-1. Fork 仓库，在 Cloudflare 创建或连接 Workers 项目。
-2. 设置 `HOME_KV_NAMESPACE_ID` 构建变量、`HOME_KV` 绑定与 `ADMIN_TOKEN` 运行时 Secret。
-3. 按 [部署指南](docs/home-lab/deployment.md) 填写云端构建与部署命令。
-4. 绑定自定义域名，登录后添加分类与网站。
-5. 网站表单保存后，点击 **保存到云端**，到另一台设备刷新验证。
+只需要一个 Cloudflare 账号，不需要自己的服务器。
 
-已部署的用户可直接阅读 [使用指南](docs/home-lab/usage.md)。个人网站列表、Cookie 与 API 密钥不应放进公开仓库。
+1. **Fork** 本仓库，在 Cloudflare 中创建 Workers 项目并连接仓库。
+2. **创建 KV 命名空间**，把它的 ID 填进构建变量 `HOME_KV_NAMESPACE_ID`。
+3. **设置管理员密码**：添加运行时 Secret `ADMIN_TOKEN`。
+4. **部署**并绑定自定义域名（可选）。
+5. **登录**后添加分类和网站，点击「保存到云端」，在另一台设备上刷新即可看到。
 
-## 文档导航
+完整步骤、构建命令和变量说明见 [部署指南](docs/home-lab/deployment.md)。
 
-| 我想做什么 | 文档 |
+> [!TIP]
+> 个人网站列表、Cookie 和 API 密钥不要提交到公开仓库。它们都保存在你自己的 KV 和 Worker Secret 中。
+
+<details>
+<summary><b>本地开发</b></summary>
+
+```bash
+npm ci
+npm run dev      # Vite 开发服务器（仅前端），http://localhost:8080
+npm run build    # 生产构建，输出到 dist/
+npx vitest run && node --test tests/*.test.mjs   # 前端与 Worker 测试
+node scripts/theme-audit/audit.mjs --fixed       # 61 个主题的对比度审查
+```
+
+完整的保存、登录流程需要 Worker API，见 [维护指南](docs/home-lab/maintenance.md)。
+
+</details>
+
+## 📚 文档
+
+| 我想… | 看这里 |
 | --- | --- |
-| 部署、KV 与自定义域名 | [部署指南](docs/home-lab/deployment.md) |
-| 网站、图标、小组件与收藏 | [使用指南](docs/home-lab/usage.md) |
-| 功能是否需要 API 或后端 | [功能边界](docs/home-lab/features.md) |
-| 理解前后端与文件职责 | [架构与文件导航](docs/home-lab/architecture.md) |
-| 排查保存、图标、天气与嵌入 | [常见问题](docs/home-lab/faq.md) |
-| 查阅历次功能和修复 | [变更日志](CHANGELOG.md) · [提交历史索引](docs/home-lab/history.md) |
-| 分支协作、验证、上线与回滚 | [维护指南](docs/home-lab/maintenance.md) |
-| 查看登录页的独立交互预览 | [预览生成说明](docs/login-theme-preview.md) |
-| 查阅完整 Dashy 配置字段 | [文档索引](docs/readme.md) |
-| 提交改进 | [贡献指南](CONTRIBUTING.md) |
+| 部署、配置 KV 和自定义域名 | [部署指南](docs/home-lab/deployment.md) |
+| 添加网站、换图标、用小组件 | [使用指南](docs/home-lab/usage.md) |
+| 知道某个功能要不要 API 或后端 | [功能边界](docs/home-lab/features.md) |
+| 排查保存、图标、天气、嵌入问题 | [常见问题](docs/home-lab/faq.md) |
+| 了解图标透明化和清晰度规则 | [图标透明化与清晰度](docs/home-lab/icon-transparency.md) |
+| 查看主题对比度审查结果 | [主题可读性审查](docs/home-lab/theme-readability.md) |
+| 理解代码结构 | [架构与文件导航](docs/home-lab/architecture.md) |
+| 分支协作、验证、上线和回滚 | [维护指南](docs/home-lab/maintenance.md) |
+| 查阅每次改动 | [变更日志](CHANGELOG.md) · [提交历史索引](docs/home-lab/history.md) |
+| 查 Dashy 原版配置字段 | [上游文档索引](docs/readme.md) |
 
-## 项目结构
+## 🧱 技术栈与结构
 
-| 路径 | 职责 |
+**Vue 3 + Vite** 前端 · **Cloudflare Workers + KV** 后端与存储 · **Vitest + node:test** 测试
+
+| 路径 | 内容 |
 | --- | --- |
-| `src/` | Vue 前端、三视图、主题、小组件与编辑器 |
-| `cloud/` | Worker 登录、KV 配置、探针适配、天气与图标 API |
-| `public/` | 静态资源、机甲标识与图标包 |
-| `docs/home-lab/` | 此 fork 的现行用户文档 |
-| `docs/` | 保留的上游参考与专项技术说明 |
-| `tests/` | 前后端功能与适配检查 |
-| `wrangler.jsonc` | Worker 与静态资源绑定声明 |
+| `src/` | 前端：三种视图、主题、小组件、编辑器、图标处理 |
+| `cloud/` | Worker：登录、KV 配置、图标读取与代理、网站描述、天气、探针 |
+| `public/portal-icons/` | 内置品牌图标与图标包（来源见 [SOURCES.md](public/portal-icons/SOURCES.md)） |
+| `scripts/` | 品牌图标生成、图标包同步、主题审查脚本 |
+| `tests/` | 前端组件、Worker 接口与工具函数测试 |
+| `docs/home-lab/` | 本项目的用户与维护文档 |
 
-## 来源与致谢
+## 🤝 参与贡献
 
-本项目基于 [Dashy](https://github.com/Lissy93/dashy)，复用了 Alicia Sykes 与上游贡献者的前端、组件、主题和配置体系。原版介绍完整保留在 [README_UPSTREAM.md](README_UPSTREAM.md)。
+欢迎提 Issue 和 PR。改动请在独立分支进行，提交前运行上面的测试命令；PR 模板会提示需要说明的验证范围。详见 [贡献指南](CONTRIBUTING.md)。
 
-感谢 [QX-icons](https://github.com/chenran71ran-oss/QX-icons)、Simple Icons、Lucide、Microsoft Fluent Emoji、Icons8 Flat Color 等资源。具体来源与许可见 [图标来源](public/portal-icons/SOURCES.md) 和各资源目录。
+## 🙏 致谢
 
-## 许可证
+- [Dashy](https://github.com/Lissy93/dashy)：本项目的基础。导航、主题、小组件和配置体系均来自 Alicia Sykes 与上游贡献者，原版介绍保留在 [README_UPSTREAM.md](README_UPSTREAM.md)。
+- 图标资源：[Simple Icons](https://simpleicons.org/)、[Lobe Icons](https://github.com/lobehub/lobe-icons)、[Lucide](https://lucide.dev/)、[Microsoft Fluent Emoji](https://github.com/microsoft/fluentui-emoji)、[Icons8 Flat Color](https://github.com/icons8/flat-color-icons)、[QX-icons](https://github.com/chenran71ran-oss/QX-icons)。
 
-继承 [MIT License](LICENSE)，保留上游版权声明。第三方图标、字体及商标遵循各自许可和权利归属。此 fork 不代表 Dashy 官方发布。
+## 📄 许可证
+
+[MIT](LICENSE)，保留上游版权声明。第三方图标、字体和商标遵循各自的许可与权利归属。本项目是 Dashy 的独立 fork，由 Kenneth（[@chenran71ran-oss](https://github.com/chenran71ran-oss)）维护，不代表 Dashy 官方发布。

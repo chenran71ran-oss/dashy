@@ -23,6 +23,9 @@ export const portalIcons = [
   brand(qx('speedtest', 'Speedtest', 'Speedtest', ['speedtest.net'], ['speedtest']), 'speedtest', { mono: true }),
   brand(qx('netflix', 'Netflix', 'Netflix', ['netflix.com']), 'netflix'),
   { ...brand(qx('google', 'Google', 'Google', ['google.com', 'www.google.com']), 'google'), exactHosts: true },
+  { id: 'googlescholar', title: 'Google Scholar / 谷歌学术', src: '/portal-icons/brand/googlescholar.svg', hosts: ['scholar.google.com'], exactHosts: true, aliases: ['google scholar', '谷歌学术'], source: 'simple-icons (CC0) official mark' },
+  // Plain-HTTP site: its own icon cannot load on an HTTPS page, so a similar bundled picture stands in.
+  { id: 'dengta', title: '灯塔-党建在线', src: '/portal-icons/lighthouse.svg', hosts: ['zzb.qingdao.gov.cn'], exactHosts: true, aliases: ['灯塔', '灯塔-青岛组工', '灯塔-党建在线'], source: 'Original Home Lab drawing' },
   brand(qx('spotify', 'Spotify', 'Spotify', ['spotify.com']), 'spotify'),
   brand(qx('telegram', 'Telegram', 'Telegram', ['telegram.org', 'web.telegram.org', 't.me']), 'telegram'),
   brand(qx('tiktok', 'TikTok / 抖音', 'TikTok', ['tiktok.com', 'douyin.com'], ['抖音', 'tiktok', 'douyin']), 'tiktok', { mono: true, under: '/portal-icons/brand/tiktok-under.svg' }),
@@ -35,10 +38,10 @@ export const portalIcons = [
   qx('haita', '海獭', 'Haita', [], ['海獭']), { ...qx('liangxin', '良心云', 'Liangxin', [], ['良心云']), src: '/portal-icons/liangxin-transparent.png', source: 'Official logo, background removed' }, qx('yuetutu', '月兔', 'Yuetutu', [], ['月兔']),
   local('cloudflare', 'Cloudflare', ['dash.cloudflare.com', 'speed.cloudflare.com', 'cloudflare.com']),
   local('fast', 'Fast.com', ['fast.com']), local('bilibili', '哔哩哔哩 / Bilibili', ['bilibili.com']),
-  local('xiaohongshu', '小红书', ['xiaohongshu.com', 'xhslink.com'], ['小红书', 'rednote', 'xhs']), { ...local('dashy', 'Dashy', ['demo.dashy.to'], ['dashy 演示']), src: '/portal-icons/dashy.png', source: 'Dashy' },
+  { ...local('xiaohongshu', '小红书', ['xiaohongshu.com', 'xhslink.com'], ['小红书', 'rednote', 'xhs']), assetHosts: ['xhscdn.com'] }, { ...local('dashy', 'Dashy', ['demo.dashy.to'], ['dashy 演示']), src: '/portal-icons/dashy.png', source: 'Dashy' },
   local('jellyfin', 'Jellyfin', [], ['jellyfin']), local('docker', 'Docker', [], ['docker']),
   local('homeassistant', 'Home Assistant', [], ['home assistant']), local('nextcloud', 'Nextcloud', [], ['nextcloud']),
-  local('bitwarden', 'Bitwarden', [], ['bitwarden']), local('notion', 'Notion', ['notion.so']), local('youtube', 'YouTube', ['youtube.com', 'youtu.be']),
+  local('bitwarden', 'Bitwarden', [], ['bitwarden']), { ...local('notion', 'Notion', ['notion.so', 'notion.site', 'notion.com']), mono: true }, local('youtube', 'YouTube', ['youtube.com', 'youtu.be']),
   { ...local('paperless-gpt', 'Paperless-GPT / Paper-LLM', [], ['paper-llm', 'paperless-llm', 'paperless-gpt']), source: 'Paperless-GPT upstream logo' },
 ];
 export function matchPortalIcon(url = '', title = '') {
@@ -63,11 +66,12 @@ export function websiteFavicon(url = '') {
 }
 const legacyPlaceholders = new Set(['🧠', '🌐', '🔗', '🖥️', '☁️', '📐', '✋', 'si-claude', 'si-googlegemini', 'si-github', 'si-tiktok', 'si-netflix', 'si-speedtest', 'si-cloudflare', 'si-bilibili', 'si-xiaohongshu']);
 const stem = value => value.toLowerCase().replace(/\.[a-z0-9]+$/, '').replace(/[-_](?:transparent|circle|v\d+|\d+x\d+|light|dark|logo|icon)\b/g, '').replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
-// A copy is the brand's own favicon or touch icon, its App Store artwork, an
+// A copy is the brand's own favicon or touch icon, an image on its own CDN, its App Store artwork, an
 // icon-library copy (QX-icons or the bundled QX badges) or an image named after
 // the brand. Other custom images, such as avatars, are kept as chosen.
 function isBrandCopy(configured, match) {
-  if (!configured || !match.hosts?.length) return false;
+  // Only a vector mark is an upgrade; brands bundled as raster badges keep the saved image.
+  if (!configured || !match.hosts?.length || !match.src.endsWith('.svg')) return false;
   let image;
   try { image = new URL(configured, 'https://local.invalid/'); } catch { return false; }
   if (!['https:', 'http:'].includes(image.protocol)) return false;
@@ -75,6 +79,8 @@ function isBrandCopy(configured, match) {
   if (onBrandHost && /(?:^|\/)(?:favicon[^/]*|apple-touch-icon[^/]*)$/i.test(image.pathname)) return true;
   if (/^is\d+-ssl\.mzstatic\.com$/i.test(image.hostname)) return true;
   if (!/\.(?:png|jpe?g|webp|gif|ico|avif)$/i.test(image.pathname)) return false;
+  // The brand's own image CDN serves its favicon under a hashed file name.
+  if (match.assetHosts?.some(host => image.hostname === host || image.hostname.endsWith(`.${host}`))) return true;
   const names = new Set([match.id, ...(match.aliases || []), ...match.title.split(/\s*\/\s*/)].map(stem).filter(Boolean));
   return names.has(stem(decodeURIComponent(image.pathname.split('/').pop())));
 }

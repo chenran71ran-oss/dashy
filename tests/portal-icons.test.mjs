@@ -59,3 +59,15 @@ test('saved raster copies of a brand logo use the bundled vector mark, other cus
   assert.equal(websiteIcon({ url: 'https://example.com/', icon: 'https://cdn.example.com/tiktok.png' }), 'https://cdn.example.com/tiktok.png');
   assert.equal(websiteIcon({ url: 'https://www.douyin.com/', icon: 'javascript:alert(1)//TikTok.png' }), 'javascript:alert(1)//TikTok.png');
 });
+test('brand CDN copies map to vectors, raster-badge brands keep saved favicons, plain-HTTP sites get a stand-in', () => {
+  const shown = (url, icon, title = '') => { const value = websiteIcon({ url, icon, title }); return value === 'auto' ? matchPortalIcon(url, title)?.src : portalIconPath(value) || value; };
+  assert.equal(shown('https://www.xiaohongshu.com/explore?channel_id=homefeed_recommend', 'https://fe-video-qc.xhscdn.com/fe-platform/ed8fe781ce9e16c1bfac2cd962f0721edabe2e49.ico'), '/portal-icons/xiaohongshu.svg');
+  assert.equal(shown('https://example.com/', 'https://fe-video-qc.xhscdn.com/fe-platform/abc.ico'), 'https://fe-video-qc.xhscdn.com/fe-platform/abc.ico');
+  assert.equal(shown('https://www.dmit.io/index.php', 'https://www.dmit.io/favicon.ico'), 'https://www.dmit.io/favicon.ico');
+  assert.equal(shown('https://www.racknerd.com/', 'https://www.racknerd.com/favicon.png'), 'https://www.racknerd.com/favicon.png');
+  assert.equal(shown('https://www.dmit.io/', ''), '/portal-icons/qx/DMIT.png');
+  assert.equal(shown('http://zzb.qingdao.gov.cn/', 'auto', '灯塔-青岛组工'), '/portal-icons/lighthouse.svg');
+  assert.equal(shown('https://scholar.google.com/schhp?hl=zh-CN', 'https://scholar.google.com/favicon.ico'), '/portal-icons/brand/googlescholar.svg');
+  assert.equal(shown('https://www.google.com/', ''), '/portal-icons/brand/google.svg');
+  assert.equal(shown('https://placid-lobster-76a.notion.site/342c', 'https://placid-lobster-76a.notion.site/images/favicon.ico'), '/portal-icons/notion.svg');
+});

@@ -27,6 +27,7 @@ const files = {
   'emby.svg': svg(`<circle cx="12" cy="12" r="6.2" fill="#fff"/><path fill="#52B54B" d="${path('emby')}"/>`),
   // Spotify's official icon has black sound waves on the green disc.
   'spotify.svg': svg(`<circle cx="12" cy="12" r="10.8" fill="#000"/><path fill="#1ED760" d="${path('spotify')}"/>`),
+  'googlescholar.svg': svg(`<path fill="#4285F4" d="${path('googlescholar')}"/>`),
   'netflix.svg': svg(`<path fill="#E50914" d="${path('netflix')}"/>`),
   'deepseek.svg': svg(`<path fill="#4D6BFE" d="${path('deepseek')}"/>`),
   'instagram.svg': svg(`<path fill="url(#ig)" d="${path('instagram')}"/>`,
