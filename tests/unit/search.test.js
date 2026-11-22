@@ -100,6 +100,11 @@ describe('Search - searchTiles', () => {
     expect(searchTiles([t], 'admin')).toHaveLength(1);
   });
 
+  it('does not match on the URL scheme', () => {
+    const t = tile({ subItems: [{ title: 'Sub', url: 'http://sub.lab' }] });
+    expect(searchTiles([t], 'http')).toEqual([]);
+  });
+
   it('tolerates tiles with missing optional fields', () => {
     const t = { title: 'Plex' };
     expect(searchTiles([t], 'plex')).toHaveLength(1);

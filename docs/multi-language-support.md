@@ -27,13 +27,13 @@ appConfig:
 
 ### Available Languages
 
-At the time of writing the following languages are supported: `en`, `en-GB`, `ar`, `bg`, `bn`, `cs`, `da`, `de`, `el`, `es`, `fr`, `gl`, `hi`, `hu`, `it`, `ja`, `ko`, `nb`, `nl`, `pl`, `pt`, `ro`, `ru`, `sk`, `sl`, `sv`, `tr`, `uk`, `zh-CN`, `zh-TW`, but an up-to-date list of all implemented translations can be found in [`./src/utils/languages.js`](https://github.com/Lissy93/dashy/blob/master/src/utils/languages.js).  Languages are specified by their 2-digit [ISO-639 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes), or sometimes a 4-digit code if it's a regional dialect.
+At the time of writing the following languages are supported: `en`, `en-GB`, `ar`, `bg`, `bn`, `cs`, `da`, `de`, `el`, `es`, `fr`, `gl`, `hi`, `hu`, `it`, `ja`, `ko`, `nb`, `nl`, `pl`, `pt`, `ro`, `ru`, `sk`, `sl`, `sv`, `sw`, `tr`, `uk`, `zh-CN`, `zh-TW`, but an up-to-date list of all implemented translations can be found in [`./src/utils/languages.js`](https://github.com/Lissy93/dashy/blob/master/src/utils/languages.js).  Languages are specified by their 2-digit [ISO-639 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes), or sometimes a 4-digit code if it's a regional dialect.
 
 ---
 
 ## Adding a new Language
 
-Dashy is using [vue-i18n](https://vue-i18n.intlify.dev/guide/) to manage multi-language support.
+Dashy is using [vue-i18n](https://vue-i18n.intlify.dev/guide/introduction.html) to manage multi-language support.
 
 Adding a new language is pretty straightforward, with just three steps:
 
@@ -150,7 +150,7 @@ Which will render:
 Hello Alicia!
 ```
 
-There are many other advanced features, including  Pluralization,  Datetime & Number Formatting, Message Support and more, all of which are outlined in the [Vue-i18n Docs](https://vue-i18n.intlify.dev/guide/).
+There are many other advanced features, including  Pluralization,  Datetime & Number Formatting, Message Support and more, all of which are outlined in the [Vue-i18n Docs](https://vue-i18n.intlify.dev/guide/introduction.html).
 
 ### Basic Example
 

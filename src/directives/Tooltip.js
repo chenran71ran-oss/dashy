@@ -194,6 +194,7 @@ function show(el) {
   const opts = state.options;
   if (!opts) return;
   clearTimeout(state.hideTimer);
+  clearTimeout(state.showTimer);
 
   state.showTimer = setTimeout(() => {
     injectStyles();

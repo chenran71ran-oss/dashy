@@ -122,7 +122,7 @@ export default {
     /* Tooltip generators */
     quotaTooltip() {
       const quotaEnabled = this.user.quota.quota > 0;
-      const content = `${this.tt('quota-enabled', { not: quotaEnabled ? '' : 'not ' })}`
+      const content = `${this.tt(quotaEnabled ? 'quota-enabled' : 'quota-disabled')}`
                     + `<br><br>${this.safeHtmlConvertBytes(this.user.quota.used)} ${this.tt('used')}<br>`
                     + `${this.safeHtmlConvertBytes(this.user.quota.free)} ${this.tt('free')}<br>`
                     + `${this.safeHtmlConvertBytes(this.user.quota.total)} ${this.tt('total')}`;

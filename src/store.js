@@ -1,3 +1,4 @@
+import { load as parseYaml } from '@/utils/yaml';
 import { createStore } from 'vuex';
 import { takeRootConfig } from '@/utils/BootConfig';
 import request from '@/utils/request';
@@ -25,6 +26,7 @@ const {
   APPLY_EDITED_CONFIG,
   SET_ROOT_CONFIG,
   SET_CURRENT_CONFIG_INFO,
+  SET_REQUESTED_CONFIG_ID,
   SET_IS_USING_LOCAL_CONFIG,
   SET_MODAL_OPEN,
   SET_LANGUAGE,
@@ -64,6 +66,10 @@ const emptyConfig = {
 /* One-shot guard against reload loops when a sub-config 401 triggers re-auth.
  * Set in sessionStorage before reloading, cleared on the next successful sub-config fetch */
 const SUB_CONFIG_RELOAD_KEY = 'dashy.sub-config-reload-attempt';
+
+/* Bumped on each INITIALIZE_CONFIG call. A sub-config fetch that settles after a newer
+ * call began (e.g. user switched page again while it loaded) is dropped, not applied */
+let latestConfigLoad = 0;
 
 /* Read + JSON-parse a raw localStorage slot, returning undefined on miss/fail. */
 const readLocal = (key) => {
@@ -176,6 +182,7 @@ const store = createStore({
     editMode: false, // While true, the user can drag and edit items + sections
     modalOpen: false, // KB shortcut functionality will be disabled when modal is open
     currentConfigInfo: {}, // For multi-page support, will store info about config file
+    requestedConfigId: null, // Page id last asked for, may still be loading
     isUsingLocalConfig: false, // If true, will use local config instead of fetched
     criticalError: null, // Will store a message, if a critical error occurs
     navigateConfToTab: undefined, // Used to switch active tab in config modal
@@ -315,6 +322,9 @@ const store = createStore({
     },
     [SET_CURRENT_CONFIG_INFO](state, subConfigInfo) {
       state.currentConfigInfo = subConfigInfo;
+    },
+    [SET_REQUESTED_CONFIG_ID](state, configId) {
+      state.requestedConfigId = configId;
     },
     [SET_IS_USING_LOCAL_CONFIG](state, isUsingLocalConfig) {
       state.isUsingLocalConfig = isUsingLocalConfig;
@@ -470,7 +480,7 @@ const store = createStore({
         let data;
         try {
           // The YAML parser is only downloaded for deployments that serve YAML text
-          data = (typeof response.data === 'string' ? (await import('@/utils/yaml')).load(response.data) : response.data);
+          data = (typeof response.data === 'string' ? parseYaml(response.data) : response.data);
         } catch (parseError) {
           commit(CRITICAL_ERROR_MSG, `Failed to parse YAML: ${parseError.message}`);
           return { ...emptyConfig };
@@ -503,8 +513,11 @@ const store = createStore({
      * Loads the active config. Pass a sub-page id to load that sub-page
      */
     async [INITIALIZE_CONFIG]({ commit, state }, subConfigId) {
+      const thisLoad = ++latestConfigLoad;
+      const superseded = () => thisLoad !== latestConfigLoad;
       try {
         const targetId = subConfigId || null;
+        commit(SET_REQUESTED_CONFIG_ID, targetId);
         if (!state.rootConfig) await this.dispatch(Keys.INITIALIZE_ROOT_CONFIG);
         const { hasStructural: rootHasStructural } = readLocalOverrides(null);
         const rootEffective = buildRootEffective(state);
@@ -530,6 +543,7 @@ const store = createStore({
           response = await request.get(subConfigPath, isRemote ? {} : makeBasicAuthHeaders());
           sessionStorage.removeItem(SUB_CONFIG_RELOAD_KEY);
         } catch (fetchErr) {
+          if (superseded()) return state.config; // User moved on, so not their error
           const status = fetchErr.response?.status;
           const auth = state.rootConfig?.appConfig?.auth || {};
           const ssoActive = Boolean(auth.enableOidc || auth.enableKeycloak);
@@ -544,9 +558,11 @@ const store = createStore({
           ErrorHandler(`Sub-config load failed: ${subConfigPath}`, fetchErr);
           return { ...emptyConfig };
         }
+        // Another page was requested while this one loaded, so keep that instead
+        if (superseded()) return state.config;
         let subFile;
         try {
-          subFile = (typeof response.data === 'string' ? (await import('@/utils/yaml')).load(response.data) : response.data) || {};
+          subFile = (typeof response.data === 'string' ? parseYaml(response.data) : response.data) || {};
         } catch (parseError) {
           commit(CRITICAL_ERROR_MSG, `Failed to parse sub-config YAML: ${parseError.message}`);
           return { ...emptyConfig };

@@ -10,31 +10,31 @@ $extra-large: 2800px;
 /* Usage @include tablet { ... } */
 
 @mixin very-tiny-phone {
-  @media (max-width: #{$very-very-tiny - 1px}) {
+  @media (width < #{$very-very-tiny}) {
     @content;
   }
 }
 
 @mixin phone {
-  @media (max-width: #{$tiny - 1px}) {
+  @media (width < #{$tiny}) {
     @content;
   }
 }
 
 @mixin tablet {
-  @media (min-width: #{$tiny}) and (max-width: #{$small - 1px}) {
+  @media (#{$tiny} <= width < #{$small}) {
     @content;
   }
 }
 
 @mixin laptop {
-  @media (min-width: #{$small}) and (max-width: #{$medium - 1px}) {
+  @media (#{$small} <= width < #{$medium}) {
     @content;
   }
 }
 
 @mixin monitor {
-  @media (min-width: #{$medium}) and (max-width: #{$large - 1px}) {
+  @media (#{$medium} <= width < #{$large}) {
     @content;
   }
 }
@@ -72,7 +72,7 @@ $extra-large: 2800px;
 }
 
 @mixin tablet-down {
-  @media (max-width: #{$small - 1px}) {
+  @media (width < #{$small}) {
     @content;
   }
 }
@@ -88,7 +88,7 @@ $short-height: 740px;
 $tall-height: 1000px;
 
 @mixin short {
-  @media (max-height: #{$short-height - 1px}) {
+  @media (height < #{$short-height}) {
     @content;
   }
 }

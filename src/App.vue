@@ -1,5 +1,5 @@
 <template>
-  <div id="dashy" :style="topLevelStyleModifications" :class="subPageClassName">
+  <div id="dashy" :style="topLevelStyleModifications" :class="[subPageClassName, `view-${currentView}`]">
     <EditModeTopBanner v-if="isEditMode" />
     <LoadingScreen :isLoading="isLoading" v-if="shouldShowSplash" />
     <Header :pageInfo="pageInfo" />
@@ -21,7 +21,7 @@ import { welcomeMsg } from '@/utils/logging/CoolConsole';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import { syncPageMeta } from '@/utils/PageMeta';
 import { viewFromPath } from '@/utils/config/ConfigHelpers';
-import { applyTheme } from '@/utils/Theming';
+import { applyTheme, applyPageStyles } from '@/utils/Theming';
 import Keys from '@/utils/StoreMutations';
 import { loadLocale } from '@/utils/languages';
 import i18n from '@/utils/i18n';
@@ -65,6 +65,14 @@ export default {
       deep: true,
       handler() { applyTheme(this.effectiveTheme,this.appConfig); },
     },
+    /* Apply custom CSS, stylesheets and theme, and re-apply on page change for sub-pages */
+    '$store.state.currentConfigInfo.confId': {
+      immediate: true,
+      handler() {
+        applyPageStyles(this.appConfig);
+        applyTheme(this.effectiveTheme, this.appConfig);
+      },
+    },
     /* Keep i18n in sync with the active page's language (incl. sub-page overrides) */
     'appConfig.language': {
       immediate: true,
@@ -80,9 +88,12 @@ export default {
     footerText() {
       return this.pageInfo && this.pageInfo.footer ? this.pageInfo.footer : '';
     },
+    currentView() {
+      return viewFromPath(this.$route.path);
+    },
     /* Footer renders only when there's text AND we're not on workspace */
     footerVisible() {
-      if (viewFromPath(this.$route.path) === 'workspace') return false;
+      if (this.currentView === 'workspace') return false;
       return !!this.footerText;
     },
     /* Determine if splash screen should be shown */
@@ -146,38 +157,6 @@ export default {
       if (/^\d+(\.\d+)?(%|px|rem|em|vw|vh)$/.test(maxWidthStr)) return maxWidthStr;
       ErrorHandler(`Invalid contentMaxWidth value: '${usersCmw}'`);
       return null;
-    },
-    /* Injects the users custom CSS as a style tag */
-    injectCustomStyles(usersCss) {
-      const style = document.createElement('style');
-      style.textContent = usersCss;
-      document.head.append(style);
-    },
-    /* Applies user-defined custom CSS and external stylesheets from appConfig */
-    applyCustomStyles() {
-      if (this.appConfig.customCss) {
-        const cleanedCss = this.appConfig.customCss.replace(/<\/?[^>]+(>|$)/g, '');
-        this.injectCustomStyles(cleanedCss);
-      }
-      if (this.appConfig.externalStyleSheet) {
-        // Remove any previously injected external stylesheets to avoid duplicates bug
-        document.querySelectorAll('[data-external-source]').forEach((el) => el.remove());
-        // Then add the external stylesheet(s)
-        const externals = this.appConfig.externalStyleSheet;
-        const urls = Array.isArray(externals) ? externals : [externals];
-        urls.forEach((url) => {
-          if (typeof url !== 'string' || (!url.startsWith('http') && !url.startsWith('/'))) {
-            ErrorHandler(`Invalid external stylesheet URL: ${url}`);
-            return;
-          }
-          const link = document.createElement('link');
-          link.setAttribute('rel', 'stylesheet');
-          link.setAttribute('type', 'text/css');
-          link.setAttribute('href', url);
-          link.setAttribute('data-external-source', 'dashy');
-          document.head.appendChild(link);
-        });
-      }
     },
     /* Hide splash screen, either after 2 seconds, or immediately based on user preference */
     hideSplash() {
@@ -246,7 +225,6 @@ export default {
   mounted() {
     this.applyLanguage();
     this.hideSplash();
-    this.applyCustomStyles();
     this.hideLoader();
     welcomeMsg();
   },

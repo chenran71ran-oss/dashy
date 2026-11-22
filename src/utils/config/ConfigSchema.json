@@ -1471,6 +1471,11 @@
                   "type": "string",
                   "description": "A custom fill color of the item, expressed either as hex code or color name"
                 },
+                "iconColor": {
+                  "title": "Icon Color",
+                  "type": "string",
+                  "description": "A custom color for just the icon, expressed either as hex code or color name. Overrides color. Applies to font-awesome, simple-icons and mdi icons"
+                },
                 "backgroundColor": {
                   "title": "Background Color",
                   "type": "string",

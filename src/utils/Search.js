@@ -7,6 +7,9 @@ import ErrorHandler from '@/utils/logging/ErrorHandler';
 const NORMALIZE_RE = /[^\w\s\p{Alpha}]/giu;
 const normalize = (input) => (input == null ? '' : input.toString().toLowerCase().replace(NORMALIZE_RE, ''));
 
+/* Every URL has a scheme, so it's not worth searching */
+const stripScheme = (url) => String(url || '').replace(/^[\w+.-]+:\/\//, '');
+
 /* Per-tile cache of the concatenated searchable text */
 const haystackCache = new WeakMap();
 
@@ -16,9 +19,9 @@ const buildHaystack = (tile) => {
   } = tile;
   const tagsStr = Array.isArray(tags) ? tags.join(' ') : (tags || '');
   const subText = Array.isArray(subItems)
-    ? subItems.map((s) => `${s.title || ''} ${s.url || ''}`).join(' ')
+    ? subItems.map((s) => `${s.title || ''} ${stripScheme(s.url)}`).join(' ')
     : '';
-  return normalize(`${title || ''} ${provider || ''} ${description || ''} ${tagsStr} ${url || ''} ${alias || ''} ${subText}`);
+  return normalize(`${title || ''} ${provider || ''} ${description || ''} ${tagsStr} ${stripScheme(url)} ${alias || ''} ${subText}`);
 };
 
 const getHaystack = (tile) => {

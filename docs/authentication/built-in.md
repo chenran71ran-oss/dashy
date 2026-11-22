@@ -108,6 +108,9 @@ ENABLE_HTTP_AUTH=true
 
 Now every API endpoint, every `.yml` file, and every server-side route requires a valid session token in the `Authorization` header (delivered automatically by the SPA after login). Unauthenticated requests get a 401 with a basic-auth challenge.
 
+> [!NOTE]
+> Guest access (`enableGuestAccess`) isn't supported in server-side mode, so everyone will need to log in.
+
 The login page is still the user-facing entry point. The flow is:
 
 1. User loads the page, SPA bundle renders the login screen

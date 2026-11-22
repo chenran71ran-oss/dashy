@@ -2,19 +2,16 @@
   <div class="work-space">
     <SideBar
       :sections="sections"
+      :activeUrl="activeUrl"
+      :openUrls="openUrls"
       @launch-app="launchApp"
-      @launch-widget="launchWidget"
-      :initUrl="getInitialUrl()"
+      @launch-widget="launchWidgets"
+      @close-app="closeApp"
     />
     <main class="workspace-main">
-      <SettingsContainer class="workspace-toolbar" compact hideSearch />
-      <div v-if="!url && !widgets" class="workspace-empty">
-        <h2>工作台</h2><p>从左侧选择网站或小组件，在这里打开。</p>
-        <p>网站设为“工作台内打开”后可嵌入当前窗口；设为“新标签页”时会按你的设置跳转。</p>
-      </div>
-      <WidgetView v-if="widgets?.length" :widgets="widgets" :title="widgetSection.name || ''" :item-size="widgetSection.displayData?.itemSize" />
-      <WebContent v-else-if="url && !isMultiTaskingEnabled" :url="url" />
-      <MultiTaskingWebComtent v-else-if="isMultiTaskingEnabled" :url="url || ''" />
+      <SettingsContainer compact hideSearch />
+      <WidgetView v-if="widgets" :widgets="widgets" :title="widgetSection.name" :item-size="widgetSection.displayData?.itemSize" />
+      <WebContent v-show="!widgets" :urls="frameUrls" :activeUrl="activeUrl" />
     </main>
   </div>
 </template>
@@ -25,98 +22,109 @@ import HomeMixin from '@/mixins/HomeMixin';
 import SideBar from '@/components/Workspace/SideBar';
 import WebContent from '@/components/Workspace/WebContent';
 import WidgetView from '@/components/Workspace/WidgetView';
-import MultiTaskingWebComtent from '@/components/Workspace/MultiTaskingWebComtent';
-import Defaults from '@/utils/config/defaults';
-import ErrorHandler from '@/utils/logging/ErrorHandler';
 import { sanitizeUrl } from '@/utils/Sanitizer';
+import { sameUrl } from '@/utils/MiscHelpers';
 
 export default {
   name: 'Workspace',
   mixins: [HomeMixin],
-  data: () => ({
-    url: '',
-    widgets: null,
-    widgetSection: {},
-  }),
-  computed: {
-    sections() {
-      return this.$store.getters.sections;
-    },
-    appConfig() {
-      return this.$store.getters.appConfig;
-    },
-    isMultiTaskingEnabled() {
-      return this.appConfig.enableMultiTasking || false;
-    },
-  },
   components: {
     SettingsContainer,
     SideBar,
     WebContent,
     WidgetView,
-    MultiTaskingWebComtent,
   },
-  methods: {
-    launchApp(options) {
-      if (options.target === 'newtab') {
-        window.open(options.url, '_blank', 'noopener,noreferrer');
-        return;
-      } else if (options.target === 'newwindow') {
-        const { width, height } = window.screen;
-        window.open(options.url, '_blank', `width=${width},height=${height},noopener,noreferrer`);
-        return;
-      } else if (options.target === 'clipboard') {
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(options.url);
-          this.$toast.success(this.$t('context-menus.item.copied-toast'));
-        } else {
-          ErrorHandler('Clipboard access requires HTTPS. See: https://bit.ly/3N5WuAA');
-          this.$toast.error('Unable to copy, see log');
-        }
-        return;
-      } else {
-        this.url = options.url;
-      }
+  data: () => ({
+    openUrls: [], // Apps opened this session, most recent last
+    widgets: null,
+    widgetSection: {},
+  }),
+  computed: {
+    /* The visible app is kept in the URL, so it can be linked to or reloaded */
+    activeUrl() {
+      return sanitizeUrl(this.$route.query.url) || '';
+    },
+    /* Apps to render, or all open apps when multi-tasking, to keep them running */
+    frameUrls() {
+      if (this.appConfig.enableMultiTasking) return this.openUrls;
+      return this.activeUrl ? [this.activeUrl] : [];
+    },
+    /* The page's landing app, once its config has loaded */
+    landingUrl() {
+      const loadedPage = this.$store.state.currentConfigInfo?.confId || null;
+      if (loadedPage !== (this.determineConfigFile() || null)) return null;
+      return sanitizeUrl(this.appConfig.workspaceLandingUrl);
+    },
+  },
+  watch: {
+    activeUrl: {
+      immediate: true,
+      handler(url) {
+        if (!url) return;
+        this.widgets = null;
+        if (!this.openUrls.includes(url)) this.openUrls.push(url);
+      },
+    },
+    landingUrl: {
+      immediate: true,
+      handler(url) {
+        if (url && !this.$route.query.url) this.launchApp(url);
+      },
+    },
+    /* Widgets belong to the page they were opened on */
+    '$route.path'() {
       this.widgets = null;
     },
-    launchWidget(widgets, section = {}) {
-      this.url = '';
-      this.widgets = widgets?.length ? widgets : null;
-      this.widgetSection = section;
+  },
+  methods: {
+    /* Opens an app, reusing its open copy if a variant of the URL is already open */
+    launchApp(url) {
+      const appUrl = this.openUrls.find((openUrl) => sameUrl(openUrl, url)) || url;
+      this.$router.replace({ query: appUrl ? { url: appUrl } : {} });
     },
-    initiateFontAwesome() {
-      const fontAwesomeScript = document.createElement('script');
-      const faKey = this.appConfig.fontAwesomeKey || Defaults.fontAwesomeKey;
-      fontAwesomeScript.setAttribute('src', `https://kit.fontawesome.com/${faKey}.js`);
-      document.head.appendChild(fontAwesomeScript);
+    /* Shows a section's widgets in place of the current app */
+    launchWidgets(widgets) {
+      this.widgetSection = this.sections?.find(section => section.widgets === widgets) || {};
+      this.widgets = widgets;
+      this.$router.replace({ query: {} });
     },
-    /* Returns a service URL, if set as a URL param, or if user has specified landing URL */
-    getInitialUrl() {
-      const route = this.$route;
-      if (route.query && route.query.url) {
-        return sanitizeUrl(decodeURI(route.query.url)) || undefined;
-      } else if (this.appConfig.workspaceLandingUrl) {
-        return this.appConfig.workspaceLandingUrl;
-      }
-      return undefined;
+    /* Closes an app, and switches to the last opened one if the visible app was closed */
+    closeApp(url) {
+      this.openUrls = this.openUrls.filter((openUrl) => openUrl !== url);
+      const { activeUrl, openUrls } = this;
+      if (activeUrl && !openUrls.includes(activeUrl)) this.launchApp(openUrls.at(-1));
     },
   },
   mounted() {
-    HomeMixin.methods.initiateFontAwesome.call(this);
+    this.initiateFontAwesome();
     this.initiateMaterialDesignIcons();
-    this.url = this.getInitialUrl();
   },
 };
-
 </script>
 
 <style scoped lang="scss">
-.work-space { min-height: calc(100dvh - var(--header-height)); }
-.workspace-main { margin-left: var(--side-bar-width); min-width: 0; position: relative; min-height: calc(100dvh - var(--header-height)); padding: .5rem; box-sizing: border-box; }
-.workspace-toolbar { margin-bottom: .5rem; }
-.workspace-empty { text-align: center; padding: clamp(1rem, 5vw, 3rem); color: var(--primary); }
-.workspace-empty p { line-height: 1.6; }
-.workspace-empty :deep(.portal-toolbar) { justify-content: center; }
-.workspace-main :deep(.web-content iframe) { position: relative; left: auto; width: 100%; height: calc(100dvh - var(--header-height) - 4rem); }
-@media(max-width:599px) { .workspace-main { padding: .25rem; } }
+@import '@/styles/media-queries.scss';
+
+:global(#dashy.view-workspace) {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Collapse the header when it's empty, or only holds the floating nav */
+:global(#dashy.view-workspace > header:not(:has(> :not(.floating)))) {
+  padding: 0;
+}
+
+.workspace-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+
+.work-space {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  @include phone {
+    flex-direction: column;
+  }
+}
 </style>

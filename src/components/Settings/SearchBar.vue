@@ -27,7 +27,7 @@
 import router from '@/router';
 import ArrowKeyNavigation from '@/utils/ArrowKeyNavigation';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
-import { getCustomKeyShortcuts } from '@/utils/config/ConfigHelpers';
+import { getCustomKeyShortcuts, makeWorkspaceRoute } from '@/utils/config/ConfigHelpers';
 import {
   getSearchEngineFromBang, findUrlForSearchEngine, stripBangs, isUrlLike,
 } from '@/utils/Search';
@@ -147,7 +147,7 @@ export default {
           window.open(url, '_self');
           break;
         case 'workspace':
-          router.push({ name: 'workspace', query: { url } });
+          router.push(makeWorkspaceRoute(url, this.$store));
           break;
         default:
           ErrorHandler(`Unknown opening method: ${method}`);

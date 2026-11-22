@@ -6,7 +6,7 @@
 # - Otherwise (if the PR did bump version) we use the new version from package.json
 # - Creates and pushes a git tag for the new version
 # - That git tag then triggers Docker publishing and release drafting in other CI
-# - Add labels and release comments to referenced issues (if applicable)
+# - Add labels and release comments to issues closed by the PR (if applicable)
 # - Trigger fresh deploy of docs site, so changelog remains up-to-date
 # - Finally, shows summary of actions taken and new tag published
 #
@@ -124,6 +124,7 @@ jobs:
         if: env.IS_MANUAL == 'true' || steps.check_pr.outputs.needs_tag == 'true'
         uses: actions/checkout@v7
         with:
+          ref: master
           token: ${{ secrets.BOT_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: 👤 Configure git identity
@@ -135,6 +136,7 @@ jobs:
       - name: 🔍 Extract referenced issues
         id: issues
         if: env.IS_MANUAL != 'true' && steps.check_pr.outputs.needs_tag == 'true'
+        continue-on-error: true
         uses: actions/github-script@v9
         with:
           script: |
@@ -144,23 +146,22 @@ jobs:
               core.setOutput('numbers', '');
               return;
             }
-            const body = context.payload.pull_request.body || '';
-            const prNumber = String(context.payload.pull_request.number);
-            const matches = body.match(/#(\d+)(?![a-fA-F0-9])/g);
-            if (!matches) {
-              core.info('No issue references found in PR body');
+            const { owner, repo } = context.repo;
+            const { repository } = await github.graphql(`query($owner: String!, $repo: String!, $number: Int!) {
+              repository(owner: $owner, name: $repo) { pullRequest(number: $number) {
+                closingIssuesReferences(first: 50) { nodes { number repository { nameWithOwner } } }
+              } }
+            }`, { owner, repo, number: context.payload.pull_request.number });
+            const numbers = repository.pullRequest.closingIssuesReferences.nodes
+              .filter(i => i.repository.nameWithOwner.toLowerCase() === `${owner}/${repo}`.toLowerCase())
+              .map(i => i.number);
+            if (numbers.length === 0) {
+              core.info('No issues closed by this PR');
               core.setOutput('numbers', '');
               return;
             }
-            const unique = [...new Set(matches.map(m => m.replace('#', '')))]
-              .filter(n => n !== prNumber && parseInt(n, 10) > 0);
-            if (unique.length === 0) {
-              core.info('No issue references after filtering');
-              core.setOutput('numbers', '');
-              return;
-            }
-            core.info(`Found issue references: ${unique.join(', ')}`);
-            core.setOutput('numbers', unique.join(','));
+            core.info(`Found closed issues: ${numbers.join(', ')}`);
+            core.setOutput('numbers', numbers.join(','));
 
       - name: ⬆️ Bump version
         id: bump

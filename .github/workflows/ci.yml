@@ -138,7 +138,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Spellcheck en.json
-        uses: crate-ci/typos@v1.50.3
+        uses: crate-ci/typos@v1.51.1
         with:
           files: src/assets/locales/en.json
 
@@ -213,7 +213,7 @@ jobs:
           fetch-depth: 0
 
       - name: Scan PR Diff for Secrets
-        uses: trufflesecurity/trufflehog@v3.97.9
+        uses: trufflesecurity/trufflehog@v3.99.7
         with:
           base: ${{ github.event.pull_request.base.sha }}
           head: ${{ github.event.pull_request.head.sha }}
@@ -234,7 +234,7 @@ jobs:
           fail-on-error: true
 
       - name: Run Zizmor
-        uses: zizmorcore/zizmor-action@v0.6.4
+        uses: zizmorcore/zizmor-action@v0.8.0
         with:
           inputs: .github/workflows/
           advanced-security: false

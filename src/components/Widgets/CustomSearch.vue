@@ -18,6 +18,7 @@
 import router from '@/router';
 import WidgetMixin from '@/mixins/WidgetMixin';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
+import { makeWorkspaceRoute } from '@/utils/config/ConfigHelpers';
 
 export default {
   mixins: [WidgetMixin],
@@ -53,7 +54,7 @@ export default {
             window.open(url, '_self');
             break;
           case 'workspace':
-            router.push({ name: 'workspace', query: { url } });
+            router.push(makeWorkspaceRoute(url, this.$store));
             break;
           default:
             ErrorHandler(`Unknown opening method: ${openingMethod}`);

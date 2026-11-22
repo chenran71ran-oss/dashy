@@ -72,9 +72,8 @@ You can set variables either in your environment, or using the [`.env`](https://
 
 - `NODE_ENV` - Current environment, can be either development, production or test
 - `PORT` - The port to expose the running application on
-- `HOST` - The host that Dashy is running on, domain or IP
-- `BASE_URL` - The default base path for serving up static assets
-- `VITE_APP_DOMAIN` - Usually the same as BASE_URL, but accessible in frontend
+- `HOST` - The address on which the HTTP and HTTPS servers listen. When unset, Node uses `::` if IPv6 is available, or `0.0.0.0` otherwise. On most systems `::` also accepts IPv4 connections (OpenBSD is the exception, so set `HOST=0.0.0.0` there). Set `HOST=0.0.0.0` to listen on IPv4 only, or a specific address to restrict the binding.
+- `VITE_APP_DOMAIN` - The address of Dashy's server, if it's not the same as where the frontend is served from
 - `INTEGRITY` - Should enable SRI for build script and link resources
 - `IS_DOCKER` - Computed automatically on build. Indicates if running in container
 - `VITE_APP_VERSION` - Again, set automatically using package.json during build time
@@ -282,10 +281,8 @@ Styleguides:
 │  │  ├── Nav.vue                 # Navigation bar, includes a list of links
 │  │  ╰── PageTitle.vue           # Page title and sub-title, visible within the Header
 │  ├── Workspace                  # Components used for the multi-tasking/ Workspace view
-│  │  ├── MultiTaskingWeb.vue     # When multi-tasking enabled, generates new iframe
 │  │  ├── SideBar.vue             # The left sidebar for the workspace view
 │  │  ├── SideBarItem.vue         # App item for the sidebar view
-│  │  ├── SideBarSection.vue      # Collapsible collection of items within workspace sidebar
 │  │  ├── WebContent.vue          # Workspace iframe view, displays content of current app
 │  │  ╰── WidgetView.vue          # Workspace container for displaying widgets in main content
 │  ├── Widgets                    # Directory contains all custom widget components

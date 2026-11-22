@@ -1,15 +1,24 @@
 {
+  "general": {
+    "close-modal": "إغلاق النافذة",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
+  },
   "home": {
     "no-results": "لا نتائج للبحث",
     "no-data": "لا يوجد بيانات",
-    "no-items-section": "لا يوجد عناصر للعرض بعد"
+    "no-items-section": "لا يوجد عناصر للعرض بعد",
+    "session-expired-line1": "انتهت صلاحية الجلسة",
+    "session-expired-line2": "سجّل الدخول مرة أخرى للوصول إلى لوحة التحكم",
+    "sign-in-again": "تسجيل الدخول مرة أخرى"
   },
   "search": {
     "search-label": "بحث",
     "search-placeholder": "ابدأ الكتابة للتصفية",
     "clear-search-tooltip": "مسح البحث",
     "enter-to-search-web": "اضغط على Enter للبحث في الويب",
-    "enter-to-open-url": "اضغط على Enter لفتح الرابط"
+    "enter-to-open-url": "اضغط على Enter لفتح الرابط",
+    "enter-to-launch-first": "اضغط Enter لفتح أول نتيجة"
   },
   "splash-screen": {
     "loading": "جاري التحميل"
@@ -17,6 +26,8 @@
   "login": {
     "title": "Dashy",
     "guest-label": "دخول الضيوف",
+    "oidc-label": "تسجيل الدخول الموحَّد",
+    "oidc-login-button": "تسجيل الدخول عبر SSO",
     "username-label": "إسم المستخدم",
     "password-label": "كلمه السر",
     "login-button": "تسجيل الدخول",
@@ -43,12 +54,19 @@
     "error-no-user-configured": "لم يتم تفعيل المصادقة، أو لم يتم إعداد مستخدمين",
     "error-go-home-button": "العودة للرئيسية",
     "logged-in-guest": "تم تسجيل الدخول كضيف، جاري إعادة التوجيه...",
+    "authenticated-redirecting": "تم التحقق، جارٍ التحويل...",
     "error-guest-access": "غير مسموح بدخول الضيوف"
   },
   "app-info": {
     "title": "معلومات التطبيق",
+    "sponsor-heading": "ادعم Dashy",
+    "sponsor-l1-prefix": "هل يعجبك Dashy؟ يمكنك",
+    "sponsor-l1-link": "دعمي على GitHub",
+    "sponsor-l1-suffix": "للمساعدة في تمويل التطوير المستمر 🩷",
     "report-bug": "الإبلاغ عن خطأ",
     "report-bug-description": "إذا كنت تعتقد أنك وجدت خطأ، يرجى",
+    "report-bug-debug-link": "مراجعة قائمة التصحيح",
+    "report-bug-middle": "ثم",
     "report-bug-link": "فتح Issue",
     "more-info": "مزيد من المعلومات",
     "source": "المصدر",
@@ -82,6 +100,7 @@
     "disabled-note": "تم تعطيل بعض ميزات التكوين بواسطة المسؤول",
     "small-screen-note": "أنت تستخدم شاشة صغيرة جداً، وقد لا تكون بعض الشاشات في هذه القائمة مثالية",
     "app-info-button": "معلومات التطبيق",
+    "debug-info-button": "معلومات التصحيح",
     "backup-note": "يوصى بعمل نسخة احتياطية من التكوين الخاص بك قبل إجراء التغييرات.",
     "reset-config-msg-l1": "سيؤدي هذا إلى إزالة جميع إعدادات المستخدم من التخزين المحلي، لكنه لن يؤثر على ملف conf.yml الخاص بك.",
     "reset-config-msg-l2": "يجب عليك أولاً الاحتفاظ بنسخة احتياطية من أي تغييرات أجريتها محليًا ، إذا كنت ترغب في استخدامها في المستقبل.",
@@ -91,7 +110,6 @@
     "reset-config-label": "إعادة التهيئة",
     "css-save-btn": "حفظ التغييرات",
     "css-note-label": "ملحوظة",
-    "css-note-l1": "ستحتاج إلى تحديث الصفحة حتى تصبح التغييرات سارية المفعول.",
     "css-note-l2": "يتم تخزين تجاوزات الأنماط محليًا فقط ، لذا يوصى بعمل نسخة من CSS الخاص بك.",
     "css-note-l3": "لإزالة جميع الأنماط المخصصة ، احذف المحتويات واضغط على حفظ التغييرات",
     "custom-css": {
@@ -105,29 +123,119 @@
     "workspace": "مساحة العمل",
     "minimal": "الحد الأدنى"
   },
+  "remote-config": {
+    "title": "تحميل الإعدادات من رابط خارجي؟",
+    "apply-button": "تطبيق المعاينة",
+    "intro": "أنت على وشك تحميل الإعدادات من رابط خارجي. هل تريد المتابعة؟",
+    "warning": "تأكد من قراءة المحتوى الذي تقوم بتحميله قبل المتابعة. بعد التحميل، سيتمكن متصفحك من تنفيذ أي كود يعمل في المتصفح موجود في هذه الإعدادات.",
+    "field-title": "العنوان",
+    "field-source": "المصدر",
+    "field-sections": "الأقسام",
+    "field-items": "العناصر",
+    "preview-note": "معاينة فقط. لن يتم تغيير أي شيء على القرص، ولن يتأثر Dashy الخاص بك بأي شكل.",
+    "applied-toast": "تم تطبيق الإعدادات الخارجية (معاينة فقط)",
+    "previewing-banner": "معاينة الإعدادات الخارجية",
+    "revert-button": "تراجع",
+    "error-invalid-url": "رابط الإعدادات الخارجية غير صالح (يجب أن يبدأ بـ http أو https)",
+    "error-fetch": "تعذّر جلب الإعدادات الخارجية. تأكد أن الرابط متاح وأن CORS مسموح.",
+    "error-parse": "الإعدادات الخارجية ليست YAML صالحًا",
+    "error-not-config": "الملف الخارجي لا يبدو كملف إعدادات Dashy",
+    "error-apply": "فشل تطبيق الإعدادات الخارجية"
+  },
   "settings": {
     "theme-label": "سمة",
     "layout-label": "تخطيط",
     "layout-auto": "آلي",
     "layout-horizontal": "أفقي",
     "layout-vertical": "عمودي",
+    "layout-masonry": "متدرج",
     "item-size-label": "حجم الصنف",
     "item-size-small": "صغير",
     "item-size-medium": "واسطة",
     "item-size-large": "كبير",
+    "language-label": "اللغة",
     "config-launcher-label": "التكوين",
     "config-launcher-tooltip": "تحديث التكوين",
+    "nav-links-tooltip": "التنقل والإعدادات",
+    "toggle-nav-aria": "إظهار أو إخفاء قائمة التنقل",
     "sign-out-tooltip": "خروج",
     "sign-in-tooltip": "تسجيل دخول",
     "sign-in-welcome": "مرحبًا {username}!",
-    "hide": "إخفاء"
+    "please-login": "سجّل الدخول للوصول الكامل",
+    "hide": "إخفاء",
+    "options-title": "الخيارات",
+    "options-tooltip": "الخيارات"
   },
   "updates": {
     "app-version-note": "ملاحظة نسخة التطبيق",
     "up-to-date": "حتى الآن",
     "out-of-date": "التحديث متاح",
     "unsupported-version-l1": "أنت تستخدم إصدارًا غير مدعوم من Dashy",
-    "unsupported-version-l2": "للحصول على أفضل تجربة وأحدث تصحيحات الأمان ، يرجى التحديث إلى"
+    "unsupported-version-l2": "للحصول على أفضل تجربة وأحدث تصحيحات الأمان ، يرجى التحديث إلى",
+    "sw-update-available": "يتوفر إصدار جديد من Dashy.",
+    "sw-update-action": "تحديث"
+  },
+  "debug": {
+    "getting-help": "الحصول على المساعدة",
+    "getting-help-msg": "إذا واجهتك أي مشكلة، يمكن لمجتمع المستخدمين مساعدتك.",
+    "resources": {
+      "troubleshooting-name": "استكشاف الأخطاء وإصلاحها",
+      "troubleshooting-desc": "تجد هنا حلولًا للمشكلات الشائعة",
+      "docs-name": "التوثيق",
+      "docs-desc": "شرح طريقة الاستخدام وخطوات الإعداد",
+      "source-name": "الكود المصدري",
+      "source-desc": "أو يمكنك تحديد المشكلة من الكود",
+      "email-name": "الدعم عبر البريد الإلكتروني",
+      "email-note": "(للداعمين فقط)",
+      "email-desc": "راسلني، وسأحاول المساعدة"
+    },
+    "reporting-bug": "الإبلاغ عن خطأ",
+    "reporting-bug-l1-prefix": "إذا وجدت شيئًا لا يعمل كما ينبغي، يرجى",
+    "reporting-bug-l1-link": "فتح Issue",
+    "reporting-bug-l1-suffix": "في مستودعنا على GitHub.",
+    "reporting-bug-l2-intro": "عند الإبلاغ عن خطأ، يرجى إرفاق المعلومات المهمة، مثل:",
+    "reporting-bug-list": {
+      "version": "إصدار Dashy",
+      "deployment": "طريقة التشغيل",
+      "errors": "سجلات الأخطاء",
+      "config": "أجزاء من الإعدادات",
+      "overrides": "التخصيصات المتعلقة بالمشكلة",
+      "environment": "معلومات بيئة التشغيل"
+    },
+    "reporting-bug-note": "احرص على إخفاء أي معلومات حساسة. قد يتم إغلاق البلاغات التي لا تحتوي على معلومات كافية لتتبع المشكلة وحلها. ونظرًا لضيق الوقت، تحظى طلبات الدعم والميزات من الداعمين بالأولوية.",
+    "app-version": "إصدار التطبيق",
+    "error-log": "سجل الأخطاء",
+    "error-log-hint-prefix": "راجع",
+    "error-log-hint-link": "هنا",
+    "error-log-hint-suffix": "لمعرفة كيفية عرض سجلات المتصفح. وقد تجد أيضًا معلومات مفيدة في سجلات الخادم.",
+    "no-errors": "لم يتم تسجيل أي أخطاء في هذه الجلسة.",
+    "current-config": "الإعدادات الحالية",
+    "current-config-hint": "عند فتح Issue، يرجى إرفاق الأجزاء المتعلقة بالمشكلة من ملف الإعدادات.",
+    "config-render-error": "تعذّر عرض الإعدادات: {error}",
+    "local-storage": "التخزين المحلي",
+    "local-storage-hint": "الإعدادات المحفوظة في هذا المتصفح، وتُستخدم بدلًا من الإعدادات الافتراضية إلى أن يتم مسحها.",
+    "no-local-storage": "لا يوجد شيء محفوظ محليًا.",
+    "local-storage-error": "تعذّرت قراءة التخزين المحلي: {error}",
+    "environment": "بيئة التشغيل",
+    "environment-hint": "معلومات المتصفح والجهاز التي يجب إرفاقها عند الإبلاغ عن خطأ.",
+    "env": {
+      "unknown": "غير معروف",
+      "yes": "نعم",
+      "no": "لا",
+      "browser": "المتصفح",
+      "os": "نظام التشغيل",
+      "viewport": "مساحة العرض",
+      "screen": "الشاشة",
+      "dpr": "نسبة البكسل",
+      "languages": "اللغات",
+      "timezone": "المنطقة الزمنية",
+      "colorScheme": "نظام الألوان",
+      "reducedMotion": "تقليل الحركة",
+      "online": "متصل بالإنترنت",
+      "route": "المسار الحالي",
+      "mode": "وضع البناء",
+      "swActive": "Service Worker"
+    }
   },
   "language-switcher": {
     "title": "تغيير لغة التطبيق",
@@ -153,7 +261,26 @@
     "success-msg-disk": "تمت كتابة ملف التكوين على القرص بنجاح",
     "success-msg-local": "تم حفظ التغييرات المحلية بنجاح",
     "error-msg-cannot-save": "حدث خطأ أثناء حفظ التكوين",
-    "not-admin-note": "لا يمكنك الكتابة التغيير إلى القرص ، لأنك لم تقم بتسجيل الدخول كمسؤول"
+    "not-admin-note": "لا يمكنك الكتابة التغيير إلى القرص ، لأنك لم تقم بتسجيل الدخول كمسؤول",
+    "preview-applied-msg": "تمت معاينة الإعدادات. أغلق هذه النافذة لرؤية التغييرات.",
+    "reset-confirm-msg": "تجاهل كل التغييرات غير المحفوظة والرجوع إلى الإعدادات الأصلية؟",
+    "wrap-label": "التفاف الأسطر",
+    "format-label": "تنسيق",
+    "reset-label": "إعادة تعيين",
+    "reset-tooltip": "تجاهل كل التعديلات والرجوع إلى الإعدادات الأصلية",
+    "download-tooltip": "تنزيل كملف conf.yml",
+    "download-label": "تنزيل YAML",
+    "copy-tooltip": "نسخ YAML إلى الحافظة",
+    "copy-label": "نسخ YAML",
+    "copy-success-msg": "تم نسخ الإعدادات إلى الحافظة",
+    "copy-fail-msg": "فشل النسخ: {message}",
+    "format-fail-msg": "تعذّر التنسيق: {message}",
+    "status-valid": "صالح",
+    "status-invalid": "غير صالح",
+    "status-warning": "{n} تحذير",
+    "status-warnings": "{n} تحذيرات",
+    "parse-fail-msg": "خطأ في قراءة YAML: {message}",
+    "editor-init-fail-msg": "فشل تشغيل المحرر: {message}"
   },
   "cloud-sync": {
     "title": "النسخ الاحتياطي والاستعادة السحابية",
@@ -197,19 +324,24 @@
       "open-section": "فتح القسم",
       "edit-section": "تعديل",
       "expand-collapse": "توسيع / طي",
-      "remove-section": "إزالة"
+      "remove-section": "إزالة",
+      "section-options": "خيارات القسم"
     }
   },
   "interactive-editor": {
     "menu": {
       "start-editing-tooltip": "الدخول إلى المحرر التفاعلي",
+      "config-unavailable": "محرر الإعدادات غير متاح",
       "edit-site-data-subheading": "تعديل بيانات الموقع",
+      "edit-config-as-code-btn": "تعديل الإعدادات بصيغة YAML",
+      "edit-config-as-code-tooltip": "فتح محرر YAML لتعديل ملف الإعدادات مباشرةً",
       "edit-page-info-btn": "تعديل معلومات الصفحة",
       "edit-page-info-tooltip": "عنوان التطبيق، الوصف، روابط التنقل، نص التذييل، إلخ.",
       "edit-app-config-btn": "تعديل إعدادات التطبيق",
       "edit-app-config-tooltip": "جميع خيارات إعداد التطبيق الأخرى",
       "edit-pages-btn": "تعديل الصفحات",
       "edit-pages-tooltip": "إضافة أو إزالة طرق عرض إضافية",
+      "edit-pages-subconfig-disabled": "لا يمكن تعديل الصفحات إلا من ملف الإعدادات الرئيسي",
       "config-save-methods-subheading": "خيارات حفظ الإعدادات",
       "save-locally-btn": "حفظ محلياً",
       "save-locally-tooltip": "حفظ الإعدادات محلياً في ذاكرة المتصفح. لن يؤثر هذا على ملف الإعدادات الخاص بك، ولكن سيتم حفظ التغييرات على هذا الجهاز فقط",
@@ -223,6 +355,7 @@
       "edit-raw-config-tooltip": "عرض وتعديل الإعدادات الخام عبر محرر JSON",
       "cancel-changes-btn": "إلغاء التعديل",
       "cancel-changes-tooltip": "إعادة تعيين التعديلات الحالية والخروج من وضع التعديل. لن يؤثر هذا على إعداداتك المحفوظة",
+      "leave-while-editing-confirm": "لديك تغييرات غير محفوظة. هل تريد مغادرة هذه الصفحة وتجاهلها؟",
       "edit-mode-name": "وضع التعديل",
       "edit-mode-subtitle": "أنت في وضع التعديل",
       "edit-mode-description": "هذا يعني أنه يمكنك إجراء تعديلات على إعداداتك ومعاينة النتائج، ولكن لن يتم حفظ أي من تغييراتك حتى تقوم بالحفظ.",
@@ -231,13 +364,37 @@
       "save-locally-warning": "إذا استمررت، سيتم حفظ التغييرات في متصفحك فقط. يجب عليك تصدير نسخة من إعداداتك لاستخدامها في أجهزة أخرى. هل تريد الاستمرار؟"
     },
     "edit-item": {
-      "missing-title-err": "عنوان العنصر مطلوب"
+      "missing-title-err": "عنوان العنصر مطلوب",
+      "add-item-title": "إضافة عنصر جديد",
+      "add-item-description": "انقر لإضافة عنصر جديد"
     },
     "edit-section": {
       "edit-section-title": "تعديل القسم",
       "add-section-title": "إضافة قسم جديد",
       "edit-tooltip": "انقر للتعديل، أو انقر بزر الماوس الأيمن لمزيد من الخيارات",
-      "remove-confirm": "هل أنت متأكد أنك تريد إزالة هذا القسم؟ يمكن التراجع عن هذا الإجراء لاحقاً."
+      "edit-tooltip-basic": "انقر للتعديل",
+      "remove-confirm": "هل أنت متأكد أنك تريد إزالة هذا القسم؟ يمكن التراجع عن هذا الإجراء لاحقاً.",
+      "missing-name-err": "اسم القسم مطلوب",
+      "duplicate-name-err": "يوجد قسم باسم '{name}' بالفعل"
+    },
+    "edit-widget": {
+      "edit-widget-title": "تعديل الأداة",
+      "add-widget-title": "إضافة أداة جديدة",
+      "add-widget-btn": "إضافة أداة",
+      "type-label": "نوع الأداة",
+      "label-label": "التسمية",
+      "update-interval-label": "فترة التحديث (بالثواني)",
+      "timeout-label": "مهلة الانتظار (بالملي ثانية)",
+      "use-proxy-label": "استخدام Proxy",
+      "allow-insecure-label": "السماح بالاتصال غير الآمن",
+      "ignore-errors-label": "تجاهل الأخطاء",
+      "options-heading": "خيارات الأداة",
+      "add-option-btn": "إضافة خيار",
+      "key-placeholder": "المفتاح",
+      "value-placeholder": "القيمة",
+      "missing-type-err": "نوع الأداة مطلوب",
+      "remove-widget": "إزالة الأداة",
+      "remove-confirm": "هل أنت متأكد أنك تريد إزالة هذه الأداة؟ يمكن التراجع عن هذا الإجراء لاحقاً."
     },
     "edit-app-config": {
       "warning-msg-title": "المضي بحذر",
@@ -250,7 +407,28 @@
       "copy-clipboard-btn": "نسخ إلى الحافظة",
       "copy-clipboard-tooltip": "نسخ جميع إعدادات التطبيق إلى حافظة النظام بتنسيق YAML",
       "download-file-btn": "تحميل كملف",
-      "download-file-tooltip": "تحميل جميع إعدادات التطبيق إلى جهازك كملف YAML"
+      "download-file-tooltip": "تحميل جميع إعدادات التطبيق إلى جهازك كملف YAML",
+      "current-config-title": "الإعدادات الحالية",
+      "preview-toggle": "معاينة YAML",
+      "issues-title": "مشاكل في بنية الإعدادات ({n})",
+      "config-list-title": "قائمة ملفات الإعدادات",
+      "col-title": "العنوان",
+      "col-path": "المسار",
+      "col-content": "المحتوى",
+      "col-status": "الحالة",
+      "col-actions": "الإجراءات",
+      "content-summary": "الأقسام: {sections}، العناصر: {items}، الأدوات: {widgets}",
+      "status-loading": "جارٍ التحميل",
+      "status-valid": "صالح",
+      "status-warnings": "{n} تحذيرات",
+      "status-error": "خطأ",
+      "status-unknown": "غير معروف",
+      "edit-current-btn": "تعديل الإعدادات",
+      "edit-current-tooltip": "فتح الإعدادات الحالية في محرر JSON",
+      "copy-fail-msg": "تعذّر النسخ إلى الحافظة، راجع السجل",
+      "download-row-tooltip": "تنزيل YAML",
+      "preview-row-tooltip": "إظهار أو إخفاء معاينة YAML",
+      "apply-row-tooltip": "تطبيق الإعدادات"
     }
   },
   "critical-error": {
@@ -268,6 +446,24 @@
       "mem-details": "تفاصيل الذاكرة (RAM)",
       "show-less": "عرض أقل",
       "open-link": "مواصلة القراءة"
+    },
+    "apod": {
+      "watch-video": "مشاهدة الفيديو"
+    },
+    "calendar": {
+      "all-day": "طوال اليوم",
+      "no-events": "لا توجد أحداث قادمة",
+      "today": "اليوم",
+      "tomorrow": "غدًا",
+      "untitled": "حدث بدون عنوان"
+    },
+    "github-profile": {
+      "repos": "المستودعات",
+      "followers": "المتابِعون",
+      "following": "يتابع",
+      "stars": "النجوم",
+      "forks": "التفرعات",
+      "issues": "المشكلات"
     },
     "pi-hole": {
       "status-heading": "الحالة"
@@ -289,7 +485,12 @@
       "disk-file-system": "نظام الملفات",
       "disk-io-read": "قراءة",
       "disk-io-write": "كتابة",
-      "system-load-desc": "عدد العمليات التي تنتظر في طابور التشغيل، محسوبة كمتوسط على جميع الأنوية"
+      "system-load-desc": "عدد العمليات التي تنتظر في طابور التشغيل، محسوبة كمتوسط على جميع الأنوية",
+      "gpu-usage": "الاستخدام",
+      "gpu-memory": "الذاكرة",
+      "gpu-temperature": "الحرارة",
+      "gpu-fan-speed": "المروحة",
+      "gpu-none": "لم يتم اكتشاف GPU"
     },
     "system-info": {
       "uptime": "وقت التشغيل"
@@ -336,7 +537,7 @@
       "enabled": "مفعل",
       "federated-shares-ucfirst": "المشاركات الاتحادية",
       "federated-shares": "المشاركات الاتحادية",
-      "files": "ملف{plural}",
+      "files": "ملف | ملفات",
       "free": "حر",
       "groups": "مجموعات",
       "hit-rate": "معدل الإصابة",
@@ -368,13 +569,14 @@
       "overall": "إجمالي",
       "private-link": "رابط خاص",
       "public-link": "رابط عام",
-      "quota-enabled": "حصة القرص {not}مفعلة لهذا المستخدم",
+      "quota-disabled": "حصة القرص غير مفعلة لهذا المستخدم",
+      "quota-enabled": "حصة القرص مفعلة لهذا المستخدم",
       "received": "تم استلامها",
       "scripts": "سكربتات",
       "sent": "تم إرسالها",
       "started": "بدأت",
       "storages-by-type": "المخازن حسب النوع",
-      "storages": "مخزن{plural}",
+      "storages": "مخزن | مخازن",
       "strings-use": "استخدام السلاسل",
       "tasks": "مهام",
       "total-files": "إجمالي الملفات",
@@ -382,7 +584,7 @@
       "total": "إجمالي",
       "until": "حتى",
       "updates-available-for": "التحديثات متاحة لـ",
-      "updates-available": "تحديث{plural} متاح",
+      "updates-available": "تحديث متاح | تحديثات متاحة",
       "used": "مستخدم",
       "user": "مستخدم",
       "using": "يستخدم",

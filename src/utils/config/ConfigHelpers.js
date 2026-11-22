@@ -104,6 +104,12 @@ export const makeRoutePath = (view, pageId, sectionName) => {
 /* Convenience wrapper: turn a raw page name into a view URL (e.g. nav links) */
 export const makePageSlug = (pageName, view) => makeRoutePath(view, makePageName(pageName));
 
+/* Route for opening a URL in the workspace, staying on the current sub-page */
+export const makeWorkspaceRoute = (url, store) => ({
+  path: makeRoutePath('workspace', store?.state?.currentConfigInfo?.confId),
+  query: { url },
+});
+
 /* Extract the view segment from a path, defaulting to 'home' */
 export const viewFromPath = (path) => {
   const seg = (path || '').split('/').filter(Boolean)[0];

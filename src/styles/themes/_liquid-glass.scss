@@ -1,0 +1,74 @@
+/* Liquid Glass — a cool, translucent palette with restrained blur. */
+html[data-theme='liquid-glass'] {
+  --primary: #f1f7ff;
+  --background: #091426;
+  --background-darker: #06101f;
+  --item-group-background: rgba(21, 45, 78, 0.58);
+  --item-group-outer-background: rgba(12, 28, 52, 0.82);
+  --item-background: rgba(18, 39, 68, 0.62);
+  --item-background-hover: rgba(47, 83, 128, 0.72);
+  --item-shadow: 0 8px 22px rgba(1, 8, 20, 0.2);
+  --item-hover-shadow: 0 12px 28px rgba(1, 8, 20, 0.34);
+
+  --heading-text-color: #e8f2ff;
+  --item-text-color: #e8f2ff;
+  --item-text-color-hover: #ffffff;
+  --item-group-heading-text-color: #e8f2ff;
+  --item-group-heading-text-color-hover: #ffffff;
+
+  --settings-background: rgba(10, 25, 46, 0.82);
+  --settings-text-color: #e8f2ff;
+  --nav-link-text-color: #e8f2ff;
+  --nav-link-text-color-hover: #ffffff;
+  --nav-link-background-color: transparent;
+  --nav-link-border-color: rgba(225, 241, 255, 0.22);
+  --nav-link-border-color-hover: rgba(225, 241, 255, 0.4);
+  --search-container-background: rgba(10, 25, 46, 0.62);
+  --search-field-background: rgba(18, 39, 68, 0.62);
+  --config-settings-background: #0c1b31;
+  --cloud-backup-background: #0c1b31;
+  --footer-background: transparent;
+  --footer-text-color: #b8c9df;
+  --footer-text-color-link: #ffffff;
+
+  --minimal-view-background-color: transparent;
+  --minimal-view-group-background: rgba(21, 45, 78, 0.58);
+  --minimal-view-section-heading-background: rgba(21, 45, 78, 0.72);
+  --minimal-view-section-heading-color: #e8f2ff;
+  --outline-color: rgba(225, 241, 255, 0.6);
+  --highlight-background: rgba(225, 241, 255, 0.22);
+  --highlight-color: #ffffff;
+  --curve-factor: 0.9rem;
+  --curve-factor-navbar: 1.1rem;
+
+  body {
+    background-color: var(--background);
+    background-image:
+      radial-gradient(circle at 10% 0%, rgba(86, 179, 255, 0.2), transparent 34rem),
+      radial-gradient(circle at 90% 12%, rgba(173, 122, 255, 0.18), transparent 30rem),
+      linear-gradient(145deg, #0a1830 0%, #091426 52%, #11102a 100%);
+    background-attachment: fixed;
+  }
+
+  .home {
+    background: transparent;
+  }
+
+  .minimal-section-heading,
+  .minimal-section-inner.selected,
+  .tab-scroll-btn {
+    border-color: var(--nav-link-border-color);
+  }
+
+  header,
+  section.settings-outer,
+  .options-panel,
+  dialog.dashy-modal,
+  .theme-configurator-wrapper,
+  .view-switcher {
+    -webkit-backdrop-filter: blur(14px) saturate(125%);
+    backdrop-filter: blur(14px) saturate(125%);
+    background: var(--settings-background);
+    border: 1px solid var(--nav-link-border-color);
+  }
+}

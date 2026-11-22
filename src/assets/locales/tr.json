@@ -110,7 +110,6 @@
     "reset-config-label": "Yapılandırmayı Sıfırla",
     "css-save-btn": "Değişiklikleri Kaydet",
     "css-note-label": "Not",
-    "css-note-l1": "Değişikliklerinizin etkili olması için sayfayı yenilemeniz gerekecek.",
     "css-note-l2": "Stil geçersiz kılmaları yalnızca yerel olarak depolanır, bu nedenle CSS'nizin bir kopyasını oluşturmanız önerilir.",
     "css-note-l3": "Tüm özel stilleri kaldırmak için içeriği silin ve Değişiklikleri Kaydet'e basın.",
     "custom-css": {
@@ -441,6 +440,9 @@
     "ignore-button": "Kritik Hataları Yoksay"
   },
   "widgets": {
+    "apod": {
+      "watch-video": "Videoyu izle"
+    },
     "general": {
       "show-more": "Ayrıntıları Genişlet",
       "cpu-details": "CPU Detayları",
@@ -535,7 +537,7 @@
       "enabled": "aktif",
       "federated-shares-ucfirst": "Birleşik paylaşımlar",
       "federated-shares": "birleşik paylaşımlar",
-      "files": "dosya{plural}",
+      "files": "dosya",
       "free": "boş",
       "groups": "gruplar",
       "hit-rate": "isabet oranı",
@@ -567,13 +569,14 @@
       "overall": "genel",
       "private-link": "gizli bağlantı",
       "public-link": "genel bağlantı",
-      "quota-enabled": "Bu kullanıcı için Disk Kotası {not}etkin",
+      "quota-disabled": "Bu kullanıcı için Disk Kotası etkin değil",
+      "quota-enabled": "Bu kullanıcı için Disk Kotası etkin",
       "received": "alınan",
       "scripts": "betikler",
       "sent": "gönderildi",
       "started": "Başlatıldı",
       "storages-by-type": "Türe göre depolar",
-      "storages": "depolama{plural}",
+      "storages": "depolama",
       "strings-use": "dizgi kullanımı",
       "tasks": "İşlemler",
       "total-files": "tüm dosyalar",
@@ -581,7 +584,7 @@
       "total": "tüm",
       "until": "Kadar",
       "updates-available-for": "Şunun için güncellemeler mevcuttur:",
-      "updates-available": "güncelleme {plural} için mevcut",
+      "updates-available": "güncelleme mevcut",
       "used": "kullanıldı",
       "user": "kullanıcı",
       "using": "kullanılıyor",

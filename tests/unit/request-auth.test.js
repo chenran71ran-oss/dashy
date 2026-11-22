@@ -32,12 +32,14 @@ async function loadRequest({
 
 describe('request auth headers', () => {
   beforeEach(() => {
+    window.happyDOM.setURL('https://dash.example.com/');
     vi.restoreAllMocks();
     localStorage.getItem.mockReset();
     global.fetch = vi.fn(() => Promise.resolve(new Response('{"ok":true}', { status: 200 })));
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.doUnmock('@/utils/auth/Auth');
     vi.doUnmock('@/utils/auth/OidcAuth');
     vi.doUnmock('@/utils/auth/KeycloakAuth');
@@ -140,5 +142,43 @@ describe('request auth headers', () => {
     expect(fetch).toHaveBeenCalledWith('https://api.example.com/data', expect.objectContaining({
       headers: {},
     }));
+  });
+
+  it('sends auth to absolute URLs on the same origin', async () => {
+    localStorage.getItem.mockReturnValue(null);
+    const request = await loadRequest();
+
+    await request.get('https://dash.example.com/conf.yml');
+
+    expect(fetch).toHaveBeenCalledWith('https://dash.example.com/conf.yml', expect.objectContaining({
+      headers: { Authorization: 'Basic abc' },
+    }));
+  });
+
+  it.each([
+    'https://dash.example.com.evil.tld/conf.yml',
+    'https://dash.example.com:8443/conf.yml',
+    '/\\evil.tld/conf.yml',
+  ])('does not send auth to %s, which is a different origin', async (url) => {
+    localStorage.getItem.mockReturnValue(null);
+    const request = await loadRequest();
+
+    await request.get(url);
+
+    expect(fetch).toHaveBeenCalledWith(url, expect.objectContaining({ headers: {} }));
+  });
+
+  it('matches VITE_APP_DOMAIN by origin, not prefix', async () => {
+    vi.stubEnv('VITE_APP_DOMAIN', 'https://api.example.com');
+    localStorage.getItem.mockReturnValue(null);
+    const request = await loadRequest();
+
+    await request.get('https://api.example.com/status-check');
+    await request.get('https://api.example.com.evil.tld/status-check');
+
+    expect(fetch.mock.calls.map(([, options]) => options.headers)).toEqual([
+      { Authorization: 'Basic abc' },
+      {},
+    ]);
   });
 });

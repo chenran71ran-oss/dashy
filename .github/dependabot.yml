@@ -17,32 +17,10 @@ updates:
       include: scope
     versioning-strategy: increase
     groups:
-      vue-ecosystem:
+      security:
+        applies-to: security-updates
         patterns:
-          - "vue*"
-          - "@vue/*"
-        update-types:
-          - minor
-          - patch
-      eslint:
-        patterns:
-          - "eslint*"
-        update-types:
-          - minor
-          - patch
-      sentry:
-        patterns:
-          - "@sentry/*"
-        update-types:
-          - minor
-          - patch
-      vitest:
-        patterns:
-          - "vitest"
-          - "@vitest/*"
-        update-types:
-          - minor
-          - patch
+          - "*"
       codemirror:
         patterns:
           - "@codemirror/*"

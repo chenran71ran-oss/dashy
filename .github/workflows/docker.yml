@@ -150,7 +150,7 @@ jobs:
 
       - name: 📤 Upload Trivy SARIF
         if: always() && hashFiles(format('trivy-{0}.sarif', matrix.arch)) != ''
-        uses: github/codeql-action/upload-sarif@v4.38.2
+        uses: github/codeql-action/upload-sarif@v4.39.1
         with:
           sarif_file: trivy-${{ matrix.arch }}.sarif
           category: trivy-${{ matrix.arch }}
@@ -261,7 +261,7 @@ jobs:
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: 🔐 Generate SBOM (SPDX)
-        uses: anchore/sbom-action@v0.24.2
+        uses: anchore/sbom-action@v0.24.3
         with:
           image: ${{ steps.manifest.outputs.primary_tag }}
           format: spdx-json
