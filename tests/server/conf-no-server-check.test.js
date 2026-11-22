@@ -29,6 +29,7 @@ beforeAll(() => {
   tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashy-no-check-test-'));
   fs.writeFileSync(path.join(tmpDir, 'conf.yml'), CONF);
   fs.writeFileSync(path.join(tmpDir, 'sub.yml'), 'pageInfo:\n  title: Sub\n');
+  fs.writeFileSync(path.join(tmpDir, 'my page.yml'), 'pageInfo:\n  title: Sub\n');
   process.env.USER_DATA_DIR = tmpDir;
   delete require.cache[require.resolve('../../services/app')];
   delete require.cache[require.resolve('../../services/utils/auth-oidc')];
@@ -48,6 +49,10 @@ describe('OIDC with disableServerSideCheck', () => {
   it('serves non-root yml files without auth', async () => {
     const res = await request(app).get('/sub.yml');
     expect(res.status).toBe(200);
+  });
+
+  it('serves yml files with encoded characters in the name', async () => {
+    expect((await request(app).get('/my%20page.yml')).status).toBe(200);
   });
 
   it('does not reject API routes on an invalid Bearer token', async () => {

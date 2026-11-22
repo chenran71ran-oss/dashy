@@ -3,7 +3,7 @@ import { reactive, nextTick } from 'vue';
 import Minimal from '@/views/Minimal.vue';
 import MinimalSection from '@/components/MinimalView/MinimalSection.vue';
 import Workspace from '@/views/Workspace.vue';
-import MultiTasking from '@/components/Workspace/MultiTaskingWebComtent.vue';
+import WebContent from '@/components/Workspace/WebContent.vue';
 import EditWidget from '@/components/InteractiveEditor/EditWidget.vue';
 import EditItem from '@/components/InteractiveEditor/EditItem.vue';
 import SubItemsEditor from '@/components/InteractiveEditor/SubItemsEditor.vue';
@@ -19,21 +19,20 @@ import { readdirSync } from 'node:fs';
 vi.mock('@/mixins/HomeMixin', () => ({ default: {
   data: () => ({ searchValue: '' }),
   computed: { sections() { return this.$store.getters.sections; }, pageInfo() { return this.$store.getters.pageInfo; }, appConfig() { return this.$store.getters.appConfig; }, isEditMode() { return this.$store.state.editMode; }, modalOpen: () => false, isBootstrap: () => false, pageId: () => 'home' },
-  methods: { getBackgroundImage: () => '', checkTheresData: s => s?.length, makeSectionId: s => s.name, checkIfResults: s => !s.some(c => c.filteredItems.length), filterTiles(items) { return (items || []).filter(i => !this.searchValue || i.title.toLowerCase().includes(this.searchValue.toLowerCase())); }, initiateFontAwesome() {}, initiateMaterialDesignIcons() {}, updateModalVisibility() {} },
+  methods: { determineConfigFile: () => null, getBackgroundImage: () => '', checkTheresData: s => s?.length, makeSectionId: s => s.name, checkIfResults: s => !s.some(c => c.filteredItems.length), filterTiles(items) { return (items || []).filter(i => !this.searchValue || i.title.toLowerCase().includes(this.searchValue.toLowerCase())); }, initiateFontAwesome() {}, initiateMaterialDesignIcons() {}, updateModalVisibility() {} },
 } }));
 vi.mock('@/utils/config/ConfigHelpers', () => ({ resolveRouteIntent: () => ({ sectionSlug: null }), makePageName: s => s.toLowerCase(), makeRoutePath: view => `/${view}` }));
 vi.mock('@/assets/interface-icons/widget-update.svg', () => ({ default: { template: '<svg />' } }));
 vi.mock('@/assets/interface-icons/config-edit-json.svg', () => ({ default: { template: '<svg />' } }));
 vi.mock('@/assets/interface-icons/interactive-editor-remove.svg', () => ({ default: { template: '<svg />' } }));
 vi.mock('@/assets/interface-icons/loader.svg', () => ({ default: { template: '<svg />' } }));
-vi.mock('@/components/Workspace/WebContent', () => ({ default: { name: 'WebContent', props: ['url', 'id'], template: '<div class="web-content" :id="id"><iframe :data-src="url" /></div>' } }));
 
 const sections = [
   { name: 'AI', icon: 'ai', items: [{ title: 'ChatGPT' }], widgets: [{ type: 'clock' }] },
   { name: 'Work', icon: 'work', items: [{ title: 'GitHub' }], widgets: [{ type: 'calendar' }] },
 ];
-const makeStore = () => ({ state: reactive({ editMode: false }), getters: reactive({ sections, pageInfo: { title: 'Home Lab', logo: '/mech/blue.png' }, appConfig: {}, iconSize: 'medium', layout: 'auto', permissions: { allowViewConfig: true }, getSectionByName: () => ({ widgets: [] }), getItemById: () => ({ title: 'Example', url: 'https://example.com', icon: 'auto' }) }), commit: vi.fn() });
-const options = store => ({ mocks: { $store: store, $route: { path: '/minimal', params: {}, query: {} }, $t: s => s, $modal: { show: vi.fn(), hide: vi.fn() } }, directives: { tooltip: {} }, stubs: { modal: { template: '<div><slot /></div>' } } });
+const makeStore = () => ({ state: reactive({ editMode: false }), getters: reactive({ sections, pageInfo: { title: 'Home Lab', logo: '/mech/blue.png' }, appConfig: {}, iconSize: 'medium', layout: 'auto', visibleComponents: { searchBar: true }, permissions: { allowViewConfig: true }, getSectionByName: () => ({ widgets: [] }), getItemById: () => ({ title: 'Example', url: 'https://example.com', icon: 'auto' }) }), commit: vi.fn() });
+const options = store => ({ mocks: { $store: store, $router: { replace: vi.fn() }, $route: { path: '/minimal', params: {}, query: {} }, $t: s => s, $modal: { show: vi.fn(), hide: vi.fn() } }, directives: { tooltip: {} }, stubs: { modal: { template: '<div><slot /></div>' } } });
 
 describe('restored views and editor capabilities preserve the current UI', () => {
   it('the selector covers every upstream widget component, including integrations', () => {
@@ -88,12 +87,12 @@ describe('restored views and editor capabilities preserve the current UI', () =>
     const opened = vi.spyOn(window, 'open').mockImplementation(() => null);
     const wrapper = shallowMount(Workspace, { global: options(makeStore()) });
     expect(wrapper.findAllComponents(SettingsContainer)).toHaveLength(1);
-    wrapper.vm.launchWidget([{ type: 'clock' }], { name: 'AI', displayData: { itemSize: 'large' } }); await nextTick();
-    expect(wrapper.findComponent({ name: 'WidgetView' }).props()).toMatchObject({ title: 'AI', itemSize: 'large' });
+    wrapper.vm.launchWidgets(wrapper.vm.sections[0].widgets); await nextTick();
+    expect(wrapper.findComponent({ name: 'WidgetView' }).props()).toMatchObject({ title: 'AI' });
     expect(wrapper.findAllComponents(SettingsContainer)).toHaveLength(1);
-    wrapper.vm.launchApp({ target: 'newtab', url: 'https://example.com' }); await nextTick();
+    
     expect(wrapper.findComponent({ name: 'WidgetView' }).exists()).toBe(true);
-    wrapper.vm.launchApp({ target: 'workspace', url: 'https://example.com' }); await nextTick();
+    wrapper.vm.launchApp('https://example.com'); await nextTick();
     expect(wrapper.findAllComponents(SettingsContainer)).toHaveLength(1);
     wrapper.unmount(); opened.mockRestore();
   });
@@ -104,15 +103,17 @@ describe('restored views and editor capabilities preserve the current UI', () =>
     expect(category.attributes('aria-expanded')).toBe('false');
     await category.trigger('click');
     expect(category.attributes('aria-expanded')).toBe('true');
-    expect(wrapper.emitted('launch-widget')[0]).toEqual([sections[0].widgets, sections[0]]);
+    expect(wrapper.emitted('launch-widget')[0]).toEqual([sections[0].widgets]);
     wrapper.unmount();
   });
   it('Workspace website entries remain keyboard accessible and retain their opening method', async () => {
-    const wrapper = shallowMount(SideBarItem, { props: { title: 'Example', url: 'https://example.com', target: 'newtab' }, global: options(makeStore()) });
-    expect(wrapper.attributes('role')).toBe('button');
-    expect(wrapper.attributes('tabindex')).toBe('0');
-    await wrapper.trigger('keydown', { key: 'Enter' });
-    expect(wrapper.emitted('launch-app')[0][0]).toEqual({ url: 'https://example.com', target: 'newtab' });
+    const opened = vi.spyOn(window, 'open').mockImplementation(() => null);
+    const wrapper = shallowMount(SideBarItem, { props: { item: { title: 'Example', url: 'https://example.com', target: 'newtab' } }, global: options(makeStore()) });
+    expect(wrapper.element.tagName).toBe('A');
+    expect(wrapper.attributes('href')).toBe('https://example.com');
+    await wrapper.trigger('click');
+    expect(opened).toHaveBeenCalled();
+    opened.mockRestore();
     wrapper.unmount();
   });
   it('Minimal uses category tabs, shows the selected category widgets and searches across categories', async () => {
@@ -133,30 +134,26 @@ describe('restored views and editor capabilities preserve the current UI', () =>
   });
 
   it('Workspace has its own web area instead of nesting the Minimal view, respects newtab and embeds workspace targets', async () => {
-    const opened = vi.spyOn(window, 'open').mockImplementation(() => null);
     const wrapper = shallowMount(Workspace, { global: options(makeStore()) });
     expect(wrapper.findComponent(Minimal).exists()).toBe(false);
-    expect(wrapper.find('.workspace-empty').exists()).toBe(true);
-    wrapper.vm.launchApp({ url: 'https://app.example', target: 'newtab' }); await nextTick();
-    expect(opened).toHaveBeenCalledWith('https://app.example', '_blank', 'noopener,noreferrer');
-    expect(wrapper.vm.url).toBeFalsy();
-    wrapper.vm.launchApp({ url: 'https://app.example', target: 'workspace' }); await nextTick();
-    expect(wrapper.findComponent({ name: 'WebContent' }).props('url')).toBe('https://app.example');
-    wrapper.vm.launchWidget([{ type: 'clock' }]); await nextTick();
+    expect(wrapper.findComponent(WebContent).props('activeUrl')).toBe('');
+    wrapper.vm.launchApp('https://app.example');
+    expect(wrapper.vm.$router.replace).toHaveBeenCalledWith({ query: { url: 'https://app.example' } });
+    wrapper.vm.launchWidgets([{ type: 'clock' }]); await nextTick();
     expect(wrapper.findComponent({ name: 'WidgetView' }).props('widgets')).toEqual([{ type: 'clock' }]);
-    wrapper.unmount(); opened.mockRestore();
+    wrapper.unmount();
   });
 
   it('multitasking renders the initial app and switches Unicode URLs without remounting old frames', async () => {
-    const wrapper = mount(MultiTasking, { props: { url: 'https://example.com/工作' }, attachTo: document.body });
+    const wrapper = mount(WebContent, { global: { mocks: { $t: k => k } }, props: { urls: ['https://example.com/工作'], activeUrl: 'https://example.com/工作' }, attachTo: document.body });
     expect(wrapper.findAll('iframe')).toHaveLength(1);
     const first = wrapper.get('iframe').element;
-    await wrapper.setProps({ url: 'https://example.com/second' });
+    await wrapper.setProps({ urls: ['https://example.com/工作', 'https://example.com/second'], activeUrl: 'https://example.com/second' });
     expect(wrapper.findAll('iframe')).toHaveLength(2);
-    expect(wrapper.findAll('.web-content.hide')).toHaveLength(1);
-    await wrapper.setProps({ url: 'https://example.com/工作' });
+    expect(wrapper.findAll('iframe').filter(frame => !frame.isVisible())).toHaveLength(1);
+    await wrapper.setProps({ activeUrl: 'https://example.com/工作' });
     expect(wrapper.findAll('iframe')).toHaveLength(2);
-    expect(wrapper.get('.web-content:not(.hide) iframe').element).toBe(first);
+    expect(wrapper.findAll('iframe').find(frame => frame.isVisible()).element).toBe(first);
     wrapper.unmount();
   });
 

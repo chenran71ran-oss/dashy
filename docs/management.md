@@ -39,8 +39,8 @@ Typical contents:
 
 - `conf.yml` - Main config (required)
 - `*.yml` / `*.yaml` - Sub-config files for [multi-page support](/docs/pages-and-sections.md#multi-page-support)
-- `item-icons/` - Local icons referenced by `icon: ./item-icons/foo.png`
-- `favicon.ico`, `manifest.json`, `robots.txt` - Override the bundled defaults
+- `item-icons/` - Local icons referenced by `icon: foo.png`
+- `favicon.ico`, `manifest.webmanifest`, `robots.txt` - Override the bundled defaults
 - `fonts/`, `widget-resources/` - Custom fonts or assets used by widgets
 
 **[⬆️ Back to Top](#management)**
@@ -398,7 +398,7 @@ With Docker, you can define environmental variables under the `environment` sect
 | `SSL_PORT` | HTTPS port. Defaults to `443` in Docker |
 | `REDIRECT_HTTPS` | Set to `false` to stop HTTP redirecting to HTTPS when SSL is enabled |
 
-Anything starting with `VITE_` is a build-time variable, baked in when the app is compiled, so it has no effect on the published image. If you need one of those (e.g. for hosting under a [sub-path](/docs/troubleshooting.md#nothing-loads-when-dashy-is-behind-a-sub-path)), you'll need to [build your own container](#building-your-own-container). The full list is in the [developing docs](/docs/developing.md#environmental-variables).
+Anything starting with `VITE_` is a build-time variable, baked in when the app is compiled, so it has no effect on the published image. If you need one of those (e.g. `VITE_APP_ROUTING_MODE=hash`), you'll need to [build your own container](#building-your-own-container). The full list is in the [developing docs](/docs/developing.md#environmental-variables).
 
 **[⬆️ Back to Top](#management)**
 

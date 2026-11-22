@@ -16,10 +16,17 @@ import { statusErrorMsg, statusMsg } from '@/utils/logging/CoolConsole';
 /** Check if a request URL targets the local Dashy server */
 function isLocalRequest(url) {
   if (!url) return false;
-  if (url.startsWith('/') && !url.startsWith('//')) return true;
   const { origin } = window.location;
   const domain = import.meta.env.VITE_APP_DOMAIN;
-  return url.startsWith(origin) || (domain && url.startsWith(domain));
+  try {
+    const target = new URL(url, origin);
+    if (target.origin === origin) return true;
+    if (!domain) return false;
+    const server = new URL(domain, origin);
+    return target.origin === server.origin && target.pathname.startsWith(server.pathname);
+  } catch {
+    return false;
+  }
 }
 
 function hasAuthorization(headers) {

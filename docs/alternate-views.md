@@ -23,9 +23,11 @@ This is the main page that you will land on when you first launch the applicatio
 
 The workspace view displays your links in a sidebar on the left-hand side, and apps are launched inside an iframe without having to leave Dashy. This enables you to use all of your self-hosted apps from one place, and makes multi-tasking easy.
 
+The menu button at the top of the sidebar expands it to show app names and a search box. Apps you open are listed at the bottom of the sidebar, so you can switch back and forth, or close them. The page URL follows the app you're viewing, so you can bookmark or link to it, e.g. `/workspace?url=https://app-to-open/`.
+
 You can specify a default app to be opened when you land on the workspace, by setting `appConfig.workspaceLandingUrl: https://app-to-open/`. If this app exists within your sections.items, then the corresponding section will also be expanded.
 
-You can also opt to keep previously opened websites/ apps open in the background, by setting `appConfig.enableMultiTasking: true`. This comes at the cost of performance, but does mean that your session with each app is preserved, enabling you to quickly switch between them.
+You can also opt to keep previously opened websites/ apps open in the background, by setting `appConfig.enableMultiTasking: true`. This comes at the cost of performance, but does mean that your session with each app is preserved, enabling you to quickly switch between them. Apps stay open until you close them from the open apps list.
 
 <p align="center">
   <b>Example of Workspace View</b><br>
@@ -61,4 +63,4 @@ Even if the target is not set (or is set to `sametab`), you can still launch any
 
 If you don't like the custom context menu, it can be disabled by setting `appConfig.disableContextMenu: true`.
 
-If you get a 'Refused to Connect' error in the modal or workspace views, then the target app has it's X-Frame-Options HTTP set to block requests from embedded content. You can easily fix this by setting this header to ALLOW, for instructions on how to do so, see the [Troubleshooting Docs](/docs/troubleshooting.md#refused-to-connect-in-modal-or-workspace-view).
+If you get a 'Refused to Connect' error in the modal or workspace views, then the target app is sending headers that block it from being embedded. You can fix this by allowing Dashy in the app's `Content-Security-Policy`, for instructions on how to do so, see the [Troubleshooting Docs](/docs/troubleshooting.md#refused-to-connect-in-modal-or-workspace-view).

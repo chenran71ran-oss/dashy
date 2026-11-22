@@ -110,7 +110,6 @@
     "reset-config-label": "Konfiqurasiyanı sıfırla",
     "css-save-btn": "Dəyişiklikləri yadda saxla",
     "css-note-label": "Qeyd",
-    "css-note-l1": "Dəyişikliklərin qüvvəyə minməsi üçün səhifəni yeniləmək lazımdır.",
     "css-note-l2": "Üslub dəyişiklikləri yalnız lokal saxlanılır, ona görə də CSS-inizin bir nüsxəsini götürmək tövsiyə olunur.",
     "css-note-l3": "Bütün fərdi üslubları silmək üçün məzmunu silin və 'Dəyişiklikləri yadda saxla' düyməsini basın",
     "custom-css": {
@@ -123,6 +122,13 @@
     "default": "Standart",
     "workspace": "İş sahəsi",
     "minimal": "Minimal"
+  },
+  "workspace": {
+    "expand-sidebar": "Yan paneli genişləndir",
+    "collapse-sidebar": "Yan paneli yığ",
+    "open-apps": "Açıq tətbiqlər",
+    "close-app": "{app} tətbiqini bağla",
+    "empty-state": "Burada açmaq üçün yan paneldən tətbiq seçin"
   },
   "remote-config": {
     "title": "Uzaq konfiqurasiya yüklənsin?",
@@ -448,6 +454,9 @@
       "show-less": "Daha az göstər",
       "open-link": "Oxumağa davam et"
     },
+    "apod": {
+      "watch-video": "Videoya bax"
+    },
     "calendar": {
       "all-day": "Bütün gün",
       "no-events": "Qarşıda heç nə yoxdur",
@@ -567,7 +576,8 @@
       "overall": "Ümumi",
       "private-link": "şəxsi link",
       "public-link": "açıq link",
-      "quota-enabled": "Bu istifadəçi üçün disk kvotası {not}aktivdir",
+      "quota-disabled": "Bu istifadəçi üçün disk kvotası aktiv deyil",
+      "quota-enabled": "Bu istifadəçi üçün disk kvotası aktivdir",
       "received": "alınıb",
       "scripts": "skript",
       "sent": "göndərilib",

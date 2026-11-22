@@ -156,6 +156,13 @@ export const truncateStr = (str, len = 60, ellipse = '...') => {
   return str.length > len + ellipse.length ? `${str.slice(0, len)}${ellipse}` : str;
 };
 
+const normalizeUrl = (url) => {
+  try { return new URL(url).href.replace(/\/+$/, ''); } catch { return url; }
+};
+
+/* Compare URLs, ignoring host case and trailing slashes */
+export const sameUrl = (a, b) => !!a && !!b && normalizeUrl(a) === normalizeUrl(b);
+
 /* Given two timestamp, return the difference in text format, e.g. '10 minutes' */
 export const getTimeDifference = (startTime, endTime) => {
   const msDifference = new Date(endTime).getTime() - new Date(startTime).getTime();

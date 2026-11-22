@@ -3,6 +3,7 @@ import {
   makePageName,
   makePageSlug,
   makeRoutePath,
+  makeWorkspaceRoute,
   viewFromPath,
   resolveRouteIntent,
   PAGE_STATUS,
@@ -264,6 +265,19 @@ describe('ConfigHelpers - makeRoutePath (view capability)', () => {
   it('keeps the section for views that support it', () => {
     expect(makeRoutePath('home', 'homelab', 'tools')).toBe('/home/homelab/tools');
     expect(makeRoutePath('minimal', 'homelab', 'tools')).toBe('/minimal/homelab/tools');
+  });
+});
+
+describe('ConfigHelpers - makeWorkspaceRoute', () => {
+  it('opens the url in the workspace for the current sub-page', () => {
+    const store = { state: { currentConfigInfo: { confId: 'kiosk' } } };
+    expect(makeWorkspaceRoute('https://a.com', store))
+      .toEqual({ path: '/workspace/kiosk', query: { url: 'https://a.com' } });
+  });
+
+  it('uses the root workspace when no sub-page is loaded', () => {
+    const store = { state: { currentConfigInfo: {} } };
+    expect(makeWorkspaceRoute('https://a.com', store).path).toBe('/workspace');
   });
 });
 

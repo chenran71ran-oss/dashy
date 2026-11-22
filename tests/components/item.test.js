@@ -613,7 +613,7 @@ describe('Methods: itemClicked', () => {
       },
     });
     wrapper.vm.itemClicked(event());
-    expect(router.push).toHaveBeenCalledWith({ name: 'workspace', query: { url: 'https://x.com' } });
+    expect(router.push).toHaveBeenCalledWith({ path: '/workspace', query: { url: 'https://x.com' } });
   });
 
   it('target clipboard: calls copyToClipboard', () => {
@@ -660,7 +660,7 @@ describe('Methods: launchItem', () => {
   it('workspace calls router.push', () => {
     const { wrapper } = mountItem();
     wrapper.vm.launchItem('workspace', 'https://test.com');
-    expect(router.push).toHaveBeenCalledWith({ name: 'workspace', query: { url: 'https://test.com' } });
+    expect(router.push).toHaveBeenCalledWith({ path: '/workspace', query: { url: 'https://test.com' } });
   });
 
   it('clipboard calls copyToClipboard', () => {
@@ -927,6 +927,34 @@ describe('Template rendering', () => {
   it('sets correct id on anchor', () => {
     const { wrapper } = mountItem();
     expect(wrapper.find('a.item').attributes('id')).toBe('link-test-1');
+  });
+
+  it('applies iconColor to the icon only', () => {
+    const { wrapper } = mountItem({
+      item: {
+        id: '1', title: 'X', url: '#', icon: 'si-github', color: 'red', iconColor: 'blue',
+      },
+    });
+    expect(wrapper.find('a.item').attributes('style')).toContain('color: red');
+    expect(wrapper.findComponent({ name: 'Icon' }).attributes('style')).toContain('color: blue');
+  });
+
+  it('falls back to color for the icon', () => {
+    const { wrapper } = mountItem({
+      item: {
+        id: '1', title: 'X', url: '#', icon: 'si-github', color: 'red',
+      },
+    });
+    expect(wrapper.findComponent({ name: 'Icon' }).attributes('style')).toContain('color: red');
+  });
+
+  it('updates the icon color when the item is edited', async () => {
+    const item = {
+      id: '1', title: 'X', url: '#', icon: 'si-github',
+    };
+    const { wrapper } = mountItem({ item });
+    await wrapper.setProps({ item: { ...item, iconColor: 'blue' } });
+    expect(wrapper.findComponent({ name: 'Icon' }).attributes('style')).toContain('color: blue');
   });
 });
 

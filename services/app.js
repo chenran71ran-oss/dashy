@@ -30,6 +30,7 @@ let config = require('./utils/config-validator'); // Validate config file and lo
 const statusCheck = require('./endpoints/status-check'); // Used by the status check feature, uses GET
 const pingCheck = require('./endpoints/ping-check'); // Used by the ping check feature, uses GET
 const saveConfig = require('./endpoints/save-config'); // Saves users new conf.yml to file-system
+const serveConfig = require('./endpoints/serve-config'); // Serves conf.yml and other YAML, behind auth
 const systemInfo = require('./endpoints/system-info'); // Basic system info, for resource widget
 const sslServer = require('./utils/ssl-server'); // TLS-enabled web server
 const corsProxy = require('./endpoints/cors-proxy'); // Enables API requests to CORS-blocked services
@@ -38,7 +39,8 @@ const openSearch = require('./endpoints/opensearch'); // Descriptor for browser 
 const aliasTarget = require('./endpoints/alias-target'); // Resolves /<alias> to an item's URL
 const { apiEnabledGate, apiErrorHandler, createApiRouter } = require('./endpoints/api'); // Opt-in REST API
 
-const { loadOidcSettings, createOidcMiddleware, maybeBootstrapConfig } = require('./utils/auth-oidc');
+const { loadOidcSettings, createOidcMiddleware } = require('./utils/auth-oidc');
+const isTrustedProxy = require('./utils/trusted-proxy');
 
 /* Service endpoint URL paths (see also serviceEndpoints in src/utils/config/defaults.js) */
 const ENDPOINTS = {
@@ -149,6 +151,9 @@ function getAuthMiddleware(authConfig, oidcSettings) {
   if (oidcSettings) {
     return createOidcMiddleware(oidcSettings);
   } else if (useConfAuth) {
+    if (authConfig.enableGuestAccess) {
+      printWarning('Guest access is not supported with ENABLE_HTTP_AUTH');
+    }
     return basicAuth({
       authorizer: customAuthorizer,
       challenge: true,
@@ -163,14 +168,17 @@ function getAuthMiddleware(authConfig, oidcSettings) {
   } else if (authConfig.enableHeaderAuth && authConfig.headerAuth) {
     const { userHeader = 'Remote-User', proxyWhitelist = [] } = authConfig.headerAuth;
     return (req, res, next) => {
-      if (!proxyWhitelist.includes(req.socket.remoteAddress)) {
+      if (!isTrustedProxy(proxyWhitelist, req.socket.remoteAddress)) {
         return res.status(401).json({ success: false, message: 'Unauthorized - not from trusted proxy' });
       }
       const user = req.headers[userHeader.toLowerCase()];
       if (!user) {
         return res.status(401).json({ success: false, message: 'Unauthorized - missing user header' });
       }
-      req.auth = { user };
+      const users = loadUserConfig() || [];
+      if (users.some(u => u.user?.toLowerCase() === user.toLowerCase())) {
+        req.auth = { user };
+      }
       return next();
     };
   }
@@ -345,34 +353,8 @@ const app = express()
       safeEnd(res, errBody(e), 500);
     }
   })
-  // Middleware to serve any .yml/.yaml files in USER_DATA_DIR with optional protection
-  // Note: returns stripped version if auth configured but not yet authenticated
-  .get(/\.ya?ml$/i, bootstrapAuth, (req, res) => {
-    const ymlFile = req.path.split('/').pop();
-    const userDataDir = path.resolve(rootDir, process.env.USER_DATA_DIR || 'user-data');
-    const filePath = path.resolve(userDataDir, ymlFile);
-    if (authIsConfigured) {
-      res.set('Cache-Control', 'private, no-store').set('Vary', 'Authorization');
-      try {
-        const stripped = maybeBootstrapConfig(filePath, {
-          isRootConfig: ymlFile === 'conf.yml',
-          isAuthenticated: Boolean(req.auth),
-          guestAccessOn,
-        });
-        if (stripped) return res.type('text/yaml').send(stripped);
-      } catch (e) {
-        printWarning(`Failed to read or parse ${ymlFile}`, e);
-        return safeEnd(res, errBody('Could not read config'), 500);
-      }
-      // Not authenticated, not main conf.yml
-      if (!req.auth && !guestAccessOn) {
-        return res.status(401).json({ success: false, message: 'Unauthorized' });
-      }
-    }
-    res.sendFile(ymlFile, { root: userDataDir }, (err) => {
-      if (err) safeEnd(res, errBody(`Could not read ${ymlFile}`), 404);
-    });
-  })
+  // Serves .yml/.yaml files in USER_DATA_DIR, with optional protection
+  .use(serveConfig({ bootstrapAuth, authIsConfigured, guestAccessOn }))
   // Serves up static files
   .use(express.static(path.resolve(rootDir, process.env.USER_DATA_DIR || 'user-data')))
   .use(express.static(path.join(rootDir, 'dist')))

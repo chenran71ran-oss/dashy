@@ -30,6 +30,7 @@ export const languages = [
   { name: 'Slovenčina', code: 'sk', flag: '🇸🇰' },
   { name: 'Slovenščina', code: 'sl', flag: '🇸🇮' },
   { name: 'Svenska', code: 'sv', flag: '🇸🇪' },
+  { name: 'Kiswahili', code: 'sw', flag: '🇰🇪' },
   { name: 'Türkçe', code: 'tr', flag: '🇹🇷' },
   { name: 'Ukrainian', code: 'uk', flag: '🇺🇦' },
   { name: '简体中文', code: 'zh-CN', flag: '🇨🇳' },

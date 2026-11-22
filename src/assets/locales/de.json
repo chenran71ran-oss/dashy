@@ -26,6 +26,8 @@
   "login": {
     "title": "Dashy",
     "guest-label": "Gastzugriff",
+    "oidc-label": "Single Sign-On",
+    "oidc-login-button": "Mit SSO anmelden",
     "username-label": "Benutzername",
     "password-label": "Passwort",
     "login-button": "Anmelden",
@@ -108,7 +110,6 @@
     "reset-config-label": "Konfiguration zurücksetzen",
     "css-save-btn": "Änderungen speichern",
     "css-note-label": "Bemerkung",
-    "css-note-l1": "Sie müssen die Seite aktualisieren, damit Ihre Änderungen wirksam werden.",
     "css-note-l2": "Stilüberschreibungen werden nur lokal gespeichert, daher wird empfohlen vorher eine Kopie Ihres CSS zu erstellen.",
     "css-note-l3": "Um alle benutzerdefinierten Stile zu entfernen löschen Sie den Inhalt und klicken Sie auf Änderungen speichern.",
     "custom-css": {
@@ -372,7 +373,7 @@
       "add-section-title": "Neue Sektion hinzufügen",
       "edit-tooltip": "Klicken zum Bearbeiten oder Rechtsklick für weitere Optionen",
       "edit-tooltip-basic": "Klicken zum Bearbeiten",
-      "remove-confirm": "Sind Sie sicher, dass Sie diese Sektion entfernen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "remove-confirm": "Sind Sie sicher, dass Sie diese Sektion entfernen möchten? Diese Aktion kann später rückgängig gemacht werden.",
       "missing-name-err": "Ein Sektionsname ist erforderlich",
       "duplicate-name-err": "Eine Sektion namens '{name}' existiert bereits"
     },
@@ -385,6 +386,7 @@
       "update-interval-label": "Aktualisierungsintervall (Sekunden)",
       "timeout-label": "Zeitlimit (ms)",
       "use-proxy-label": "Proxy verwenden",
+      "allow-insecure-label": "Ungültige Zertifikate erlauben",
       "ignore-errors-label": "Fehler ignorieren",
       "options-heading": "Widget-Optionen",
       "add-option-btn": "Option hinzufügen",
@@ -392,7 +394,7 @@
       "value-placeholder": "Wert",
       "missing-type-err": "Ein Widget-Typ ist erforderlich",
       "remove-widget": "Widget entfernen",
-      "remove-confirm": "Sind Sie sicher, dass Sie dieses Widget entfernen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+      "remove-confirm": "Sind Sie sicher, dass Sie dieses Widget entfernen möchten? Diese Aktion kann später rückgängig gemacht werden."
     },
     "edit-app-config": {
       "warning-msg-title": "Ab hier ist Vorsicht geboten",
@@ -444,6 +446,13 @@
       "mem-details": "Details Arbeitsspeicher",
       "show-less": "Weniger anzeigen",
       "open-link": "Weiterlesen"
+    },
+    "calendar": {
+      "all-day": "Ganztägig",
+      "no-events": "Keine anstehenden Termine",
+      "today": "Heute",
+      "tomorrow": "Morgen",
+      "untitled": "Unbenannter Termin"
     },
     "github-profile": {
       "repos": "Repositories",
@@ -557,7 +566,8 @@
       "overall": "Insgesamt",
       "private-link": "privater Link",
       "public-link": "öffentlicher Link",
-      "quota-enabled": "Disk Quota ist {nicht}aktiviert für diesen Benutzer",
+      "quota-disabled": "Disk Quota ist nicht aktiviert für diesen Benutzer",
+      "quota-enabled": "Disk Quota ist aktiviert für diesen Benutzer",
       "received": "empfangen",
       "scripts": "Skripte",
       "sent": "gesendet",

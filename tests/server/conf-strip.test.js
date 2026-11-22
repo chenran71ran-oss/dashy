@@ -78,6 +78,16 @@ describe('OIDC strip behaviour for /conf.yml', () => {
     expect(res.status).toBe(401);
   });
 
+  it.each(['/sub%2Eyml', '/sub.ya%6Dl', '/sub.yml%2F.'])('requires auth for encoded path %s', async (url) => {
+    expect((await request(app).get(url)).status).toBe(401);
+  });
+
+  it('strips conf.yml requested via an encoded path', async () => {
+    const body = yamlLoad((await request(app).get('/conf%2Eyml')).text);
+    expect(body._bootstrap.authenticated).toBe(false);
+    expect(body.sections).toBeUndefined();
+  });
+
   it('falls through to bootstrap on conf.yml when Bearer fails to verify', async () => {
     const res = await request(app)
       .get('/conf.yml')

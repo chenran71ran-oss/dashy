@@ -21,8 +21,7 @@
         <span v-if="apps.num_updates_available" class="nc-updates">
           <i class="fal fa-download"></i><em>{{ apps.num_updates_available }}</em>
           <strong>
-            {{ tt('updates-available',
-            {plural: apps.num_updates_available > 1 ? 's' : ''}) }}
+            {{ tt('updates-available', apps.num_updates_available) }}
           </strong>
         </span>
         <small v-else data-nc-updates class="disabled">{{ tt('no-pending-updates') }}</small>
@@ -31,9 +30,9 @@
       <!-- server info: storage -->
       <p v-tooltip="storagesTooltip()">
         <i class="fal fa-file"></i><em v-html="safeHtmlFormatNumber(storage.num_files)"></em>
-        <strong>{{ tt('files', { plural: storage.num_files > 1 ? 's' : '' }) }}</strong>&nbsp;
+        <strong>{{ tt('files', storage.num_files) }}</strong>&nbsp;
         <small>{{ tt('in') }}</small><em>{{ storage.num_storages }}</em>
-        <strong>{{ tt('storages', { plural: storage.num_storages > 1 ? 's' : '' }) }}</strong>
+        <strong>{{ tt('storages', storage.num_storages) }}</strong>
         &nbsp;•&nbsp;<strong v-html="safeHtmlConvertBytes(system.freespace)"></strong>&nbsp;
         <small>{{ tt('free') }}</small>
       </p>
