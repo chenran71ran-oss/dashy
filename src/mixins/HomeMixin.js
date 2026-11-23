@@ -164,11 +164,12 @@ const HomeMixin = {
     getBackgroundImage() {
       if (this.appConfig && this.appConfig.backgroundImg) {
         const image = `url(${JSON.stringify(this.appConfig.backgroundImg)})`;
-        // The opaque base beneath a liquid-glass wallpaper matches the page at 0%.
-        const tint = 'color-mix(in srgb, var(--background) calc(100% - var(--glass-background-opacity, 100%)), transparent)';
         return {
-          background: `${image} no-repeat center / cover fixed`,
-          backgroundImage: `linear-gradient(${tint}, ${tint}), ${image}`,
+          backgroundImage: `var(--page-tint, linear-gradient(transparent, transparent)), ${image}`,
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+          backgroundAttachment: 'fixed',
         };
       }
       return '';

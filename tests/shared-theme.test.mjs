@@ -24,6 +24,9 @@ test('a desktop theme selection is shared with a signed-out mobile while preserv
  const mobile=await worker.fetch(new Request(root+'/api/login-appearance'),env);
  assert.equal((await mobile.json()).theme,'material-original');
  assert.ok([...values.keys()].some(k=>k.includes('history:/conf.yml:')));
+ const glassColors = { 'glass-background-opacity': '0%', 'glass-panel-opacity': '36%' };
+ assert.equal((await save({theme:'liquid-glass',colors:glassColors})).status,200);
+ assert.deepEqual(JSON.parse(values.get(CONFIG_KEY)).appConfig.customColors['liquid-glass'],glassColors);
  const colors={'item-background':'#fff',primary:'#1299dd','font-body':'Roboto'};
  assert.equal((await save({theme:'material-original',colors})).status,200);
  assert.deepEqual(JSON.parse(values.get(CONFIG_KEY)).appConfig.customColors['material-original'],colors);

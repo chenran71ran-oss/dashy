@@ -1,6 +1,8 @@
 /* Liquid Glass — a cool, translucent palette with restrained blur. */
 html[data-theme='liquid-glass'] {
-  --glass-background-opacity: 100%;
+  --glass-background-opacity: 24%;
+  --page-tint: linear-gradient(var(--glass-tint), var(--glass-tint));
+  --glass-tint: color-mix(in srgb, var(--background) var(--glass-background-opacity), transparent);
   --glass-panel-opacity: 36%;
   --glass-card-opacity: 42%;
   --glass-button-opacity: 28%;
@@ -13,7 +15,7 @@ html[data-theme='liquid-glass'] {
   --item-group-background: var(--glass-panel);
   --item-group-outer-background: var(--glass-panel);
   --item-background: var(--glass-card);
-  --item-background-hover: rgba(47, 83, 128, 0.72);
+  --item-background-hover: rgb(47 83 128 / var(--glass-card-opacity));
   --item-shadow: 0 8px 22px rgba(1, 8, 20, 0.2);
   --item-hover-shadow: 0 12px 28px rgba(1, 8, 20, 0.34);
 
@@ -59,8 +61,9 @@ html[data-theme='liquid-glass'] {
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    opacity: var(--glass-background-opacity);
+
     background-image:
+      var(--page-tint),
       radial-gradient(circle at 10% 0%, rgba(86, 179, 255, 0.2), transparent 34rem),
       radial-gradient(circle at 90% 12%, rgba(173, 122, 255, 0.18), transparent 30rem),
       linear-gradient(170deg, #10172d 0%, #344674 52%, #202841 100%);
@@ -77,6 +80,13 @@ html[data-theme='liquid-glass'] {
     border-color: var(--nav-link-border-color);
   }
 
+  div.minimal-section-heading.selected {
+    background: rgb(89 112 160 / var(--glass-button-opacity));
+    border-color: #aac8ed;
+    .section-title, .section-icon { color: var(--primary); }
+  }
+
+  .options-panel :is(.view-btn, .action-btn, .auth-btn),
   .display-options .layout-icon,
   .theme-selector-section .color-button,
   .tab-scroll-btn {
@@ -84,11 +94,18 @@ html[data-theme='liquid-glass'] {
     color: var(--settings-text-color);
     border-color: var(--nav-link-border-color);
 
-    &:hover, &.selected {
-      background-color: color-mix(in srgb, var(--glass-button), #a8c5ff 24%);
+    &:hover, &.active, &.selected {
+      background-color: rgb(89 112 160 / var(--glass-button-opacity));
       color: white;
       border-color: #aac8ed;
     }
+  }
+
+  dialog.theme-editor-dialog {
+    background: var(--glass-panel);
+    backdrop-filter: blur(12px);
+    &::backdrop { background: transparent; }
+    .theme-configurator-wrapper { background: transparent; }
   }
 
   header,
