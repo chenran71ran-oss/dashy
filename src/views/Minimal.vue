@@ -154,13 +154,6 @@ export default {
     finishedSearching() {
       if (this.$refs.filterComp) this.$refs.filterComp.clearFilterInput();
     },
-    /* Make CSS styles to apply the users custom background image */
-    getBackgroundImage() {
-      if (this.appConfig && this.appConfig.backgroundImg) {
-        return `background: url('${this.appConfig.backgroundImg}') no-repeat center fixed;background-size:cover;`;
-      }
-      return '';
-    },
     /* Scroll the tab strip by ~one visible page; leaves a small overlap so
      * the user can see where they came from */
     scrollTabs(direction) {

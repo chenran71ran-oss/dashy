@@ -163,7 +163,13 @@ const HomeMixin = {
     /* If user has a background image, then generate CSS attributes */
     getBackgroundImage() {
       if (this.appConfig && this.appConfig.backgroundImg) {
-        return `background: url('${this.appConfig.backgroundImg}') no-repeat center fixed;background-size:cover;`;
+        const image = `url(${JSON.stringify(this.appConfig.backgroundImg)})`;
+        // The opaque base beneath a liquid-glass wallpaper matches the page at 0%.
+        const tint = 'color-mix(in srgb, var(--background) calc(100% - var(--glass-background-opacity, 100%)), transparent)';
+        return {
+          background: `${image} no-repeat center / cover fixed`,
+          backgroundImage: `linear-gradient(${tint}, ${tint}), ${image}`,
+        };
       }
       return '';
     },

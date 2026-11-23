@@ -73,6 +73,7 @@ export default {
   },
   data() {
     const glassControls = this.themeToEdit === 'liquid-glass' ? {
+      'glass-background-opacity': '页面背景不透明度',
       'glass-panel-opacity': '面板不透明度',
       'glass-card-opacity': '卡片不透明度',
       'glass-button-opacity': '按钮不透明度',

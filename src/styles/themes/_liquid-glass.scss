@@ -1,5 +1,6 @@
 /* Liquid Glass — a cool, translucent palette with restrained blur. */
 html[data-theme='liquid-glass'] {
+  --glass-background-opacity: 100%;
   --glass-panel-opacity: 36%;
   --glass-card-opacity: 42%;
   --glass-button-opacity: 28%;
@@ -49,11 +50,21 @@ html[data-theme='liquid-glass'] {
 
   body {
     background-color: var(--background);
+    isolation: isolate;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--glass-background-opacity);
     background-image:
       radial-gradient(circle at 10% 0%, rgba(86, 179, 255, 0.2), transparent 34rem),
       radial-gradient(circle at 90% 12%, rgba(173, 122, 255, 0.18), transparent 30rem),
       linear-gradient(170deg, #10172d 0%, #344674 52%, #202841 100%);
-    background-attachment: fixed;
+
   }
 
   .home {
