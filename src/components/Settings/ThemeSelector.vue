@@ -23,7 +23,12 @@
       </div>
     </div>
     <IconPalette v-if="!hidePallete" class="color-button" @click="openThemeConfigurator" @keydown.enter="openThemeConfigurator" @keydown.space.prevent="openThemeConfigurator" role="button" aria-hidden="false" tabindex="0" :aria-label="$t('theme-maker.title')" v-tooltip="$t('theme-maker.title')" />
-    <CustomThemeMaker v-if="themeConfiguratorOpen" :themeToEdit="selectedTheme" @closeThemeConfigurator="closeThemeConfigurator()" />
+    <dialog v-if="themeConfiguratorOpen" ref="themeDialog" class="theme-editor-dialog"
+      :aria-label="$t('theme-maker.title')" @keydown.esc.stop
+      @cancel.prevent="$refs.themeEditor.resetUnsavedColors()">
+      <CustomThemeMaker ref="themeEditor" :themeToEdit="selectedTheme"
+        @closeThemeConfigurator="closeThemeConfigurator" />
+    </dialog>
   </div>
 </template>
 <script>
@@ -67,8 +72,14 @@ export default {
       catch(error){this.selectedTheme=this.themeFromStore;this.$toast(error.message);}
       finally{this.themeSaving=false;}
     },
-    openThemeConfigurator() { this.dropdownOpen = false; this.$store.commit(Keys.SET_MODAL_OPEN, true); this.themeConfiguratorOpen = true; },
-    closeThemeConfigurator() { if (this.themeConfiguratorOpen) { this.$store.commit(Keys.SET_MODAL_OPEN, false); this.themeConfiguratorOpen = false; } },
+    async openThemeConfigurator() {
+      this.dropdownOpen = false;
+      this.$store.commit(Keys.SET_MODAL_OPEN, true);
+      this.themeConfiguratorOpen = true;
+      await this.$nextTick();
+      this.$refs.themeDialog?.showModal();
+    },
+    closeThemeConfigurator() { if (this.themeConfiguratorOpen) { this.$refs.themeDialog?.close(); this.$store.commit(Keys.SET_MODAL_OPEN, false); this.themeConfiguratorOpen = false; } },
     closePopovers() { this.dropdownOpen = false; this.closeThemeConfigurator(); },
   },
 };
@@ -76,6 +87,28 @@ export default {
 <style lang="scss">
 @import 'vue-select/dist/vue-select.css';
 .theme-selector-section { display: flex; align-items: flex-end; gap: 0.5rem; width: 100%; color: var(--settings-text-color); }
+.theme-editor-dialog {
+  box-sizing: border-box;
+  width: min(25rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: 1px solid var(--outline-color);
+  border-radius: var(--curve-factor);
+  background: var(--background);
+  color: var(--primary);
+
+  &::backdrop { background: rgb(0 0 0 / 45%); }
+
+  div.theme-configurator-wrapper {
+    position: static;
+    width: auto;
+    max-height: none;
+    box-shadow: none;
+    .color-row-container { max-height: none; }
+  }
+}
 .theme-control { flex: 1; min-width: 0; }
 .theme-dropdown {
   position: relative;
