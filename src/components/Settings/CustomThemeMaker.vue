@@ -5,10 +5,16 @@
       <!-- Show color swatch input for each color -->
       <div class="color-row" v-for="colorName in Object.keys(customColors)" :key="colorName">
         <label :for="`color-input-${colorName}`" class="color-name">
-          {{colorName.replaceAll('-', ' ')}}
+          {{ glassControls[colorName] || colorName.replaceAll('-', ' ') }}
         </label>
+        <template v-if="glassControls[colorName]">
+          <input :id="`color-input-${colorName}`" type="range" min="0" max="100"
+            :value="parseFloat(customColors[colorName])"
+            @input="updateOpacity(colorName, $event.target.value)" />
+          <output :for="`color-input-${colorName}`">{{ customColors[colorName] }}</output>
+        </template>
         <input
-          v-if="isColor(colorName, customColors[colorName])"
+          v-else-if="isColor(colorName, customColors[colorName])"
           :id="`color-input-${colorName}`"
           type="color"
           :value="customColors[colorName]"
@@ -66,8 +72,15 @@ export default {
     CancelIcon,
   },
   data() {
+    const glassControls = this.themeToEdit === 'liquid-glass' ? {
+      'glass-panel-opacity': '面板不透明度',
+      'glass-card-opacity': '卡片不透明度',
+      'glass-button-opacity': '按钮不透明度',
+    } : {};
     return {
-      customColors: this.makeInitialData(mainCssVars),
+      glassControls,
+      originalOpacity: {},
+      customColors: this.makeInitialData([...mainCssVars, ...Object.keys(glassControls)]),
       showingAllVars: false,
       saving: false,
     };
@@ -77,6 +90,13 @@ export default {
   },
   emits: ['closeThemeConfigurator'],
   methods: {
+    updateOpacity(name, value) {
+      if (!Object.hasOwn(this.originalOpacity, name)) {
+        this.originalOpacity[name] = document.documentElement.style.getPropertyValue(`--${name}`);
+      }
+      this.customColors[name] = `${value}%`;
+      this.setVariable(name, this.customColors[name]);
+    },
     /* Finds the current dominent value for a given CSS variable */
     getCssVariableValue(cssVar) {
       return getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim() || 'inherit';
@@ -104,9 +124,13 @@ export default {
       this.$emit('closeThemeConfigurator');
     },
     /* Itterates over available variables, removing them from the DOM */
-    resetUnsavedColors() {
+    resetUnsavedColors(reset = false) {
       const variables = Object.keys(this.customColors);
       variables.forEach((variable) => {
+        if (this.glassControls[variable] && !reset) {
+          if (Object.hasOwn(this.originalOpacity, variable)) this.setVariable(variable, this.originalOpacity[variable]);
+          return;
+        }
         document.documentElement.style.removeProperty(`--${variable}`);
       });
       this.customColors = this.makeInitialData(mainCssVars);
@@ -120,14 +144,14 @@ export default {
         try {this.$store.commit(Keys.SET_SHARED_THEME,await saveSharedTheme(this.themeToEdit,{colors:null}));}
         catch(error){this.$toast(error.message);return;}
         finally{this.saving=false;}
-        this.resetUnsavedColors();this.$toast('已恢复主题默认配色并同步到云端');return;
+        this.resetUnsavedColors(true);this.$toast('已恢复主题默认配色并同步到云端');return;
       }
       let priorSettings = {};
       try { priorSettings = JSON.parse(localStorage[localStorageKeys.CUSTOM_COLORS] || '{}'); }
       catch { /* ignore corrupt data */ }
       delete priorSettings[this.themeToEdit];
       localStorage.setItem(localStorageKeys.CUSTOM_COLORS, JSON.stringify(priorSettings));
-      this.resetUnsavedColors();
+      this.resetUnsavedColors(true);
       this.$toast(this.$t('theme-maker.reset-toast', { theme: this.themeToEdit }));
     },
     /* Generates CSS for the currently applied variables, and copys to users clipboard */
@@ -173,7 +197,7 @@ export default {
           ])),
           [],
         );
-      this.customColors = this.makeInitialData(availableVariables);
+      this.customColors = { ...this.customColors, ...this.makeInitialData(availableVariables) };
       this.showingAllVars = true;
     },
     /* Returns a complmenting text color for the palete input foreground */

@@ -1,11 +1,17 @@
 /* Liquid Glass — a cool, translucent palette with restrained blur. */
 html[data-theme='liquid-glass'] {
+  --glass-panel-opacity: 36%;
+  --glass-card-opacity: 42%;
+  --glass-button-opacity: 28%;
+  --glass-panel: rgb(16 25 47 / var(--glass-panel-opacity));
+  --glass-card: rgb(25 38 68 / var(--glass-card-opacity));
+  --glass-button: rgb(61 79 119 / var(--glass-button-opacity));
   --primary: #f1f7ff;
   --background: #091426;
   --background-darker: #06101f;
-  --item-group-background: rgba(21, 45, 78, 0.58);
-  --item-group-outer-background: rgba(12, 28, 52, 0.82);
-  --item-background: rgba(18, 39, 68, 0.62);
+  --item-group-background: var(--glass-panel);
+  --item-group-outer-background: var(--glass-panel);
+  --item-background: var(--glass-card);
   --item-background-hover: rgba(47, 83, 128, 0.72);
   --item-shadow: 0 8px 22px rgba(1, 8, 20, 0.2);
   --item-hover-shadow: 0 12px 28px rgba(1, 8, 20, 0.34);
@@ -16,15 +22,15 @@ html[data-theme='liquid-glass'] {
   --item-group-heading-text-color: #e8f2ff;
   --item-group-heading-text-color-hover: #ffffff;
 
-  --settings-background: rgba(10, 25, 46, 0.82);
+  --settings-background: var(--glass-panel);
   --settings-text-color: #e8f2ff;
   --nav-link-text-color: #e8f2ff;
   --nav-link-text-color-hover: #ffffff;
-  --nav-link-background-color: transparent;
+  --nav-link-background-color: var(--glass-button);
   --nav-link-border-color: rgba(225, 241, 255, 0.22);
   --nav-link-border-color-hover: rgba(225, 241, 255, 0.4);
-  --search-container-background: rgba(10, 25, 46, 0.62);
-  --search-field-background: rgba(18, 39, 68, 0.62);
+  --search-container-background: var(--glass-panel);
+  --search-field-background: var(--glass-card);
   --config-settings-background: #0c1b31;
   --cloud-backup-background: #0c1b31;
   --footer-background: transparent;
@@ -32,8 +38,8 @@ html[data-theme='liquid-glass'] {
   --footer-text-color-link: #ffffff;
 
   --minimal-view-background-color: transparent;
-  --minimal-view-group-background: rgba(21, 45, 78, 0.58);
-  --minimal-view-section-heading-background: rgba(21, 45, 78, 0.72);
+  --minimal-view-group-background: var(--glass-panel);
+  --minimal-view-section-heading-background: var(--glass-button);
   --minimal-view-section-heading-color: #e8f2ff;
   --outline-color: rgba(225, 241, 255, 0.6);
   --highlight-background: rgba(225, 241, 255, 0.22);
@@ -46,7 +52,7 @@ html[data-theme='liquid-glass'] {
     background-image:
       radial-gradient(circle at 10% 0%, rgba(86, 179, 255, 0.2), transparent 34rem),
       radial-gradient(circle at 90% 12%, rgba(173, 122, 255, 0.18), transparent 30rem),
-      linear-gradient(145deg, #0a1830 0%, #091426 52%, #11102a 100%);
+      linear-gradient(170deg, #10172d 0%, #344674 52%, #202841 100%);
     background-attachment: fixed;
   }
 
@@ -60,14 +66,28 @@ html[data-theme='liquid-glass'] {
     border-color: var(--nav-link-border-color);
   }
 
+  .display-options .layout-icon,
+  .theme-selector-section .color-button,
+  .tab-scroll-btn {
+    background-color: var(--glass-button);
+    color: var(--settings-text-color);
+    border-color: var(--nav-link-border-color);
+
+    &:hover, &.selected {
+      background-color: color-mix(in srgb, var(--glass-button), #a8c5ff 24%);
+      color: white;
+      border-color: #aac8ed;
+    }
+  }
+
   header,
   section.settings-outer,
   .options-panel,
   dialog.dashy-modal,
   .theme-configurator-wrapper,
   .view-switcher {
-    -webkit-backdrop-filter: blur(14px) saturate(125%);
-    backdrop-filter: blur(14px) saturate(125%);
+    -webkit-backdrop-filter: blur(6px) saturate(115%);
+    backdrop-filter: blur(6px) saturate(115%);
     background: var(--settings-background);
     border: 1px solid var(--nav-link-border-color);
   }
