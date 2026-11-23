@@ -50,8 +50,11 @@ html[data-theme='liquid-glass'] {
   --curve-factor: 0.9rem;
   --curve-factor-navbar: 1.1rem;
 
+  &, body {
+    background: transparent;
+  }
+
   body {
-    background-color: var(--background);
     isolation: isolate;
   }
 
@@ -61,9 +64,9 @@ html[data-theme='liquid-glass'] {
     inset: 0;
     z-index: -1;
     pointer-events: none;
+    opacity: var(--glass-background-opacity);
 
     background-image:
-      var(--page-tint),
       radial-gradient(circle at 10% 0%, rgba(86, 179, 255, 0.2), transparent 34rem),
       radial-gradient(circle at 90% 12%, rgba(173, 122, 255, 0.18), transparent 30rem),
       linear-gradient(170deg, #10172d 0%, #344674 52%, #202841 100%);
