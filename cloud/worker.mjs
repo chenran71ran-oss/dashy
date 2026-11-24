@@ -339,6 +339,12 @@ export default {
       }
       if (!['GET', 'HEAD'].includes(method)) return json({ error: '请求方法不支持' }, 405);
       const response = await env.ASSETS.fetch(req);
+      // A build file that no longer exists (an older tab after a deployment) must fail as a 404,
+      // not as the app's HTML page, so the browser reports it and the page can recover.
+      if (u.pathname.startsWith('/assets/') && (response.headers.get('content-type') || '').includes('text/html')) {
+        await response.body?.cancel();
+        return new Response('Not found', { status: 404, headers: { ...BASE_HEADERS, 'content-type': 'text/plain; charset=utf-8' } });
+      }
       const headers = new Headers(response.headers);
       headers.set('x-content-type-options', 'nosniff');
       headers.set('referrer-policy', 'no-referrer');

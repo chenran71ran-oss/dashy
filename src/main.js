@@ -25,6 +25,7 @@ import { loadExternalStyleSheets } from '@/utils/Theming';
 import Keys from '@/utils/StoreMutations';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import Toast from '@/utils/Toast';
+import { watchForStaleBuild } from '@/utils/StaleBuild';
 
 // Create the Vue 3 app instance
 const app = createApp(Dashy);
@@ -46,6 +47,9 @@ app.directive('dragSort', dragSort);
 app.config.errorHandler = (err, instance, info) => {
   ErrorHandler(`Vue error in ${info}`, err);
 };
+
+// A tab opened before a deployment reloads (or, while editing, asks to) instead of failing silently
+watchForStaleBuild(store);
 
 window.addEventListener('unhandledrejection', (event) => {
   ErrorHandler('Unhandled promise rejection', event.reason);
