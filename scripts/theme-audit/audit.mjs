@@ -11,7 +11,7 @@ const options = {silenceDeprecations:['import','global-builtin','color-functions
 const components = {
  item:'src/components/LinkItems/Item.vue', collapsable:'src/components/LinkItems/Collapsable.vue',
  minimal:'src/views/Minimal.vue', section:'src/components/MinimalView/MinimalSection.vue', heading:'src/components/MinimalView/MinimalHeading.vue',
- sidebar:'src/components/Workspace/SideBar.vue', sideitem:'src/components/Workspace/SideBarItem.vue', sidesection:'src/components/Workspace/SideBarSection.vue',
+ sidebar:'src/components/Workspace/SideBar.vue', sideitem:'src/components/Workspace/SideBarItem.vue',
  search:'src/components/Settings/SearchBar.vue', workspaceView:'src/views/Workspace.vue',
 };
 const chunks=[];
@@ -35,7 +35,7 @@ const attr=(html,id)=>html.replace(/<([a-z][\w-]*)(?=[\s>])/g,`<$1 data-v-${id}`
 function cards(){return Array.from({length:8},(_,i)=>attr(`<div class="item-wrapper"><a class="item size-large"><div class="tile-title"><span class="text" data-audit="title-${i}">Example site</span><p class="description" data-audit="description-${i}">English website description</p></div></a></div>`,'item')).join('');}
 const minimal=attr('<div class="minimal-home focus-home"><div class="item-group-container">','minimal')+attr('<div class="minimal-section-heading"><h3 class="section-title" data-audit="tab">Category</h3></div><div class="minimal-section-heading selected"><h3 class="section-title" data-audit="tab-selected">Selected</h3></div>','heading')+attr('<div class="minimal-section-inner focus-category"><div class="section-items">','section')+cards()+'</div></div></div>'+attr('<section class="filter-container"><form class="minimal"><div class="search-wrap"><input id="filter-tiles" data-audit="search" /></div></form></section>','search')+'</div>';
 const home=attr('<div class="home"><div class="collapsable"><div class="section-header"><h3 data-audit="heading">Category</h3></div><div class="collapsible-content"><div class="content-inner"><div class="section-items">','collapsable')+cards()+'</div></div></div></div></div>';
-const workspace=attr('<div class="work-space">','workspaceView')+attr('<nav class="side-bar"><div class="side-bar-section">','sidebar')+attr('<div class="sub-side-bar">','sidesection')+attr('<div class="side-bar-item text-only"><p class="small-title" data-audit="sidebar-label">Website</p></div>','sideitem')+'</div></div></nav>'+attr('<main class="workspace-main"><div class="workspace-empty"><h2 data-audit="workspace-title">Workspace</h2><p data-audit="workspace-hint">Choose a website on the left.</p></div></main></div>','workspaceView');
+const workspace=attr('<div class="work-space">','workspaceView')+attr('<nav class="side-bar expanded"><div class="side-bar-sections"><div class="side-bar-section"><div class="sub-side-bar">','sidebar')+attr('<a class="side-bar-item"><span class="title" data-audit="sidebar-label">Website</span></a>','sideitem')+'</div></div></div></nav>'+attr('<main class="workspace-main"><div class="workspace-empty"><h2 data-audit="workspace-title">Workspace</h2><p data-audit="workspace-hint">Choose a website on the left.</p></div></main></div>','workspaceView');
 const cache=new Map();
 function color(value){
  value=(value||'transparent').trim();
@@ -60,7 +60,10 @@ function background(el){
  return compositeColor(color(bg),background(el.parentElement));
 }
 const rows=[];const limitations=new Set();
+// happy-dom cannot resolve color-mix() with calc(); these themes are measured in a real browser instead.
+const browserOnly=new Set(['liquid-glass']);
 for(const [theme,label] of Object.entries(themeLabels)){
+ if(browserOnly.has(theme)){limitations.add(`${theme}: uses color-mix(); contrast is measured in a real browser, see docs/home-lab/theme-readability.md`);continue;}
  if(theme==='default')doc.documentElement.removeAttribute('data-theme');else doc.documentElement.dataset.theme=theme;
  for(const [view,html] of Object.entries({home,minimal,workspace})) {
   doc.body.innerHTML=html;

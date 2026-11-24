@@ -100,6 +100,7 @@ import { searchTiles } from '@/utils/Search';
 import { localStorageKeys } from '@/utils/config/defaults';
 import { makeRoutePath, resolveRouteIntent } from '@/utils/config/ConfigHelpers';
 import { sameUrl } from '@/utils/MiscHelpers';
+import { prefetchItemIcons, scheduleIdle } from '@/utils/IconPrefetch';
 
 export default {
   name: 'SideBar',
@@ -158,9 +159,25 @@ export default {
   },
   watch: {
     activeUrl: { handler: 'openActiveSection', immediate: true },
-    sections: 'openActiveSection',
+    sections() { this.openActiveSection(); this.warmSectionIcons(); },
   },
+  mounted() { this.warmSectionIcons(); },
+  beforeUnmount() { this.stopIconWarm(); },
   methods: {
+    /* Closed sections mount their items on open; warm their icons while idle */
+    warmSectionIcons() {
+      this.stopIconWarm();
+      let stopWarm = null;
+      const cancelIdle = scheduleIdle(() => {
+        const items = this.workspaceSections.flatMap(section => section.items);
+        stopWarm = prefetchItemIcons(items, { defaultIcon: this.$store?.getters.appConfig?.defaultIcon });
+      });
+      this.cancelIconWarm = () => { cancelIdle(); if (stopWarm) stopWarm(); };
+    },
+    stopIconWarm() {
+      if (this.cancelIconWarm) this.cancelIconWarm();
+      this.cancelIconWarm = null;
+    },
     isActive(item) {
       return sameUrl(item.url, this.activeUrl);
     },
