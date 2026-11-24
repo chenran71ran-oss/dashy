@@ -35,3 +35,15 @@ test('favorites stay separate from bookmarks and image cache still requires auth
  const result=await worker.fetch(new Request(url,{headers:{cookie}}),env);assert.equal(result.status,200);assert.equal(result.headers.get('content-type'),'image/svg+xml');assert.equal(result.headers.get('content-security-policy'),"default-src 'none'; sandbox");
  assert.equal(result.headers.get('cache-control'),'private, max-age=3600');assert.equal(result.headers.get('vary'),'Cookie');
 });
+
+test('a build file that no longer exists is a 404, not the app page served as JavaScript',async()=>{
+ const env={ADMIN_TOKEN:'test-only',HOME_KV:{get:async()=>null,put:async()=>{}},ASSETS:{fetch:async req=>new URL(req.url).pathname==='/assets/live-AbCd1234.js'
+  ?new Response('export{}',{headers:{'content-type':'text/javascript'}})
+  :new Response('<!doctype html>',{headers:{'content-type':'text/html; charset=utf-8'}})}};
+ const gone=await worker.fetch(new Request('http://127.0.0.1/assets/EditItem-OldHash1.js'),env);
+ assert.equal(gone.status,404);assert.equal(gone.headers.get('cache-control'),'no-store');
+ const live=await worker.fetch(new Request('http://127.0.0.1/assets/live-AbCd1234.js'),env);
+ assert.equal(live.status,200);assert.match(live.headers.get('content-type'),/javascript/);
+ const page=await worker.fetch(new Request('http://127.0.0.1/minimal'),env);
+ assert.equal(page.status,200);assert.match(page.headers.get('content-type'),/html/);
+});

@@ -22,6 +22,7 @@ import { initHeaderAuth, isHeaderAuthEnabled } from '@/utils/auth/HeaderAuth';
 import { startingView as defaultStartingView, routePaths } from '@/utils/config/defaults';
 import { VIEW_META, getUrlForAlias } from '@/utils/config/ConfigHelpers';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
+import { rememberDestination } from '@/utils/StaleBuild';
 
 const progress = new Progress({ color: 'var(--progress-bar)' });
 
@@ -202,8 +203,10 @@ router.afterEach(() => {
 });
 
 /* Catch navigation + lazy-import failures */
-router.onError((err) => {
+router.onError((err, to) => {
   progress.end();
+  // A view chunk from before a deployment: the stale-build handler reloads straight into this route
+  if (/dynamically imported module|Importing a module script failed|Couldn't resolve component/i.test(err?.message || '')) rememberDestination(to?.fullPath);
   ErrorHandler('Navigation failed. Try hard-reload (Shift + F5)', err);
 });
 
