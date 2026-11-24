@@ -13,6 +13,19 @@
 
 浏览器的匿名回退需要图片服务器允许 CORS；不允许时使用可用的内置品牌图标或原有缺图回退，不将未经验证的图片误报为可用。
 
+## 2026-11-24：读取失败时的顺序
+
+部分网站拒绝 Worker 的服务器端请求，又不允许匿名跨源图片，原来会在卡片上留下首字母或空白。现在云端模式按以下顺序尝试，任一步成功即停止：
+
+1. 经 `/api/icon-image` 代理读取保存的图片。
+2. 保存的是网站内的其他图片（如 `/assets/logo.png`）时，经代理再读一次该网站根目录的 `/favicon.ico`。保存的本来就是根目录 favicon 时跳过此步。
+3. 原有回退：内置品牌图标，或匿名 CORS 直连（仍不携带凭据，不会触发登录框）。
+4. 按标题和域名选一个内置 Lucide 图标，跟随主题色显示，例如测速 → 仪表盘、监控 → 心电图、服务器/VPS → 服务器、商店 → 购物袋、学术 → 学位帽、高校/政务 → 建筑、论坛 → 对话气泡；都不匹配时用地球。规则在 `src/utils/StandInIcons.js`。
+
+只有没有网址的地方（分类标题）仍用首字母。第 4 步只是类别示意，不代表网站自己的标志；想显示网站自己的图标，仍需在编辑弹窗里读取或手动选择。
+
+测试 `tests/components/icon-fallback-chain.test.js` 覆盖完整顺序、根目录 favicon 不重复请求、分类标题保留首字母和类别匹配。没有逐个网站在线上确认代理失败的原因（Worker 未开启日志）。
+
 ## 上游资源
 
 `public/portal-icons/paperless-gpt.svg` 原样取自 [icereed/paperless-gpt](https://github.com/icereed/paperless-gpt/blob/1d07cedfe83b2a06994d535d2c64e256e6fd8a3e/web-app/src/assets/logo.svg)，提交 `1d07cedfe83b2a06994d535d2c64e256e6fd8a3e`。MIT 许可及 Copyright (c) 2024 Icereed 保留于同目录 `paperless-gpt.LICENSE.txt`。
