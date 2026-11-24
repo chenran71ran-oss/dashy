@@ -6,17 +6,17 @@
 
 **一个入口，放下你的常用网站、自建服务和每天要看的信息。**
 
-基于 [Dashy](https://github.com/Lissy93/dashy) 深度改造的中文导航主页 · 部署在 Cloudflare Workers，电脑和手机共用同一份配置
+基于 [Dashy](https://github.com/Lissy93/dashy) 4.10 深度改造的中文导航主页 · 部署在 Cloudflare Workers，电脑和手机共用同一份配置
 
 [![MIT License](https://img.shields.io/badge/License-MIT-2563eb?style=flat-square)](LICENSE)
 [![Cloudflare Workers](https://img.shields.io/badge/Deploy-Cloudflare_Workers-f38020?style=flat-square&logo=cloudflare&logoColor=white)](docs/home-lab/deployment.md)
 [![Vue 3](https://img.shields.io/badge/Vue-3-42b883?style=flat-square&logo=vuedotjs&logoColor=white)](docs/home-lab/architecture.md)
-[![Themes](https://img.shields.io/badge/内置主题-61-8b5cf6?style=flat-square)](docs/home-lab/theme-readability.md)
-[![Based on Dashy](https://img.shields.io/badge/Based_on-Dashy-0ea5e9?style=flat-square)](https://github.com/Lissy93/dashy)
+[![Themes](https://img.shields.io/badge/内置主题-62-8b5cf6?style=flat-square)](docs/home-lab/theme-readability.md)
+[![Based on Dashy 4.10](https://img.shields.io/badge/Based_on-Dashy_4.10-0ea5e9?style=flat-square)](https://github.com/Lissy93/dashy)
 
 [快速开始](#-快速开始) · [功能](#-功能亮点) · [使用指南](docs/home-lab/usage.md) · [常见问题](docs/home-lab/faq.md) · [变更日志](CHANGELOG.md) · [English](README.EN.md)
 
-<img src="docs/assets/home-lab/overview.png" alt="Home Lab 总站视图：按分类排列的网站卡片，北境霜蓝主题" width="900">
+<img src="docs/assets/home-lab/overview.webp" alt="Home Lab 总站视图：按分类排列的网站卡片和英文说明，液态玻璃主题" width="900">
 
 </div>
 
@@ -26,39 +26,46 @@
 
 | 总站 `/home` | 专注 `/minimal` | 工作台 `/workspace` |
 | --- | --- | --- |
-| 所有分类、小分类和小组件一次铺开 | 按分类标签切换，只看当前这一类 | 左侧导航，右侧直接打开网页或小组件 |
+| 所有分类、网站和小组件一次铺开 | 按分类标签切换，只看当前这一类 | 左侧导航，右侧直接打开网页或小组件 |
 
 <p align="center">
-  <img src="docs/assets/home-lab/focus.png" alt="专注视图：按分类标签切换，东京之夜主题" width="640">
+  <img src="docs/assets/home-lab/focus.png" alt="专注视图：按分类标签切换，北境霜蓝主题" width="560">
   &nbsp;
-  <img src="docs/assets/home-lab/mobile.png" alt="手机上的专注视图，奶油猫主题" width="195">
+  <img src="docs/assets/home-lab/mobile.webp" alt="手机上的专注视图，奶油猫主题" width="180">
+</p>
+<p align="center">
+  <img src="docs/assets/home-lab/workspace.png" alt="工作台：展开的侧栏按分类列出网站，东京之夜主题" width="560">
 </p>
 
-### 🎨 图标：透明、清晰、跟随主题
+工作台使用上游 4.10 的新侧栏：可以收起成图标栏，也可以展开后搜索和按分类浏览。
 
-- **品牌图标用官方矢量图**：GitHub、Telegram、抖音、Instagram、ChatGPT、Claude、DeepSeek 等 40 余个品牌，背景透明，任何尺寸都清晰。
-- **单色标志跟随主题色**：GitHub、X、OpenAI、Manus 这类黑白标志，深色主题下是浅色，浅色主题下是深色，不再垫白底。
-- **网站图标自动去白底**：自动读取的 favicon 如果是白底，会在后台线程（Web Worker）里去掉背景。照片和头像不处理。
-- **读取更清晰的图标**：优先选择矢量图和尺寸最大的图标，不会被 16px 的小 favicon 抢先。
-- **自选图库**：1900 多个内置图标（含 387 个彩色图标），按分类和中英文关键词搜索。
+### 🎨 62 个主题，每个都校准过可读性
 
-### ⚡ 快：切换分类不再等图标
+- **液态玻璃**：深色底上的彩色光晕，面板、卡片、按钮都是带高光边缘的毛玻璃。四个滑块分别调光晕、面板、卡片和按钮的透明度；系统开启「减少透明度」时自动改用实心背景。
+- 包含上游 Dashy 的全部主题，均有中文名称，可收藏常用主题，收藏跨设备同步。
+- 每个主题都经过对比度审查：网站名、说明、分类标签、搜索框、工作台侧栏在所有主题下都不低于 4.5:1。
+- 登录页、主题菜单、右键菜单和像素机甲标识的配色跟随当前主题。
 
-- 访问过的分类保持挂载，切回来直接显示。
-- 浏览器空闲时，提前读取并处理其他分类的图标。
+### 🖼️ 图标：透明、清晰，读不到也不留空
+
+- **品牌图标用官方矢量图**：GitHub、Telegram、抖音、ChatGPT、Claude、DeepSeek、Apple Music、阿里云等近 50 个品牌，背景透明，任何尺寸都清晰。已保存的官网 favicon 会自动换成矢量图。
+- **单色标志跟随主题色**：GitHub、X、OpenAI、Manus 这类黑白标志，深色主题下是浅色，浅色主题下是深色。
+- **网站图标自动去白底**：白底 favicon 在后台线程（Web Worker）里去掉背景，照片和头像不处理。
+- **读不到也有兜底**：先经 Worker 代理读取，再试网站根目录的 favicon，最后按网站类型显示一个主题色图标（监控、测速、服务器、商店、学术……），不再只剩首字母。
+- **自选图库**：2200 多个内置图标（含 387 个彩色图标），按分类和中英文关键词搜索。
+
+### ⚡ 快，而且部署后不会卡住
+
+- 首屏脚本减半，启动时的会话检查和配置读取合并为一次请求。
+- 访问过的分类保持挂载，切回来直接显示；浏览器空闲时提前处理其他分类的图标。
 - 静态资源按内容哈希长期缓存，第二次打开几乎不用重新下载。
+- 部署新版本后，还开着的旧页面会自动刷新到新版本；正在编辑时先提示保存，不丢修改。
 
 ### ✍️ 不写 YAML 也能管理
 
 - 页面内直接添加、编辑、拖拽排序网站和分类，保存前可预览。
 - **补齐图标与说明**：一键找出缺图标、缺说明的网站，读取网站自己的图标和英文描述，预览确认后再应用。
-- 保存到云端时自动备份上一版，可从配置历史恢复。
-
-### 🌗 61 个主题，每个都校准过可读性
-
-- 包含上游 Dashy 的全部主题，均有中文名称，可收藏常用主题。
-- 每个主题都经过对比度审查：网站名、说明、分类标签、搜索框、工作台文字在所有主题下都不低于 4.5:1。
-- 登录页、主题菜单、右键菜单和像素机甲标识的配色跟随当前主题。
+- 每次保存到云端都会自动备份上一版，可在配置历史中恢复（保留 30 天）。
 
 ### 📡 服务状态与小组件
 
@@ -95,8 +102,9 @@
 npm ci
 npm run dev      # Vite 开发服务器（仅前端），http://localhost:8080
 npm run build    # 生产构建，输出到 dist/
+npx eslint .     # 代码检查
 npx vitest run && node --test tests/*.test.mjs   # 前端与 Worker 测试
-node scripts/theme-audit/audit.mjs --fixed       # 61 个主题的对比度审查
+node scripts/theme-audit/audit.mjs --fixed       # 62 个主题的对比度审查
 ```
 
 完整的保存、登录流程需要 Worker API，见 [维护指南](docs/home-lab/maintenance.md)。
@@ -111,8 +119,9 @@ node scripts/theme-audit/audit.mjs --fixed       # 61 个主题的对比度审�
 | 添加网站、换图标、用小组件 | [使用指南](docs/home-lab/usage.md) |
 | 知道某个功能要不要 API 或后端 | [功能边界](docs/home-lab/features.md) |
 | 排查保存、图标、天气、嵌入问题 | [常见问题](docs/home-lab/faq.md) |
-| 了解图标透明化和清晰度规则 | [图标透明化与清晰度](docs/home-lab/icon-transparency.md) |
+| 了解图标透明化、读取顺序和兜底 | [图标透明化与清晰度](docs/home-lab/icon-transparency.md) · [图标加载与身份验证](docs/home-lab/icon-auth.md) |
 | 查看主题对比度审查结果 | [主题可读性审查](docs/home-lab/theme-readability.md) |
+| 了解启动速度的测量方法 | [启动性能](docs/home-lab/startup-performance.md) |
 | 理解代码结构 | [架构与文件导航](docs/home-lab/architecture.md) |
 | 分支协作、验证、上线和回滚 | [维护指南](docs/home-lab/maintenance.md) |
 | 查阅每次改动 | [变更日志](CHANGELOG.md) · [提交历史索引](docs/home-lab/history.md) |
@@ -120,12 +129,12 @@ node scripts/theme-audit/audit.mjs --fixed       # 61 个主题的对比度审�
 
 ## 🧱 技术栈与结构
 
-**Vue 3 + Vite** 前端 · **Cloudflare Workers + KV** 后端与存储 · **Vitest + node:test** 测试
+**Vue 3 + Vite（rolldown）** 前端 · **Cloudflare Workers + KV** 后端与存储 · **Vitest + node:test** 测试
 
 | 路径 | 内容 |
 | --- | --- |
 | `src/` | 前端：三种视图、主题、小组件、编辑器、图标处理 |
-| `cloud/` | Worker：登录、KV 配置、图标读取与代理、网站描述、天气、探针 |
+| `cloud/` | Worker：登录、KV 配置与历史、图标读取与代理、网站描述、天气、探针 |
 | `public/portal-icons/` | 内置品牌图标与图标包（来源见 [SOURCES.md](public/portal-icons/SOURCES.md)） |
 | `scripts/` | 品牌图标生成、图标包同步、主题审查脚本 |
 | `tests/` | 前端组件、Worker 接口与工具函数测试 |
@@ -133,7 +142,7 @@ node scripts/theme-audit/audit.mjs --fixed       # 61 个主题的对比度审�
 
 ## 🤝 参与贡献
 
-欢迎提 Issue 和 PR。改动请在独立分支进行，提交前运行上面的测试命令；PR 模板会提示需要说明的验证范围。详见 [贡献指南](CONTRIBUTING.md)。
+欢迎提 Issue 和 PR。改动请在独立分支进行，提交前运行上面的检查和测试命令；PR 模板会提示需要说明的验证范围。详见 [贡献指南](CONTRIBUTING.md)。
 
 ## 🙏 致谢
 
