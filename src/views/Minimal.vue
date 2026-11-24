@@ -1,5 +1,7 @@
 <template>
-  <div class="minimal-home focus-home" :style="getBackgroundImage()">
+  <div class="minimal-home focus-home">
+    <!-- The column is at most 1000px wide; the user's background image covers the whole window -->
+    <div v-if="appConfig.backgroundImg" class="page-background" :style="getBackgroundImage()" aria-hidden="true"></div>
     <!-- Page title and search bar -->
     <div class="title-and-search">
       <PageTitle :title="pageInfo.title" :logo="pageInfo.logo" class="minimal-title" minimal />
@@ -196,6 +198,13 @@ export default {
 <style lang="scss" scoped>
 @import '@/styles/media-queries.scss';
 @import '@/styles/style-helpers.scss';
+
+.page-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
 
 .minimal-home {
   --minimal-card-min: 9.5rem;

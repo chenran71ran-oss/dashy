@@ -14,19 +14,15 @@ html:not([data-theme]) .collapsable .collapsible-content .item-wrapper > a.item:
 html[data-theme='glass'] div.minimal-section-heading:not(.selected) h3.section-title { color: #ffffff; }
 html[data-theme='material'] .collapsable .section-header h3 { color: #363636; }
 html[data-theme='material'] div.minimal-section-heading.selected h3.section-title { color: #1e1e1e; }
-html[data-theme='material'] nav.side-bar div.side-bar-item p.small-title { color: #cdcdcd; }
 html[data-theme='material-dark'] div.minimal-section-heading:not(.selected) h3.section-title { color: #a3a6a8; }
 html[data-theme='material-dark'] div.minimal-section-heading.selected h3.section-title { color: #7f8489; }
-html[data-theme='material-dark'] nav.side-bar div.side-bar-item p.small-title { color: #17b5bf; }
 html[data-theme='colorful'] .collapsable .collapsible-content .item-wrapper:nth-child(2) > a.item:hover .tile-title span.text { color: #05070e; opacity: 1; }
 html[data-theme='colorful'] .collapsable .collapsible-content .item-wrapper:nth-child(2) > a.item:hover .tile-title p.description { color: #05070e; opacity: 1; }
 html[data-theme='colorful'] .minimal-home .minimal-section-inner .item-wrapper:nth-child(2) > a.item:hover .tile-title span.text { color: #05070e; opacity: 1; }
 html[data-theme='colorful'] .minimal-home .minimal-section-inner .item-wrapper:nth-child(2) > a.item:hover .tile-title p.description { color: #05070e; opacity: 1; }
-html[data-theme='dracula'] nav.side-bar div.side-bar-item p.small-title { color: #a6b8ec; }
 html[data-theme='lissy'] .collapsable .section-header h3 { color: #f9269b; }
 html[data-theme='lissy'] .collapsable .collapsible-content .item-wrapper > a.item:not(:hover) .tile-title p.description { color: #fc92cd; }
 html[data-theme='lissy'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title p.description { color: #fb76c0; }
-html[data-theme='lissy'] nav.side-bar div.side-bar-item p.small-title { color: #fa49ab; }
 html[data-theme='cherry-blossom'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title p.description { color: #e0cff1; }
 html[data-theme='nord'] .collapsable .section-header h3 { color: #0b0f20; }
 html[data-theme='whimsy'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title span.text { color: #f6a9bb; }
@@ -43,7 +39,6 @@ html[data-theme='deep-ocean'] .collapsable .collapsible-content .item-wrapper > 
 html[data-theme='deep-ocean'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title span.text { color: #4afcff; }
 html[data-theme='deep-ocean'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title p.description { color: #4afcff; }
 html[data-theme='minimal-light'] .collapsable .section-header h3 { color: #363636; }
-html[data-theme='minimal-light'] nav.side-bar div.side-bar-item p.small-title { color: #747474; }
 html[data-theme='matrix'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title span.text { color: #3ecf3e; }
 html[data-theme='matrix'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title p.description { color: #3ecf3e; }
 html[data-theme='matrix-red'] .collapsable .section-header h3 { color: #0b1021; }
@@ -63,7 +58,6 @@ html[data-theme='color-block'] .minimal-home .minimal-section-inner .item-wrappe
 html[data-theme='color-block'] .minimal-home .minimal-section-inner .item-wrapper > a.item:not(:hover) .tile-title p.description { color: #ed687e; }
 html[data-theme='color-block'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title span.text { color: #ed687e; }
 html[data-theme='color-block'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title p.description { color: #ed687e; }
-html[data-theme='color-block'] nav.side-bar div.side-bar-item p.small-title { color: #eb5870; }
 html[data-theme='raspberry-jam'] .collapsable .collapsible-content .item-wrapper > a.item:not(:hover) .tile-title span.text { color: #ef598b; }
 html[data-theme='raspberry-jam'] .collapsable .collapsible-content .item-wrapper > a.item:not(:hover) .tile-title p.description { color: #ef598b; }
 html[data-theme='raspberry-jam'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title span.text { color: #f16e9a; }
@@ -86,7 +80,6 @@ html[data-theme='cyberpunk'] .minimal-home .minimal-section-inner .item-wrapper 
 html[data-theme='cyberpunk'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title p.description { color: #020203; }
 html[data-theme='material-original'] div.minimal-section-heading:not(.selected) h3.section-title { color: #1c7ca7; }
 html[data-theme='material-original'] div.minimal-section-heading.selected h3.section-title { color: #3d3d3d; }
-html[data-theme='material-original'] nav.side-bar div.side-bar-item p.small-title { color: #1a739b; }
 html[data-theme='material-dark-original'] .collapsable .section-header h3 { color: #2d353c; }
 html[data-theme='material-dark-original'] .collapsable .collapsible-content .item-wrapper > a.item:not(:hover) .tile-title span.text { color: #5eccd3; }
 html[data-theme='material-dark-original'] .collapsable .collapsible-content .item-wrapper > a.item:not(:hover) .tile-title p.description { color: #5eccd3; }
@@ -96,7 +89,6 @@ html[data-theme='material-dark-original'] .minimal-home .minimal-section-inner .
 html[data-theme='material-dark-original'] .minimal-home .minimal-section-inner .item-wrapper > a.item:not(:hover) .tile-title p.description { color: #5eccd3; }
 html[data-theme='material-dark-original'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title span.text { color: #5eccd3; }
 html[data-theme='material-dark-original'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title p.description { color: #5eccd3; }
-html[data-theme='material-dark-original'] nav.side-bar div.side-bar-item p.small-title { color: #3ec1ca; }
 html[data-theme='neomorphic'] .collapsable .section-header h3 { color: #141414; }
 html[data-theme='neomorphic'] .collapsable .collapsible-content .item-wrapper > a.item:not(:hover) .tile-title span.text { color: #141414; }
 html[data-theme='neomorphic'] .collapsable .collapsible-content .item-wrapper > a.item:not(:hover) .tile-title p.description { color: #141414; }
@@ -121,17 +113,13 @@ html[data-theme='night-bat'] .minimal-home .minimal-section-inner .item-wrapper 
 html[data-theme='night-bat'] section.filter-container form.minimal input { color: #719dff; }
 html[data-theme='night-bat'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title span.text { color: #719dff; }
 html[data-theme='night-bat'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title p.description { color: #719dff; }
-html[data-theme='night-bat'] nav.side-bar div.side-bar-item p.small-title { color: #5b8eff; }
-html[data-theme='solarized-dark'] nav.side-bar div.side-bar-item p.small-title { color: #3c97d6; }
 html[data-theme='solarized-light'] div.minimal-section-heading:not(.selected) h3.section-title { color: #1d6ba2; }
 html[data-theme='solarized-light'] div.minimal-section-heading.selected h3.section-title { color: #1a1a17; }
 html[data-theme='solarized-light'] section.filter-container form.minimal input { color: #1d6ba2; }
-html[data-theme='solarized-light'] nav.side-bar div.side-bar-item p.small-title { color: #2073ae; }
 html[data-theme='brutalist'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title span.text { color: #c20054; }
 html[data-theme='brutalist'] .collapsable .collapsible-content .item-wrapper > a.item:hover .tile-title p.description { color: #c20054; }
 html[data-theme='brutalist'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title span.text { color: #c20054; }
 html[data-theme='brutalist'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title p.description { color: #c20054; }
-html[data-theme='brutalist'] nav.side-bar div.side-bar-item p.small-title { color: #73716c; }
 /* The second rainbow accent loses contrast when the entire hovered card is dimmed. */
 html[data-theme='colorful'] .item-wrapper:nth-child(2) > a.item:hover { opacity: 1; }
 
@@ -151,7 +139,6 @@ html[data-theme='blue-purple'] div.minimal-section-heading.selected h3.section-t
 html[data-theme='blue-purple'] section.filter-container form.minimal input { color: #aceefc; }
 html[data-theme='blue-purple'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title span.text { color: #3829f1; }
 html[data-theme='blue-purple'] .minimal-home .minimal-section-inner .item-wrapper > a.item:hover .tile-title p.description { color: #3829f1; }
-html[data-theme='blue-purple'] nav.side-bar div.side-bar-item p.small-title { color: #056e85; }
 
 /* Workspace empty-state text uses --primary directly; calibrated where it is too faint. */
 html[data-theme='material-dark'] main.workspace-main .workspace-empty { color: #08b5c0; }
@@ -167,3 +154,20 @@ html[data-theme='blue-purple'] main.workspace-main .workspace-empty { color: #05
 
 /* Adventure's remote background image: keep the theme's dark base if it fails to load. */
 html[data-theme='adventure'] body { background-color: var(--background); }
+
+/* Workspace sidebar (upstream redesign, Dashy 4.10): item text follows --side-bar-item-color. */
+/* Lissy cycles seven section colours; only the three too dark for the sidebar are lightened */
+html[data-theme='lissy'] nav.side-bar .side-bar-section:nth-child(1n) { --side-bar-item-color: #fa4cac; }
+html[data-theme='lissy'] nav.side-bar .side-bar-section:nth-child(2n) { --side-bar-item-color: #e547ff; }
+html[data-theme='lissy'] nav.side-bar .side-bar-section:nth-child(3n) { --side-bar-item-color: #7587ff; }
+html[data-theme='lissy'] nav.side-bar .side-bar-section:nth-child(4n) { --side-bar-item-color: #38d9fd; }
+html[data-theme='lissy'] nav.side-bar .side-bar-section:nth-child(5n) { --side-bar-item-color: #15f4a3; }
+html[data-theme='lissy'] nav.side-bar .side-bar-section:nth-child(6n) { --side-bar-item-color: #e8ff47; }
+html[data-theme='lissy'] nav.side-bar .side-bar-section:nth-child(7n) { --side-bar-item-color: #ff6c47; }
+html[data-theme='vaporware'] nav.side-bar { --side-bar-item-color: #a6ecfc; }
+html[data-theme='cyberpunk'] nav.side-bar { --side-bar-item-color: #1d1d02; }
+html[data-theme='material-original'] nav.side-bar { --side-bar-item-color: #8bd7fa; }
+html[data-theme='material-dark-original'] nav.side-bar { --side-bar-item-color: #03383c; }
+html[data-theme='night-bat'] nav.side-bar { --side-bar-item-color: #709cff; }
+html[data-theme='solarized-light'] nav.side-bar { --side-bar-item-color: #1d6ca2; }
+html[data-theme='blue-purple'] nav.side-bar { --side-bar-item-color: #aceefc; }

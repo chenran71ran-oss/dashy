@@ -1,63 +1,96 @@
-/* Liquid Glass — a cool, translucent palette with restrained blur. */
+/* Liquid Glass — frosted, light-catching surfaces over soft colour glows.
+ *
+ * The four opacity controls in the theme editor keep their names and saved values:
+ *   --glass-background-opacity  strength of the colour glows (or, with a background image, of the tint over it)
+ *   --glass-panel-opacity       smoke in the frosted section, toolbar and dialog panels
+ *   --glass-card-opacity        frost on website cards
+ *   --glass-button-opacity      frost on buttons and category tabs
+ * The page canvas is always the theme's dark base, so the browser's white never shows through.
+ */
 html[data-theme='liquid-glass'] {
-  --glass-background-opacity: 24%;
-  --page-tint: linear-gradient(var(--glass-tint), var(--glass-tint));
-  --glass-tint: color-mix(in srgb, var(--background) var(--glass-background-opacity), transparent);
+  --glass-background-opacity: 60%;
   --glass-panel-opacity: 36%;
   --glass-card-opacity: 42%;
   --glass-button-opacity: 28%;
-  --glass-panel: rgb(16 25 47 / var(--glass-panel-opacity));
-  --glass-card: rgb(25 38 68 / var(--glass-card-opacity));
-  --glass-button: rgb(61 79 119 / var(--glass-button-opacity));
+
+  /* Surfaces: a dark smoke for legibility, a light frost that scales with each control
+     (capped at about a quarter white so light text stays readable at 100%),
+     and a fixed sheen so a surface still reads as glass at 0%. */
+  --glass-smoke: rgb(8 16 34 / var(--glass-panel-opacity));
+  --glass-panel: var(--glass-smoke);
+  --glass-card: color-mix(in srgb, #dce9ff calc(var(--glass-card-opacity) * 0.26), rgb(6 12 28 / 0.16));
+  --glass-button: color-mix(in srgb, #dce9ff calc(var(--glass-button-opacity) * 0.26), transparent);
+  --glass-sheen: linear-gradient(180deg, rgb(255 255 255 / 0.13), rgb(255 255 255 / 0.03) 42%, rgb(255 255 255 / 0) 70%);
+  --glass-edge: rgb(255 255 255 / 0.16);
+  --glass-edge-strong: rgb(255 255 255 / 0.32);
+  --glass-highlight: inset 0 1px 0 rgb(255 255 255 / 0.3), inset 0 0 0 1px rgb(255 255 255 / 0.04);
+  --glass-depth: 0 12px 32px -12px rgb(0 6 20 / 0.55);
+  --glass-blur: blur(18px) saturate(160%);
+  --glass-selected: rgb(220 233 255 / 0.15);
+  /* Tabs and buttons that sit straight on the page (not inside a panel) carry the panel smoke too */
+  --glass-loose: linear-gradient(var(--glass-button), var(--glass-button)), var(--glass-sheen);
+  --glass-text-shadow: 0 1px 2px rgb(0 8 24 / 0.5);
+
+  /* With a background image, the same control tints it toward the base colour */
+  --glass-tint: color-mix(in srgb, var(--background) var(--glass-background-opacity), transparent);
+  --page-tint: linear-gradient(var(--glass-tint), var(--glass-tint));
+
   --primary: #f1f7ff;
-  --background: #091426;
-  --background-darker: #06101f;
-  --item-group-background: var(--glass-panel);
+  --background: #070f22;
+  --background-darker: #050b19;
+  --item-group-background: transparent;
   --item-group-outer-background: var(--glass-panel);
   --item-background: var(--glass-card);
-  --item-background-hover: rgb(47 83 128 / var(--glass-card-opacity));
-  --item-shadow: 0 8px 22px rgba(1, 8, 20, 0.2);
-  --item-hover-shadow: 0 12px 28px rgba(1, 8, 20, 0.34);
+  --item-background-hover: color-mix(in srgb, #e6efff calc(var(--glass-card-opacity) * 0.26 + 6%), rgb(6 12 28 / 0.16));
+  --item-shadow: var(--glass-highlight), var(--glass-depth);
+  --item-hover-shadow: inset 0 1px 0 rgb(255 255 255 / 0.42), inset 0 0 0 1px rgb(255 255 255 / 0.08), 0 16px 36px -12px rgb(0 6 20 / 0.6);
 
-  --heading-text-color: #e8f2ff;
-  --item-text-color: #e8f2ff;
+  --heading-text-color: #eef5ff;
+  --item-text-color: #eef5ff;
   --item-text-color-hover: #ffffff;
-  --item-group-heading-text-color: #e8f2ff;
+  --item-group-heading-text-color: #eef5ff;
   --item-group-heading-text-color-hover: #ffffff;
 
   --settings-background: var(--glass-panel);
-  --settings-text-color: #e8f2ff;
-  --nav-link-text-color: #e8f2ff;
+  --settings-text-color: #eef5ff;
+  --nav-link-text-color: #eef5ff;
   --nav-link-text-color-hover: #ffffff;
   --nav-link-background-color: var(--glass-button);
-  --nav-link-border-color: rgba(225, 241, 255, 0.22);
-  --nav-link-border-color-hover: rgba(225, 241, 255, 0.4);
-  --search-container-background: var(--glass-panel);
+  --nav-link-border-color: var(--glass-edge);
+  --nav-link-border-color-hover: var(--glass-edge-strong);
+  --search-container-background: transparent;
   --search-field-background: var(--glass-card);
-  --config-settings-background: #0c1b31;
-  --cloud-backup-background: #0c1b31;
+  --config-settings-background: #0b1730;
+  --cloud-backup-background: #0b1730;
   --footer-background: transparent;
-  --footer-text-color: #b8c9df;
+  --footer-text-color: #c3d3ea;
   --footer-text-color-link: #ffffff;
 
   --minimal-view-background-color: transparent;
   --minimal-view-group-background: var(--glass-panel);
+  --minimal-view-group-color: #eef5ff;
   --minimal-view-section-heading-background: var(--glass-button);
-  --minimal-view-section-heading-color: #e8f2ff;
-  --outline-color: rgba(225, 241, 255, 0.6);
-  --highlight-background: rgba(225, 241, 255, 0.22);
+  --minimal-view-section-heading-color: #eef5ff;
+  --minimal-view-search-background: var(--glass-card);
+  --minimal-view-search-color: #eef5ff;
+  --trigger-background: var(--glass-button);
+  --trigger-color: #eef5ff;
+  --trigger-active-background: var(--glass-selected);
+  --trigger-active-color: #ffffff;
+  --outline-color: rgb(225 241 255 / 0.5);
+  --highlight-background: rgb(225 241 255 / 0.22);
   --highlight-color: #ffffff;
   --curve-factor: 0.9rem;
   --curve-factor-navbar: 1.1rem;
 
-  &, body {
-    background: transparent;
-  }
+  background: var(--background);
 
   body {
+    background: transparent;
     isolation: isolate;
   }
 
+  /* The liquid: soft colour glows on the dark base, strength set by the background control */
   body::before {
     content: '';
     position: fixed;
@@ -65,61 +98,145 @@ html[data-theme='liquid-glass'] {
     z-index: -1;
     pointer-events: none;
     opacity: var(--glass-background-opacity);
-
-    background-image:
-      radial-gradient(circle at 10% 0%, rgba(86, 179, 255, 0.2), transparent 34rem),
-      radial-gradient(circle at 90% 12%, rgba(173, 122, 255, 0.18), transparent 30rem),
-      linear-gradient(170deg, #10172d 0%, #344674 52%, #202841 100%);
-
+    background:
+      radial-gradient(38rem 30rem at 8% 4%, rgb(56 160 255 / 0.55), transparent 70%),
+      radial-gradient(34rem 28rem at 92% 10%, rgb(150 104 255 / 0.5), transparent 70%),
+      radial-gradient(40rem 32rem at 70% 96%, rgb(34 211 238 / 0.32), transparent 70%),
+      radial-gradient(30rem 26rem at 18% 88%, rgb(244 114 182 / 0.22), transparent 70%),
+      linear-gradient(165deg, #0d1a3a 0%, #1d2d5e 50%, #101a36 100%);
   }
 
-  .home {
-    background: transparent;
-  }
+  .home, .minimal-home, .work-space { background-color: transparent; }
 
-  .minimal-section-heading,
-  .minimal-section-inner.selected,
-  .tab-scroll-btn {
-    border-color: var(--nav-link-border-color);
-  }
-
-  div.minimal-section-heading.selected {
-    background: rgb(89 112 160 / var(--glass-button-opacity));
-    border-color: #aac8ed;
-    .section-title, .section-icon { color: var(--primary); }
-  }
-
-  .options-panel :is(.view-btn, .action-btn, .auth-btn),
-  .display-options .layout-icon,
-  .theme-selector-section .color-button,
-  .tab-scroll-btn {
-    background-color: var(--glass-button);
-    color: var(--settings-text-color);
-    border-color: var(--nav-link-border-color);
-
-    &:hover, &.active, &.selected {
-      background-color: rgb(89 112 160 / var(--glass-button-opacity));
-      color: white;
-      border-color: #aac8ed;
-    }
-  }
-
-  dialog.theme-editor-dialog {
-    background: var(--glass-panel);
-    backdrop-filter: blur(12px);
-    &::backdrop { background: transparent; }
-    .theme-configurator-wrapper { background: transparent; }
-  }
-
+  /* Frosted panels: the only surfaces that blur what lies behind them */
+  .collapsable,
+  .minimal-section-inner:is(.selected, .show-all),
   header,
   section.settings-outer,
   .options-panel,
+  .view-switcher,
+  nav.side-bar,
   dialog.dashy-modal,
-  .theme-configurator-wrapper,
-  .view-switcher {
-    -webkit-backdrop-filter: blur(6px) saturate(115%);
-    backdrop-filter: blur(6px) saturate(115%);
-    background: var(--settings-background);
-    border: 1px solid var(--nav-link-border-color);
+  dialog.theme-editor-dialog,
+  .theme-configurator-wrapper {
+    background-color: var(--glass-panel);
+    background-image: var(--glass-sheen);
+    border: 1px solid var(--glass-edge);
+    box-shadow: var(--glass-highlight), var(--glass-depth);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+  }
+
+  /* Nested surfaces sit on an already-blurred panel: frost and sheen, no second blur */
+  .collapsable .collapsible-content,
+  section.settings-outer .options-panel,
+  dialog.theme-editor-dialog .theme-configurator-wrapper {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .collapsable .section-header { background: transparent; }
+
+  /* The focus and workspace search row, and focus categories not on screen, stay clear */
+  .portal-toolbar.compact,
+  .minimal-section-inner:not(.selected, .show-all) {
+    background: none;
+    border: none;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .item-wrapper > a.item,
+  .sub-item-wrapper > a.item {
+    background-color: var(--glass-card);
+    background-image: var(--glass-sheen);
+    border: 1px solid var(--glass-edge);
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+    &:hover, &:focus-visible {
+      background-color: var(--item-background-hover);
+      border-color: var(--glass-edge-strong);
+      transform: translateY(-1px);
+    }
+  }
+
+  /* Buttons and tabs: frost that follows the button control, always outlined and lit */
+  .options-panel :is(.view-btn, .action-btn, .auth-btn),
+  .display-options .layout-icon,
+  .theme-selector-section .color-button,
+  .tab-scroll-btn,
+  .options-trigger,
+  .minimal-home div.minimal-section-heading {
+    background-color: var(--glass-button);
+    background-image: var(--glass-sheen);
+    color: var(--settings-text-color);
+    border: 1px solid var(--glass-edge);
+    box-shadow: var(--glass-highlight);
+
+    &:hover, &.active, &.selected, &.open {
+      background-color: var(--glass-selected);
+      color: #ffffff;
+      border-color: var(--glass-edge-strong);
+    }
+  }
+
+  /* Focus tabs and the focus/workspace launcher sit on the page itself: smoke and blur them like a panel */
+  .minimal-home div.minimal-section-heading,
+  .minimal-home .options-trigger,
+  .tab-scroll-btn {
+    background-color: var(--glass-panel);
+    background-image: var(--glass-loose);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+  }
+
+  /* A soft shadow keeps light text crisp over bright spots in a background image */
+  :is(.item .tile-title, .section-header h3, .minimal-section-heading h3, .page-titles, .side-bar-item) {
+    text-shadow: var(--glass-text-shadow);
+  }
+
+  /* The selected tab keeps light text, whatever the button control is set to */
+  .minimal-home div.minimal-section-heading.selected {
+    background-color: var(--glass-panel);
+    background-image: linear-gradient(var(--glass-selected), var(--glass-selected)), var(--glass-sheen);
+    border-color: var(--glass-edge-strong);
+    :is(h3.section-title, .section-icon) { color: #ffffff; }
+  }
+
+  .minimal-section-inner.selected { border-color: var(--glass-edge); }
+
+  section.filter-container form input,
+  .minimal-home input#filter-tiles {
+    background-color: var(--glass-card);
+    background-image: var(--glass-sheen);
+    border: 1px solid var(--glass-edge);
+    box-shadow: var(--glass-highlight);
+    color: #eef5ff;
+    &::placeholder { color: rgb(238 245 255 / 0.66); }
+    &:focus { border-color: var(--glass-edge-strong); opacity: 1; }
+  }
+
+  dialog.theme-editor-dialog::backdrop,
+  dialog.dashy-modal::backdrop { background: rgb(3 8 20 / 0.35); }
+
+  /* Phones: a lighter blur keeps scrolling smooth */
+  @media (max-width: 600px) {
+    --glass-blur: blur(12px) saturate(150%);
+  }
+
+  /* Without backdrop blur, or when the system asks for less transparency, use solid smoke */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    --glass-panel: rgb(8 16 34 / max(var(--glass-panel-opacity), 82%));
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    --glass-panel: rgb(8 16 34 / 0.94);
+    --glass-card: rgb(32 48 82 / 0.96);
+    --glass-button: rgb(32 48 82 / 0.96);
+    --glass-blur: none;
   }
 }
