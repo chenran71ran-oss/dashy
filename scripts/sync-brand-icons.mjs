@@ -28,6 +28,8 @@ const files = {
   // Spotify's official icon has black sound waves on the green disc.
   'spotify.svg': svg(`<circle cx="12" cy="12" r="10.8" fill="#000"/><path fill="#1ED760" d="${path('spotify')}"/>`),
   'googlescholar.svg': svg(`<path fill="#4285F4" d="${path('googlescholar')}"/>`),
+  'applemusic.svg': svg(`<path fill="#FA243C" d="${path('applemusic')}"/>`),
+  'alibabacloud.svg': svg(`<path fill="#FF6A00" d="${path('alibabacloud')}"/>`),
   'netflix.svg': svg(`<path fill="#E50914" d="${path('netflix')}"/>`),
   'deepseek.svg': svg(`<path fill="#4D6BFE" d="${path('deepseek')}"/>`),
   'instagram.svg': svg(`<path fill="url(#ig)" d="${path('instagram')}"/>`,

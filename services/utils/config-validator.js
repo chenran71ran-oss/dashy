@@ -5,10 +5,10 @@
 
 const fs = require('fs'); // For opening + reading files
 const path = require('path'); // For resolving the config file path
-const yaml = require('./yaml'); // For parsing YAML
 const Ajv = require('ajv'); // For validating with schema
 
 const schema = require('../../src/utils/config/ConfigSchema.json');
+const yaml = require('./yaml'); // For parsing YAML
 
 /* Tell AJV to use strict mode, and report all errors */
 const validatorOptions = {
@@ -24,7 +24,7 @@ const ajv = new Ajv(validatorOptions);
 const successMsg = () => '\x1b[1m\x1b[32m✔️ Config file is valid, no issues found\x1b[0m\n';
 
 /* Just a wrapper to system's console.log */
-const logToConsole = (msg) => { console.log(msg || '\n'); }; // eslint-disable-line no-console
+const logToConsole = (msg) => { console.log(msg || '\n'); };
 
 /* Formats error message. ready for printing to the console */
 const errorMsg = (output) => {
@@ -93,7 +93,7 @@ const printFileReadError = (e) => {
       + 'If this issue persists, you can get support by raising a ticket on GitHub. '
       + 'Please include the following stack trace';
     logToConsole(moreInfo);
-    // eslint-disable-next-line no-console
+
     console.warn('\x1b[33mStack Trace for config-validator.js:\x1b[0m\n', e);
     logToConsole();
   }

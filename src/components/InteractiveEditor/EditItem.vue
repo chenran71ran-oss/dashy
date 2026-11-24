@@ -28,7 +28,7 @@
           <label>检测间隔（秒）<input v-model.number="draft.statusCheckInterval" aria-label="HTTP 检测间隔" type="number" min="0" max="300" placeholder="0：仅打开页面时检测" /></label>
           <label>额外接受的状态码<input v-model="draft.statusCheckAcceptCodes" aria-label="接受的状态码" placeholder="例如 301,401；默认接受 2xx" /></label>
           <label>最多跟随重定向次数<input v-model.number="draft.statusCheckMaxRedirects" aria-label="重定向次数" type="number" min="0" max="20" placeholder="0：不跟随重定向" /></label>
-          <label>自定义请求头（JSON）<textarea v-model="probeHeaders" aria-label="检测请求头" rows="3" placeholder='{"X-Health-Check":"home-lab"}' /></label>
+          <label>自定义请求头（JSON）<textarea v-model="probeHeaders" aria-label="检测请求头" rows="3" placeholder="{&quot;X-Health-Check&quot;:&quot;home-lab&quot;}" /></label>
           <p class="editor-hint">原版用于带认证的健康接口。此处内容会随配置发给已登录的浏览器；需要保密的 Token 应在接入后放到 CF Secrets，不要填真实 Cookie。</p>
           <label class="check"><input type="checkbox" v-model="draft.statusCheckAllowInsecure" /> 接入后允许忽略 TLS 证书错误（原版高级选项）</label>
         </details>
@@ -60,13 +60,14 @@
 </template>
 <script>
 import IconPicker from './IconPicker.vue';
-import { readSiteDescription } from '@/utils/SiteCompletion';
 import SubItemsEditor from './SubItemsEditor.vue';
 import SaveCancelButtons from './SaveCancelButtons';
+import { readSiteDescription } from '@/utils/SiteCompletion';
 import AccessError from '@/components/Configuration/AccessError';
 import StoreKeys from '@/utils/StoreMutations';
 import { modalNames } from '@/utils/config/defaults';
 import safeClone from '@/utils/safeClone';
+
 const validUrl = (value) => { try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password; } catch { return false; } };
 export default {
   components: { IconPicker, SubItemsEditor, SaveCancelButtons, AccessError },

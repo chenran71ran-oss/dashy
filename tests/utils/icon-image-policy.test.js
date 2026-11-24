@@ -1,4 +1,5 @@
 import {iconCrossOrigin} from '@/utils/IconImagePolicy';
+
 afterEach(()=>{delete window.__KH_CLOUD_AUTH;});
 it('makes direct HTTPS, HTTP and protocol-relative external images anonymous in cloud mode',()=>{
  window.__KH_CLOUD_AUTH=true;

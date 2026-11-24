@@ -1,10 +1,10 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { readFileSync } from 'fs';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import svgLoader from 'vite-svg-loader';
 import { VitePWA } from 'vite-plugin-pwa';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { readFileSync } from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(path.resolve(__dirname, 'package.json'), 'utf-8'));

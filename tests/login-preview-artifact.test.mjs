@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { Window } from 'happy-dom';
 import { themeLabels } from '../src/utils/ThemeCatalog.js';
 import { contrastRatio } from '../src/utils/ThemeContrast.js';
+
 const settle=()=>new Promise(resolve=>setTimeout(resolve,0));
 
 test('the generated HTML mounts and switches themes without Node globals', async () => {

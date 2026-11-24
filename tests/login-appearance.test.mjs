@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import worker from '../cloud/worker.mjs';
+
 test('signed-out appearance reads expose only validated theme colors',async()=>{
   let writes=0;
   const config={pageInfo:{title:'Private title'},sections:[{name:'Private section',items:[{title:'Private',url:'https://private.example/?token=secret'}]}],appConfig:{theme:'material-original',dayTheme:'nord-frost',nightTheme:'dracula',customColors:{'material-original':{primary:'#123456',background:'#fafafa','font-body':'private-font','background-image':'url(https://private.example/secret.png)'}}}};

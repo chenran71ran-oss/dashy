@@ -1,4 +1,5 @@
 import { favoriteThemesKey, readThemeFavorites } from './ThemeCatalog';
+
 let writes=Promise.resolve(), nextWrite=0;
 async function send(method='GET', body) {
   const response=await fetch('/api/theme-favorites',{method,credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json'}:{},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(8000)});

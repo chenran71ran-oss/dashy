@@ -59,10 +59,10 @@
 </template>
 
 <script>
-import KvConfigHistory from './KvConfigHistory.vue';
 // Import libraries
 import sha256 from 'crypto-js/sha256';
 import { Progress } from 'rsup-progress';
+import KvConfigHistory from './KvConfigHistory.vue';
 // Import form elements
 import Button from '@/components/FormElements/Button';
 import Input from '@/components/FormElements/Input';

@@ -1,15 +1,16 @@
 // Kenneth portal · original Dashy frontend + Cloudflare Assets + KV.
 // Runtime ADMIN_TOKEN only; never put the password in frontend build variables.
-import validSchema from './config-validator.cjs';
-import configSchema from '../src/utils/config/ConfigSchema.json' with { type: 'json' };
 import { parse as parseYaml } from 'yaml';
+import configSchema from '../src/utils/config/ConfigSchema.json' with { type: 'json' };
+import { themeLabels } from '../src/utils/ThemeCatalog.js';
+import validSchema from './config-validator.cjs';
 import { readWeather } from './weather.mjs';
 import { discoverDescription, discoverIcon, fetchPublicIcon, publicIconUrl } from './icon-discovery.mjs';
 import { iconCacheKey, cacheIconAsset } from './icon-cache.mjs';
 import { publicLoginAppearance } from './login-appearance.mjs';
-import { themeLabels } from '../src/utils/ThemeCatalog.js';
 import { CONFIG_KEY, configPath, configKey, saveConfig, listHistory, readHistory } from './config-storage.mjs';
 import { statusCheck, pingCheck, corsProxy, backendService } from './services.mjs';
+
 const OLD_CONFIG_KEY = 'kenneth-home:config:v1';
 const FAVORITES_KEY = 'kenneth-home:theme-favorites:v1';
 export const DEFAULT_CONFIG = {

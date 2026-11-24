@@ -1,4 +1,5 @@
 import { discoverSiteIcon } from '../../src/utils/SiteIcons.js';
+
 afterEach(()=>vi.restoreAllMocks());
 it('retries transient failures after a short delay instead of retaining them for ten minutes',async()=>{
   let now=1000000;vi.spyOn(Date,'now').mockImplementation(()=>now);

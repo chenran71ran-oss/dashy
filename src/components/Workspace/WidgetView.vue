@@ -15,7 +15,7 @@ export default {
   props: {
     widgets: { type: Array, default: () => [] },
     title: { type: String, default: '' },
-    itemSize: String,
+    itemSize: { type: String, default: '' },
   },
 };
 </script>

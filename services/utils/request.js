@@ -31,7 +31,7 @@ const restrictionsDisabled = !!process.env.DANGEROUSLY_DISABLE_PROXY_RESTRICTION
 const validateTargetUrl = (raw) => {
   if (restrictionsDisabled) return { ok: true };
   let url;
-  try { url = new URL(raw); } catch (e) {
+  try { url = new URL(raw); } catch {
     return { ok: false, status: 400, error: 'Target-URL is not a valid URL' };
   }
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
@@ -110,7 +110,7 @@ function request(config) {
       let parsed;
       try {
         parsed = new URL(targetUrl);
-      } catch (e) {
+      } catch {
         reject(new RequestError(`Invalid URL: ${targetUrl}`));
         return;
       }
@@ -179,7 +179,7 @@ function request(config) {
         // Resolves (or rejects) the promise, from an already-complete response body
         const finish = (raw) => {
           let responseData;
-          try { responseData = JSON.parse(raw); } catch (_) { responseData = raw; }
+          try { responseData = JSON.parse(raw); } catch { responseData = raw; }
 
           const response = {
             data: responseData,

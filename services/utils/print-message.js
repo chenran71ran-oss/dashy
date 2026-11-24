@@ -7,7 +7,7 @@
  * @returns A string formatted for the terminal
  */
 module.exports = (ip, port, isDocker) => {
-  let msg = ''; // To return
+  let msg; // To return
   const chars = { // Color codes used in the message
     RESET: '\x1b[0m',
     CYAN: '\x1b[36m',

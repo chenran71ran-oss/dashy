@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { matchPortalIcon, websiteFavicon, websiteIcon, portalIconPath } from '../src/utils/PortalIcons.js';
+
 test('Brog Hub replaces its temporary book icon while preserving later custom choices', () => {
   const url = 'https://aileader.chenran71ran.cc/';
   assert.equal(matchPortalIcon(url).id, 'brog-hub');

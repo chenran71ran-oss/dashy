@@ -1,7 +1,7 @@
+import path from 'path';
 import {
   describe, it, expect, beforeEach,
 } from 'vitest';
-import path from 'path';
 
 describe('Config Validator', () => {
   const configValidator = path.resolve(__dirname, '../../services/utils/config-validator.js');

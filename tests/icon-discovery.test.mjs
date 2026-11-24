@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { discoverIcon, publicIconUrl, isPublicAddress, extractIconLinks, fetchPublicIcon } from '../cloud/icon-discovery.mjs';
 import { discoverSiteIcon } from '../src/utils/SiteIcons.js';
 import worker from '../cloud/worker.mjs';
+
 const image=()=>new Response(new Uint8Array([137,80,78,71,13,10,26,10]),{headers:{'content-type':'image/png'}});
 const dns=()=>Response.json({Status:0,Answer:[{type:1,data:'8.8.8.8'}]});
 test('the image route serves the exact image verified during discovery without fetching it again',async(t)=>{

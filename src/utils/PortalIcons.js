@@ -1,5 +1,6 @@
 // Public brand assets only. Website lists and credentials stay in the user's KV.
 import { officialSiteIcons } from '../../cloud/icon-catalog.mjs';
+
 const qx = (id, title, file, hosts = [], aliases = []) => ({ id, title, src: `/portal-icons/qx/${file}.png`, hosts, aliases, source: 'QX' });
 // Transparent marks from simple-icons (scripts/sync-brand-icons.mjs); QX artwork stays in the repository.
 const brand = (entry, file, extra = {}) => ({ ...entry, src: `/portal-icons/brand/${file}.svg`, source: 'simple-icons (CC0) official mark', ...extra });
@@ -16,6 +17,8 @@ export const portalIcons = [
   { ...qx('claude', 'Claude', 'Claude', ['claude.ai'], ['claude']), src: '/portal-icons/claude-hq.svg', source: 'Simple Icons / Claude' },
   { ...qx('gemini', 'Google Gemini', 'Gemini', ['gemini.google.com'], ['google gemini', 'gemini']), src: '/portal-icons/gemini-hq.svg', source: 'Lobe Icons / Gemini' },
   brand(qx('emby', 'Emby', 'Emby', ['app.emby.media'], ['emby']), 'emby'),
+  { id: 'applemusic', title: 'Apple Music', src: '/portal-icons/brand/applemusic.svg', hosts: ['music.apple.com'], exactHosts: true, aliases: ['apple music'], source: 'simple-icons (CC0) official mark' },
+  { id: 'aliyun', title: '阿里云 / Alibaba Cloud', src: '/portal-icons/brand/alibabacloud.svg', hosts: ['aliyun.com', 'alibabacloud.com'], aliases: ['阿里云', 'alibaba cloud', 'aliyun'], source: 'simple-icons (CC0) official mark' },
   { id: 'manus', title: 'Manus', src: '/portal-icons/brand/manus.svg', mono: true, hosts: ['manus.im'], aliases: ['manus'], source: 'lobe-icons (MIT), via QX-icons' },
   { id: 'grok', title: 'Grok', src: '/portal-icons/brand/grok.svg', mono: true, hosts: ['grok.com'], aliases: ['grok'], source: 'lobe-icons (MIT), via QX-icons' },
   { id: 'muse', title: 'muse.ai', src: '/portal-icons/brand/muse.svg', hosts: ['muse.ai'], aliases: ['muse', 'muse.ai'], source: 'muse.ai official logo, via QX-icons' },

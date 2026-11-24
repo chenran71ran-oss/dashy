@@ -40,6 +40,7 @@ import ThemeContrastMixin from '@/mixins/ThemeContrastMixin';
 import { themeMenuPalette } from '@/utils/ThemeMenuPalette';
 import { themeLabel, orderThemes, readThemeFavorites } from '@/utils/ThemeCatalog';
 import { loadFavoriteThemes, setFavoriteTheme } from '@/utils/ThemeFavorites';
+
 export default {
   name: 'ThemeSelector', mixins: [ThemingMixin, ThemeContrastMixin], props: { hidePallete: Boolean }, components: { CustomThemeMaker, IconPalette },
   data: () => ({ themeConfiguratorOpen: false, dropdownOpen: false, query: '', favorites: [], favoritesSaving: false, themeSaving: false, favoritesNote: '正在读取收藏…' }),

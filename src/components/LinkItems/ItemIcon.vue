@@ -23,8 +23,11 @@
     <img v-else-if="iconPath && !broken" :crossorigin="imageCrossOrigin" :src="transparent?.src || imageSource" :alt="title ? `${title} 图标` : ''" @error="onImageError" loading="eager" decoding="async" referrerpolicy="no-referrer"
       :class="['tile-icon', size, { broken, 'awaiting-transparency': transparent === undefined && !showOriginal }]"
     />
-    <!-- Icon could not load/ broken url -->
-    <span v-if="broken || iconType === 'none'" class="icon-monogram" aria-hidden="true">{{ monogram }}</span>
+    <!-- Icon could not load: a glyph for the kind of site, else the first letter -->
+    <span v-if="(broken || iconType === 'none') && standIn" class="glyph-stack stand-in" aria-hidden="true">
+      <span :class="`glyph-icon ${size}`" :style="{maskImage: `url(${standIn})`, WebkitMaskImage: `url(${standIn})`}"></span>
+    </span>
+    <span v-else-if="broken || iconType === 'none'" class="icon-monogram" aria-hidden="true">{{ monogram }}</span>
   </div>
 </template>
 
@@ -35,6 +38,7 @@ import { builtinIconPath } from '@/utils/BuiltinIconPaths';
 import { discoverSiteIcon, cachedSiteIcon } from '@/utils/SiteIcons';
 import { iconCrossOrigin, iconImageSource } from '@/utils/IconImagePolicy';
 import { canMakeTransparent, makeTransparent, transparentIcon } from '@/utils/IconTransparency';
+import { standInIcon } from '@/utils/StandInIcons';
 import ErrorHandler from '@/utils/logging/ErrorHandler';
 import EmojiUnicodeRegex from '@/utils/EmojiUnicodeRegex';
 import { asciiHash } from '@/utils/MiscHelpers';
@@ -94,8 +98,15 @@ export default {
     iconPath() {
       if (this.broken) return undefined;
       if (this.attemptedFallback) return this.getFallbackIcon();
+      if (this.triedSiteFavicon) return websiteFavicon(this.url);
       return this.getIconPath(this.resolvedIcon, this.url);
     },
+    /* Through the icon proxy, a saved custom image that fails is retried as the site's root favicon */
+    siteFaviconRetry() {
+      const favicon = websiteFavicon(this.url);
+      return !!(window.__KH_CLOUD_AUTH && favicon.startsWith('https://') && /^https:\/\//i.test(this.resolvedIcon) && favicon !== this.resolvedIcon);
+    },
+    standIn() { return standInIcon(this.title, this.url); },
     imageSource() { return iconImageSource(this.iconPath, { fallback: this.attemptedFallback }); },
     // Discovery depends only on these inputs; renaming a manual icon's title must not refetch.
     discoveryTarget() {
@@ -107,6 +118,7 @@ export default {
   data() {
     return {
       broken: false, // If true, was unable to resolve icon
+      triedSiteFavicon: false, // Proxy retry with the site's /favicon.ico
       attemptedFallback: false,
       siPath: '', // Resolved SVG path for simple-icons (set async)
       discoveredIcon: '',
@@ -292,6 +304,7 @@ export default {
     async resolveSimpleIcon() {
       const requestedIcon = this.resolvedIcon;
       this.broken = false;
+      this.triedSiteFavicon = false;
       this.attemptedFallback = false;
       this.siPath = '';
       if (this.iconType !== 'si' || !this.icon) {
@@ -349,6 +362,10 @@ export default {
     },
     /* On <img> error: try fallback once; if none available or already tried, mark broken */
     onImageError() {
+      if (!this.attemptedFallback && !this.triedSiteFavicon && this.siteFaviconRetry) {
+        this.triedSiteFavicon = true;
+        return;
+      }
       if (this.attemptedFallback || this.getFallbackIcon() === undefined) {
         this.broken = true;
         return;

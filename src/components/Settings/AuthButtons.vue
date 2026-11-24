@@ -5,9 +5,10 @@
 </template>
 <script>
 import IconLogout from '@/assets/interface-icons/user-logout.svg';
+
 export default {
   name: 'AuthButtons', components: { IconLogout },
-  props: { userType: Number, iconOnly: Boolean },
+  props: { iconOnly: Boolean },
   methods: {
     async logout() {
       try {

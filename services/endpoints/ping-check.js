@@ -3,8 +3,8 @@
  * It accepts many parameters (host, count, timeout) and will make a system ping icmp
  * request and then resolve the average response time.
  */
-const ping = require('pingman');
 const net = require('net');
+const ping = require('pingman');
 
 // Max ICMP packets per check, matching the documented pingCheckCount limit
 const MAX_COUNT = 5;

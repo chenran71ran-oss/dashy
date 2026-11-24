@@ -4,9 +4,9 @@
  * and that core functionality is operational
  */
 
-import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import { describe, it, expect } from 'vitest';
 import * as yaml from 'js-yaml';
 
 describe('Smoke Tests - Testing Infrastructure', () => {

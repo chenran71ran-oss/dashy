@@ -5,6 +5,7 @@
 </template>
 <script>
 import { mechPalette, themedTabIcon } from '@/utils/MechPalette';
+
 const cssRgb = (variable, fallback) => {
   const probe=document.createElement('span'); probe.style.color=`var(${variable}, ${fallback})`; probe.style.display='none';
   document.body.appendChild(probe); const color=getComputedStyle(probe).color; probe.remove();

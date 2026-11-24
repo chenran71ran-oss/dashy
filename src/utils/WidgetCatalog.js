@@ -1,5 +1,6 @@
 // Canonical upstream widget types; aliases remain accepted by the renderer.
 import { WIDGET_HELP } from './WidgetHelp.js';
+
 export const WIDGET_COMPONENTS = {
   'adguard-dns-info': 'AdGuardDnsInfo',
   'adguard-filter-status': 'AdGuardFilterStatus',

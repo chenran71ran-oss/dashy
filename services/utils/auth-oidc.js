@@ -13,8 +13,8 @@
  */
 
 const fs = require('fs');
-const yaml = require('./yaml');
 const { createRemoteJWKSet, jwtVerify } = require('jose');
+const yaml = require('./yaml');
 
 /* Normalise the OIDC / Keycloak block from conf.yml into a unified shape.
    Returns null when neither provider is enabled or required fields are missing. */
@@ -23,7 +23,7 @@ function loadOidcSettings(authConfig) {
 
   if (authConfig.enableOidc && authConfig.oidc) {
     if (authConfig.oidc.disableServerSideCheck) {
-      console.warn('[auth-oidc] disableServerSideCheck is set, skipping auth check'); // eslint-disable-line no-console
+      console.warn('[auth-oidc] disableServerSideCheck is set, skipping auth check');
       return null;
     }
     const {
@@ -117,7 +117,7 @@ function createOidcMiddleware(settings, { permissive = false } = {}) {
   return async (req, res, next) => {
     const header = req.headers.authorization || '';
     if (/^Basic\s+/i.test(header)) {
-      console.warn('[auth-oidc] expected Bearer token, received Basic auth header'); // eslint-disable-line no-console
+      console.warn('[auth-oidc] expected Bearer token, received Basic auth header');
     }
     const match = header.match(/^Bearer\s+(.+)$/i);
     if (!match) return next(); // No token attached, let downstream gates decide
@@ -138,7 +138,7 @@ function createOidcMiddleware(settings, { permissive = false } = {}) {
       };
       return next();
     } catch (e) {
-      console.warn('[auth-oidc] token verification failed:', e.message || e); // eslint-disable-line no-console
+      console.warn('[auth-oidc] token verification failed:', e.message || e);
       if (permissive) return next();
       return res.status(401).json({
         success: false,

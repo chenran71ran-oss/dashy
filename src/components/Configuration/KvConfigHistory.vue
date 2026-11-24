@@ -15,6 +15,7 @@
 </template>
 <script>
 import request from '@/utils/request';
+
 export default {
   name: 'KvConfigHistory',
   data: () => ({ entries: [], busy: false, message: '' }),

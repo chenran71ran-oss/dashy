@@ -16,6 +16,7 @@
 </template>
 <script>
 import IconPicker from './IconPicker.vue';
+
 export default {
   name: 'SubItemsEditor',
   components: { IconPicker },
