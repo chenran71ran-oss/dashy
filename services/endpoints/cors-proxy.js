@@ -5,6 +5,7 @@
  */
 
 const request = require('../utils/request');
+
 const { validateTargetUrl } = request;
 
 // If reference to env var is present, substitute for env var value if set
@@ -15,7 +16,7 @@ const resolvePlaceholder = (name) => {
   if (value !== undefined) return value;
   if (!warnedPlaceholders.has(name)) {
     warnedPlaceholders.add(name);
-    // eslint-disable-next-line no-console
+
     console.warn(`[cors-proxy] Env-var placeholder '${name}' is referenced but not set`);
   }
   return name;
@@ -82,7 +83,7 @@ const handler = (req, res) => {
       if (headers?.Authorization) {
         headers.Authorization = substituteBasicAuth(headers.Authorization);
       }
-    } catch (e) {
+    } catch {
       res.status(400).send({ error: 'CustomHeaders header contains malformed JSON' });
       return;
     }
@@ -107,7 +108,7 @@ const handler = (req, res) => {
   // Make the request, and respond with result
   const send = (status, body) => {
     if (res.headersSent) return;
-    try { res.status(status).send(body); } catch (e) { /* response stream gone */ }
+    try { res.status(status).send(body); } catch { /* response stream gone */ }
   };
   request(requestConfig).then(
     (response) => send(200, response.data),

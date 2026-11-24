@@ -130,7 +130,7 @@ describe('Calendar widget', () => {
   it('drops unsafe event URLs', async () => {
     request.mockResolvedValue({
       data: feed(['UID:1', `DTSTART:${at(0, 10)}`, 'SUMMARY:Totally legitimate prize',
-        // eslint-disable-next-line no-script-url
+
         'URL:javascript:alert(1)']),
     });
     expect((await mount()).findAll('a.event-row')).toHaveLength(0);

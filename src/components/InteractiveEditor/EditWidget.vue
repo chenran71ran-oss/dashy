@@ -47,7 +47,7 @@
         <label>高度（像素）<input v-model.number="options.frameHeight" aria-label="嵌入高度" type="number" min="80" max="1200" placeholder="默认320" /></label>
         <p class="editor-hint">对方的 CSP / X-Frame-Options 可能禁止嵌入。遇到拒绝连接时，改成普通网站卡片跳转。HTTPS 总站请使用 HTTPS 嵌入地址。</p>
       </template>
-      <label v-if="!simpleType">组件参数（JSON）<textarea v-model="optionsText" aria-label="组件参数 JSON" rows="9" spellcheck="false" placeholder='{"hostname":"https://your-service.example"}' /></label>
+      <label v-if="!simpleType">组件参数（JSON）<textarea v-model="optionsText" aria-label="组件参数 JSON" rows="9" spellcheck="false" placeholder="{&quot;hostname&quot;:&quot;https://your-service.example&quot;}" /></label>
       <p v-if="!simpleType" class="editor-hint">按原版文档填写该组件所需的 API 地址、密钥占位符和其他参数。需要服务端密钥时开启代理，并在 CF Secrets 设置 DASHY_ 开头的变量。</p>
       <a :href="documentationUrl" target="_blank" rel="noopener noreferrer">查看原版小组件参数文档</a>
       <details><summary>原版通用选项</summary>
@@ -65,12 +65,13 @@
   </modal>
 </template>
 <script>
-import { WIDGET_CATALOG, WIDGET_COMPONENTS } from '@/utils/WidgetCatalog';
 import SaveCancelButtons from './SaveCancelButtons';
+import { WIDGET_CATALOG, WIDGET_COMPONENTS } from '@/utils/WidgetCatalog';
 import AccessError from '@/components/Configuration/AccessError';
 import StoreKeys from '@/utils/StoreMutations';
 import safeClone from '@/utils/safeClone';
 import { modalNames } from '@/utils/config/defaults';
+
 const validUrl = value => { try { const u = new URL(value); return ['https:', 'http:'].includes(u.protocol) && !u.username && !u.password; } catch { return false; } };
 export default {
   name: 'EditWidget', components: { SaveCancelButtons, AccessError },

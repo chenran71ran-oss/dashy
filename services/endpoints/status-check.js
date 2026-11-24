@@ -86,7 +86,7 @@ const decodeHeaders = (maybeHeaders) => {
   let parsedHeaders = {};
   try {
     parsedHeaders = JSON.parse(maybeHeaders);
-  } catch (e) { /* Not valid JSON, will just return an empty object */ }
+  } catch { /* Not valid JSON, will just return an empty object */ }
   return parsedHeaders;
 };
 

@@ -27,10 +27,10 @@ const printWelcomeMessage = () => {
   dns.promises.lookup(os.hostname())
     .then(({ address }) => {
       const ip = process.env.HOST || address || 'localhost';
-      console.log(printMessage(ip, port, isDocker)); // eslint-disable-line no-console
+      console.log(printMessage(ip, port, isDocker));
     })
     .catch(() => {
-      console.log(`Dashy server has started (${port})`); // eslint-disable-line no-console
+      console.log(`Dashy server has started (${port})`);
     });
 };
 
@@ -40,7 +40,7 @@ http.createServer(app)
     printWelcomeMessage();
   })
   .on('error', (err) => {
-    console.warn('Unable to start Dashy\'s Node server\n', err); // eslint-disable-line no-console
+    console.warn('Unable to start Dashy\'s Node server\n', err);
   });
 
 /* Check, and if possible start SSL server too */

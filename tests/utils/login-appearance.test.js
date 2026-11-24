@@ -1,5 +1,6 @@
-import { resolveLoginAppearance } from '@/utils/LoginAppearance';
 import { publicLoginAppearance } from '../../cloud/login-appearance.mjs';
+import { resolveLoginAppearance } from '@/utils/LoginAppearance';
+
 const storage=values=>({getItem:key=>values[key]||null});
 it('keeps desktop and mobile on the saved portal theme despite stale local or OS choices',()=>{
  const remote={theme:'material-original',dayTheme:'nord-frost',nightTheme:'dracula'};

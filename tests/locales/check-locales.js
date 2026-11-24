@@ -36,6 +36,7 @@ const c = {
 const paint = (col, s) => `${c[col]}${s}${c.reset}`;
 const coverageColour = (pct) => (pct === 100 ? 'green' : pct >= 80 ? 'cyan' : pct >= 50 ? 'yellow' : 'red');
 const hdr = (t) => `\n${paint('bold', t)}\n${paint('grey', '─'.repeat(stripAnsi(t).length))}`;
+// eslint-disable-next-line no-control-regex -- strips ANSI colour codes from terminal output
 const stripAnsi = (s) => s.replace(/\x1b\[[0-9;]*m/g, '');
 
 /* Keys used indirectly (computed at runtime) that the static scanner can't see */

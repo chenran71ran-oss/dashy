@@ -1,5 +1,5 @@
-import { load as parseYaml } from '@/utils/yaml';
 import { createStore } from 'vuex';
+import { load as parseYaml } from '@/utils/yaml';
 import { takeRootConfig } from '@/utils/BootConfig';
 import request from '@/utils/request';
 import Keys from '@/utils/StoreMutations';

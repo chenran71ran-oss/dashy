@@ -9,6 +9,7 @@ import Keys from '@/utils/StoreMutations';
 import { builtInThemes } from '@/utils/config/defaults';
 import { getExternalThemes, getExtraThemeNames } from '@/utils/Theming';
 import { saveSharedTheme } from '@/utils/SharedTheme';
+
 let themeSelectionRevision = 0;
 
 export default {

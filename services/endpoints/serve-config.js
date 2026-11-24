@@ -10,7 +10,7 @@ const rootDir = path.join(__dirname, '..', '..');
 const yamlFilename = (req) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') return null;
   let file;
-  try { file = path.normalize(decodeURIComponent(req.path)); } catch (e) { return null; }
+  try { file = path.normalize(decodeURIComponent(req.path)); } catch { return null; }
   return /\.(ya?ml|yam)(:|$)/i.test(file) ? path.basename(file) : null;
 };
 

@@ -1,6 +1,7 @@
 import store from '@/store';
 import request from '@/utils/request';
 import Keys from '@/utils/StoreMutations';
+
 vi.mock('@/utils/request',()=>({default:{get:vi.fn()}}));
 beforeEach(()=>{
  window.__KH_CLOUD_AUTH=true;

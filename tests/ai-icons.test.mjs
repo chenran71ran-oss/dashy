@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {websiteIcon,portalIconPath} from '../src/utils/PortalIcons.js';
+
 test('AI brands use self-contained vector icons and migrate saved official favicons',()=>{
   for(const [id,host] of [['chatgpt','chatgpt.com'],['claude','claude.ai'],['gemini','gemini.google.com']]){
     const url=`https://${host}/`;

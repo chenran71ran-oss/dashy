@@ -1,9 +1,9 @@
 // @vitest-environment node
-import { describe, it, expect, beforeEach, afterAll } from 'vitest';
-import request from 'supertest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import request from 'supertest';
+import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import * as yaml from 'js-yaml';
 
 // Isolate writes to a temp dir so the real user-data/conf.yml is never touched

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import worker, {DEFAULT_CONFIG} from '../cloud/worker.mjs';
 import {fetchPublicIcon} from '../cloud/icon-discovery.mjs';
+
 const dns=()=>Response.json({Status:0,Answer:[{type:1,data:'8.8.8.8'}]});
 test('image fetching validates redirects, refuses non-images and bounds payloads',async()=>{
  const calls=[];

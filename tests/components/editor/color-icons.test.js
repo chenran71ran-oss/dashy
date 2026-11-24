@@ -1,6 +1,6 @@
-import { shallowMount } from '@vue/test-utils';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { shallowMount } from '@vue/test-utils';
 import IconPicker from '@/components/InteractiveEditor/IconPicker.vue';
 import { builtinIcons, builtinIconPath, isColoredIcon, iconCategories } from '@/utils/BuiltinIcons';
 

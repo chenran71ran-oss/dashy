@@ -67,7 +67,7 @@ process.env.IS_SERVER = 'True';
 
 /* Just console.warns an error */
 const printWarning = (msg, error) => {
-  console.warn(`\x1b[103m\x1b[34m${msg}\x1b[0m\n`, error || ''); // eslint-disable-line no-console
+  console.warn(`\x1b[103m\x1b[34m${msg}\x1b[0m\n`, error || '');
 };
 
 /* Send a response body if the stream is already closed, with optional status */
@@ -76,7 +76,7 @@ const safeEnd = (res, body, status) => {
   try {
     if (status) res.status(status);
     res.end(body);
-  } catch (e) { /* response stream gone */ }
+  } catch { /* response stream gone */ }
 };
 
 /* Build a serialized JSON error body */
@@ -97,7 +97,7 @@ function loadAuthConfig() {
     const fileContents = fs.readFileSync(filePath, 'utf8');
     const data = yaml.load(fileContents);
     return data?.appConfig?.auth || {};
-  } catch (e) {
+  } catch {
     return {};
   }
 }
@@ -301,8 +301,8 @@ const app = express()
           const parsed = yaml.load(req.body.config);
           if (parsed && typeof parsed === 'object') config = parsed;
         }
-      } catch (e) { /* unparseable body or YAML, config is unchanged */ }
-      try { res.end(jsonBody); } catch (e) { /* response stream gone */ }
+      } catch { /* unparseable body or YAML, config is unchanged */ }
+      try { res.end(jsonBody); } catch { /* response stream gone */ }
     };
     saveConfig(req.body, respond).catch((e) => {
       printWarning('Error writing config file to disk', e);

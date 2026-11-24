@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { orderThemes, themeLabels, readThemeFavorites } from '../src/utils/ThemeCatalog.js';
+
 test('current and favorite themes stay at the top with Chinese and English search', () => {
   const names = ['default', 'material', 'matrix-red', 'adventure-basic', 'custom'];
   assert.deepEqual(orderThemes(names, 'adventure-basic', ['matrix-red', 'material', 'deleted']), ['adventure-basic', 'matrix-red', 'material', 'default', 'custom']);

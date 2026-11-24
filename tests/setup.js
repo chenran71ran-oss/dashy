@@ -13,8 +13,8 @@ global.console = {
   // Uncomment to suppress console.debug in tests
   // debug: vi.fn(),
   // Keep warnings and errors visible
-  warn: console.warn, // eslint-disable-line no-console
-  error: console.error, // eslint-disable-line no-console
+  warn: console.warn,
+  error: console.error,
 };
 
 // Mock localStorage for tests

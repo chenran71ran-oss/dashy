@@ -12,6 +12,7 @@
 
 <script>
 import { contextMenuPalette } from '@/utils/ThemeMenuPalette';
+
 export default {
   name: 'ContextMenuSurface',
   inheritAttrs: false,

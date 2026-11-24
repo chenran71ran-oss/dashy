@@ -1,9 +1,9 @@
 // @vitest-environment node
-import { describe, it, expect, afterAll } from 'vitest';
-import request from 'supertest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import request from 'supertest';
+import { describe, it, expect, afterAll } from 'vitest';
 
 // Auth strategy is chosen when the app module loads, so env must be set first
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashy-api-auth-'));

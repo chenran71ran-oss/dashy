@@ -2,6 +2,7 @@
 import { createApp } from 'vue';
 import CloudLogin from '../src/CloudLogin.vue';
 import '../src/styles/login-palettes.scss';
+
 let selectedTheme='material-original';
 
 window.fetch=async url=>Response.json(url==='/api/login-appearance'?{theme:selectedTheme}:{error:'这是设计预览，不校验或发送真实密码。'},{status:url==='/api/login-appearance'?200:401});

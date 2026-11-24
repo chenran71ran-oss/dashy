@@ -13,7 +13,7 @@
         :aria-expanded="navLinksOpen" aria-haspopup="menu" />
       <IconViewMode @click="openChangeViewMenu()" tabindex="-2"
         v-tooltip="tooltip($t('alternate-views.alternate-view-heading'))" />
-      <AuthButtons :userType="userState" iconOnly />
+      <AuthButtons iconOnly />
     </div>
 
     <!-- Modal containing all the configuration options -->
@@ -89,9 +89,6 @@ export default {
     },
     isEditAllowed() {
       return this.$store.getters.permissions.allowViewConfig;
-    },
-    userState() {
-      return this.$store.getters.userState;
     },
     /* Tooltip text for Edit Mode button, to change depending on it in edit mode */
     enterEditModeTooltip() {

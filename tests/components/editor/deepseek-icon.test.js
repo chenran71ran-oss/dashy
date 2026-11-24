@@ -1,5 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import ItemIcon from '@/components/LinkItems/ItemIcon.vue';
+
 vi.mock('@/assets/interface-icons/broken-icon.svg',()=>({default:{template:'<span />'}}));
 const mountIcon=(icon,url,title)=>shallowMount(ItemIcon,{props:{icon,url,title,size:'small'},global:{mocks:{$store:{getters:{appConfig:{}}}}}});
 it('renders the official blue DeepSeek mark on a transparent background',()=>{

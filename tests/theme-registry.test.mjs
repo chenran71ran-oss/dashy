@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import defaults from '../src/utils/config/defaults.js';
+import { builtInThemes } from '../src/utils/config/defaults.js';
 import { themeLabels } from '../src/utils/ThemeCatalog.js';
 import schema from '../src/utils/config/ConfigSchema.json' with { type: 'json' };
 
@@ -17,7 +17,7 @@ const cssThemes = () => {
 };
 
 test('menu labels, built-in list and config schema name the same themes', () => {
-  const builtIn = defaults.builtInThemes;
+  const builtIn = builtInThemes;
   assert.equal(new Set(builtIn).size, builtIn.length);
   assert.deepEqual([...builtIn].sort(), Object.keys(themeLabels).sort());
   assert.deepEqual(schema.properties.appConfig.properties.theme.examples, builtIn);
@@ -26,7 +26,7 @@ test('menu labels, built-in list and config schema name the same themes', () => 
 test('every built-in theme has styles, and every theme selector is offered in the menu', () => {
   const css = cssThemes();
   css.delete('my-theme'); // Documented example in user-defined-themes.scss
-  const builtIn = new Set(defaults.builtInThemes);
-  assert.deepEqual(defaults.builtInThemes.filter(name => name !== 'default' && !css.has(name)), []);
+  const builtIn = new Set(builtInThemes);
+  assert.deepEqual(builtInThemes.filter(name => name !== 'default' && !css.has(name)), []);
   assert.deepEqual([...css].filter(name => !builtIn.has(name)), []);
 });

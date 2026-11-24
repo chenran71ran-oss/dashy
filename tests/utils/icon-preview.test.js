@@ -1,4 +1,5 @@
 import { verifySiteIcon } from '../../src/utils/SiteIcons.js';
+
 afterEach(()=>{delete window.__KH_CLOUD_AUTH;});
 it('uses an anonymous request before assigning the direct image fallback URL',async()=>{
   window.__KH_CLOUD_AUTH=true;const sources=[];

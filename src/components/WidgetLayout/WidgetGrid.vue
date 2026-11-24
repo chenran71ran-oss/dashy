@@ -7,9 +7,10 @@
 </template>
 <script>
 import WidgetBase from '@/components/Widgets/WidgetBase.vue';
+
 export default {
   components: { WidgetBase },
-  props: { widgets: { type: Array, default: () => [] }, itemSize: String },
+  props: { widgets: { type: Array, default: () => [] }, itemSize: { type: String, default: '' } },
   emits: ['navigateToSection'],
   computed: {
     effectiveSize() { return this.itemSize || this.$store.getters.iconSize || 'medium'; },

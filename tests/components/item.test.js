@@ -3,9 +3,9 @@ import {
 } from 'vitest';
 import { shallowMount } from '@vue/test-utils';
 import { createStore } from 'vuex';
+import pingCheck from '../../services/endpoints/ping-check';
 import Item from '@/components/LinkItems/Item.vue';
 import router from '@/router';
-import pingCheck from '../../services/endpoints/ping-check';
 
 vi.mock('@/utils/request', () => {
   const fn = vi.fn(() => Promise.resolve({ data: {} }));

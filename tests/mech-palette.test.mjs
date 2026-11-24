@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mechPalette, paletteMatrix } from '../src/utils/MechPalette.js';
+
 test('mascot palettes follow arbitrary theme colors rather than two fixed styles',()=>{
   const colors=[[40,110,230],[240,45,50],[25,205,65],[190,80,240],[250,185,20],[20,180,200],[250,95,155]];
   const styles=colors.map(color=>mechPalette(color));

@@ -1,5 +1,6 @@
 import { mount,flushPromises } from '@vue/test-utils';
 import CloudLogin from '@/CloudLogin.vue';
+
 vi.mock('@/components/PageStrcture/MechLogo.vue',()=>({default:{template:'<img alt="Home Lab 像素高达标识" />'}}));
 beforeEach(()=>{vi.stubGlobal('localStorage',{getItem:vi.fn().mockReturnValue(null)});vi.stubGlobal('fetch',vi.fn(async url=>Response.json(url==='/api/login-appearance'?{theme:'material-original'}:{ok:true})));});
 afterEach(()=>{vi.unstubAllGlobals();document.documentElement.removeAttribute('data-theme');});

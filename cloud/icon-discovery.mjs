@@ -1,5 +1,6 @@
 // Reads public homepage icon metadata. Never forwards session cookies or site URL tokens.
 import { officialSiteIcons, officialApplicationIcons } from './icon-catalog.mjs';
+
 const dnsCache = new Map();
 const blockedHost = /(^|\.)(localhost|local|internal|home|lan|invalid)$/i;
 export function publicIconUrl(value, base) {

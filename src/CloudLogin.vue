@@ -30,6 +30,7 @@
 import { ref,onMounted,onBeforeUnmount } from 'vue';
 import MechLogo from './components/PageStrcture/MechLogo.vue';
 import { resolveLoginAppearance,applyLoginAppearance } from './utils/LoginAppearance';
+
 const emit=defineEmits(['authenticated']);
 const password=ref(''),busy=ref(false),error=ref(''),revealPassword=ref(false);
 const theme=ref('nord-frost'),themeStyles=ref({});

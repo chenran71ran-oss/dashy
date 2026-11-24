@@ -1,3 +1,4 @@
+import { readdirSync } from 'node:fs';
 import { shallowMount, mount, flushPromises } from '@vue/test-utils';
 import { reactive, nextTick } from 'vue';
 import Minimal from '@/views/Minimal.vue';
@@ -14,7 +15,6 @@ import SideBar from '@/components/Workspace/SideBar.vue';
 import SideBarItem from '@/components/Workspace/SideBarItem.vue';
 import ItemMixin from '@/mixins/ItemMixin';
 import { WIDGET_CATALOG } from '@/utils/WidgetCatalog';
-import { readdirSync } from 'node:fs';
 
 vi.mock('@/mixins/HomeMixin', () => ({ default: {
   data: () => ({ searchValue: '' }),

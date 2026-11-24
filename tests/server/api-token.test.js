@@ -1,9 +1,9 @@
 // @vitest-environment node
-import { describe, it, expect, afterAll } from 'vitest';
-import request from 'supertest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import request from 'supertest';
+import { describe, it, expect, afterAll } from 'vitest';
 
 // No Dashy auth configured here — only an API_TOKEN. Set before requiring app.
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashy-api-token-'));
@@ -19,6 +19,7 @@ afterAll(() => {
 });
 
 const app = require('../../services/app');
+
 const bearer = (token) => ({ Authorization: `Bearer ${token}` });
 
 describe('API token auth (no other auth configured)', () => {

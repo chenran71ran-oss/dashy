@@ -1,5 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import WidgetMixin from '@/mixins/WidgetMixin';
+
 vi.mock('rsup-progress',()=>({Progress:class {start=vi.fn();end=vi.fn();}}));
 afterEach(()=>vi.useRealTimers());
 const mountWidget=()=>shallowMount({mixins:[WidgetMixin],template:'<div/>',methods:{fetchData:vi.fn()}},{props:{options:{updateInterval:2}}});

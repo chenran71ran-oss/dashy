@@ -1,5 +1,6 @@
 import { discoverIcon } from '../../cloud/icon-discovery.mjs';
 import { discoverSiteIcon } from '../../src/utils/SiteIcons.js';
+
 const delay=(signal,ms,value)=>new Promise((resolve,reject)=>{
   const timer=setTimeout(()=>{signal.removeEventListener('abort',abort);resolve(value);},ms);
   const abort=()=>{clearTimeout(timer);reject(new DOMException('Aborted','AbortError'));};

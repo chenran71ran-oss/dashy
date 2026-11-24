@@ -1,11 +1,10 @@
-const request = require('./request');
-
 const currentVersion = require('../../package.json').version;
+const request = require('./request');
 
 const packageUrl = 'https://raw.githubusercontent.com/Lissy93/dashy/master/package.json';
 
 const logToConsole = (msg) => {
-  console.log(msg); // eslint-disable-line no-console
+  console.log(msg);
 };
 
 const VERSION_RE = /^\d+(\.\d+)*$/;

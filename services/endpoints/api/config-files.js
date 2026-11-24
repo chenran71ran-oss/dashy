@@ -4,8 +4,8 @@
  */
 const fsPromises = require('fs').promises;
 const path = require('path');
-const yaml = require('../../utils/yaml');
 const Ajv = require('ajv');
+const yaml = require('../../utils/yaml');
 
 const saveConfig = require('../save-config');
 const schema = require('../../../src/utils/config/ConfigSchema.json');

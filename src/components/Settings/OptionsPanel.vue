@@ -8,7 +8,7 @@
       <div class="toolbar-buttons">
         <button v-if="canEdit" type="button" class="action-btn" @click="openConfig" aria-label="配置" title="配置"><IconConfig /></button>
         <button v-if="canEdit" type="button" class="action-btn" @click="startEdit" :disabled="isEditMode" aria-label="编辑网站" title="编辑网站"><IconEdit /></button>
-        <AuthButtons :userType="userState" iconOnly />
+        <AuthButtons iconOnly />
       </div>
     </div>
     <div class="toolbar-group">
@@ -30,7 +30,6 @@ import ItemSizeSelector from './ItemSizeSelector';
 import AuthButtons from './AuthButtons';
 import Keys from '@/utils/StoreMutations';
 import { modalNames } from '@/utils/config/defaults';
-import { getUserState } from '@/utils/auth/Auth';
 import { makeRoutePath, resolveRouteIntent, viewFromPath } from '@/utils/config/ConfigHelpers';
 import IconClose from '@/assets/interface-icons/config-close.svg';
 import IconEdit from '@/assets/interface-icons/interactive-editor-edit-mode.svg';
@@ -38,13 +37,13 @@ import IconConfig from '@/assets/interface-icons/config-editor.svg';
 import IconHome from '@/assets/interface-icons/application-home.svg';
 import IconMinimalView from '@/assets/interface-icons/application-minimal.svg';
 import IconWorkspaceView from '@/assets/interface-icons/open-workspace.svg';
+
 export default {
   components: { ThemeSelector, LayoutSelector, ItemSizeSelector, AuthButtons, IconClose, IconEdit, IconConfig, IconHome, IconMinimalView, IconWorkspaceView },
   emits: ['close'],
   computed: {
     isEditMode() { return this.$store.state.editMode; },
     canEdit() { return this.$store.getters.permissions.allowViewConfig; },
-    userState() { return getUserState(); },
     currentView() { return viewFromPath(this.$route.path); },
     views() { return [{ id: 'home', label: '总站', icon: 'IconHome' }, { id: 'minimal', label: '专注', icon: 'IconMinimalView' }, { id: 'workspace', label: '工作台', icon: 'IconWorkspaceView' }]; },
   },

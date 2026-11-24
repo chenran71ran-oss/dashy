@@ -22,12 +22,13 @@
 </template>
 <script>
 import IconPicker from './IconPicker.vue';
+import SaveCancelButtons from './SaveCancelButtons';
 import StoreKeys from '@/utils/StoreMutations';
 import { modalNames } from '@/utils/config/defaults';
 import safeClone from '@/utils/safeClone';
 import { makePageName } from '@/utils/config/ConfigHelpers';
-import SaveCancelButtons from './SaveCancelButtons';
 import AccessError from '@/components/Configuration/AccessError';
+
 export default {
   components: { SaveCancelButtons, AccessError, IconPicker },
   props: { sectionName: { type: String, default: '' }, isAddNew: Boolean }, emits: ['closeEditSection'],

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'vite';
 import { themeLabels } from '../src/utils/ThemeCatalog.js';
+
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const asset=name=>'data:image/png;base64,'+fs.readFileSync(path.join(process.env.LOGIN_PREVIEW_ASSETS||path.join(root,'public/mech'),name+'.png')).toString('base64');
 const {default:vue}=await import('@vitejs/plugin-vue');

@@ -1,6 +1,7 @@
-import { websiteFavicon } from './PortalIcons.js';
 import { officialSiteIcons } from '../../cloud/icon-catalog.mjs';
+import { websiteFavicon } from './PortalIcons.js';
 import { iconCrossOrigin } from './IconImagePolicy.js';
+
 const cache=new Map();
 const CACHE_LIMIT=512;
 const VERIFIED_TTL=600000;

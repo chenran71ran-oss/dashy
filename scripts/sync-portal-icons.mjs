@@ -1,6 +1,7 @@
 // Optional maintenance command. Normal browsing uses already bundled local icons.
 import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
+
 const base = new URL('../public/portal-icons/', import.meta.url);
 const manifest = JSON.parse(await fs.readFile(new URL('qx-sources.json', base), 'utf8'));
 for (const entry of manifest.files) {

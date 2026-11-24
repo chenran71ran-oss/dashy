@@ -1,9 +1,9 @@
 // @vitest-environment node
-import { describe, it, expect, afterAll } from 'vitest';
-import request from 'supertest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import request from 'supertest';
+import { describe, it, expect, afterAll } from 'vitest';
 
 // Both Dashy basic-auth AND an API_TOKEN configured — either should work
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashy-api-coexist-'));
