@@ -44,17 +44,19 @@ async function start() {
   let returning = false;
   try { returning = localStorage.getItem(SIGNED_IN_KEY) === '1'; } catch { /* storage optional */ }
   if (returning) Promise.all([import('./store.js'), import('./router.js'), import('./App.vue')]).catch(() => {});
-  try {
-    const response = await first;
-    if (response.ok) {
+  let response;
+  try { response = await first; } catch { /* Offline: display the password form and a retryable error on submit. */ }
+  if (response?.ok) {
+    try {
       const text = await response.text();
       configChanged(JSON.stringify({ config: JSON.parse(text) }));
       primeRootConfig(Promise.resolve(JSON.parse(text)));
-      return await enter();
-    }
-    // Any failure other than "not signed in" is shown by the app's own error screen.
-    if (response.status !== 401) return await enter();
-  } catch { /* Display the password form and a retryable error on submit. */ }
+    } catch { /* Unreadable body: the app reloads the configuration itself. */ }
+    // A signed-in visitor goes straight to the app; a failure there must surface, not reopen the password form.
+    return enter();
+  }
+  // Any failure other than "not signed in" is shown by the app's own error screen.
+  if (response && response.status !== 401) return enter();
   remember(false);
   gate = createApp(CloudLogin, { onAuthenticated: enter });
   gate.mount('#app');
