@@ -13,8 +13,11 @@
 </template>
 
 <script>
-import EditItem from '@/components/InteractiveEditor/EditItem.vue';
+import { defineAsyncComponent } from 'vue';
 import SubItem from '@/components/LinkItems/SubItem.vue';
+
+// The editor is only needed in edit mode; a static import would pull it into the start-up code.
+const EditItem = defineAsyncComponent(() => import('@/components/InteractiveEditor/EditItem.vue'));
 
 export default {
   data: () => ({ editing: false }),
