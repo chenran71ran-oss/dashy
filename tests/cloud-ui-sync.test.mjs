@@ -34,7 +34,7 @@ test('favorites stay separate from bookmarks and image cache still requires auth
  const url=root+'/api/icon-image?url='+encodeURIComponent(image);
  assert.equal((await worker.fetch(new Request(url),env)).status,401);
  const result=await worker.fetch(new Request(url,{headers:{cookie}}),env);assert.equal(result.status,200);assert.equal(result.headers.get('content-type'),'image/svg+xml');assert.equal(result.headers.get('content-security-policy'),"default-src 'none'; sandbox");
- assert.equal(result.headers.get('cache-control'),'private, max-age=3600');assert.equal(result.headers.get('vary'),'Cookie');
+ assert.equal(result.headers.get('cache-control'),'private, max-age=86400');assert.equal(result.headers.get('vary'),'Cookie');
 });
 
 test('a build file that no longer exists is a 404, not the app page served as JavaScript',async()=>{

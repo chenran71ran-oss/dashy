@@ -11,6 +11,7 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": true
   },
+  "observability": { "enabled": true },
   "kv_namespaces": [
     { "binding": "HOME_KV", "id": "REPLACE_WITH_YOUR_EXISTING_KV_NAMESPACE_ID" }
   ]

@@ -20,7 +20,7 @@ test('the image route serves the exact image verified during discovery without f
   assert.equal((await discovered.json()).verified,true);
   const displayed=await worker.fetch(new Request('https://home.example/api/icon-image?url='+encodeURIComponent('https://exact-bytes.example/icon.png'),{headers:{origin:'https://home.example',cookie}}),env);
   assert.equal(displayed.status,200);assert.equal(displayed.headers.get('content-type'),'image/png');assert.equal(imageRequests,1);
-  assert.equal(displayed.headers.get('cache-control'),'private, max-age=3600');
+  assert.equal(displayed.headers.get('cache-control'),'private, max-age=86400');
   assert.equal(displayed.headers.get('vary'),'Cookie');
   assert.equal(discovered.headers.get('cache-control'),'no-store');
   const denied=await worker.fetch(new Request('https://home.example/api/icon-image?url=https%3A%2F%2Fexact-bytes.example%2Ficon.png'),env);
