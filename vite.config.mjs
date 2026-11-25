@@ -46,14 +46,6 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     chunkSizeWarningLimit: 7000,
-    rolldownOptions: {
-      output: {
-        // Automatic code splitting can place mutually importing modules in two chunks.
-        // Whichever chunk the browser evaluates first then reads the other's exports before
-        // they exist (a blank page after sign-in). Keep source execution order instead.
-        strictExecutionOrder: true,
-      },
-    },
   },
 
   server: {
