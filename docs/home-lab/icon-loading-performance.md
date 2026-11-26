@@ -23,3 +23,16 @@ The branch starts from master `de006f91049ae329174c2948f9d8da138ac725d4` (PR #15
 - Production build and whitespace checks pass.
 
 These are request-count and behavior regressions, not measured production network timings. First visits still depend on the source website and network. Browser cache reuse also depends on browser settings and developer-tools cache disabling. No live browser performance measurement has been made for this branch.
+
+## 2026-11-25: cache lifetimes
+
+| Cache | Before | Now |
+| --- | --- | --- |
+| Worker KV copy of a website icon (`kenneth-home:icon:*`) | 24 hours | 3 days |
+| Browser copy of `/api/icon-image` responses (`private`, varies by cookie) | 1 hour | 1 day |
+| Bundled `/portal-icons/` files | 1 hour | 1 hour (unchanged; they change with deployments) |
+
+With a 24-hour KV lifetime, the first visit of each day often found the icons expired and fetched every website again, so a cold start waited for the slowest websites. Both limits are constants in `cloud/icon-cache.mjs`. An icon replaced at the same address appears within three days, or immediately after its KV key is deleted. `tests/icon-cache-lifetime.test.mjs` checks both lifetimes and the failure log below.
+
+The Worker now logs icon fetches that fail (`icon-fetch-failed`, with host, path and reason) or take longer than one second after a KV miss (`icon-fetch-slow`, with the time in milliseconds). `wrangler.jsonc` enables Workers Logs, so a deployment no longer turns off logging that was enabled in the dashboard.
+

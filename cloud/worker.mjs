@@ -6,7 +6,7 @@ import { themeLabels } from '../src/utils/ThemeCatalog.js';
 import validSchema from './config-validator.cjs';
 import { readWeather } from './weather.mjs';
 import { discoverDescription, discoverIcon, fetchPublicIcon, publicIconUrl } from './icon-discovery.mjs';
-import { iconCacheKey, cacheIconAsset } from './icon-cache.mjs';
+import { iconCacheKey, cacheIconAsset, ICON_CACHE_SECONDS, ICON_BROWSER_SECONDS } from './icon-cache.mjs';
 import { publicLoginAppearance } from './login-appearance.mjs';
 import { CONFIG_KEY, configPath, configKey, saveConfig, listHistory, readHistory } from './config-storage.mjs';
 import { statusCheck, pingCheck, corsProxy, backendService } from './services.mjs';
@@ -273,17 +273,22 @@ export default {
         const cached=await env.HOME_KV?.get(key);let body,mime;
         if(cached){const data=JSON.parse(cached);mime=data.mime;body=Uint8Array.from(atob(data.body),c=>c.charCodeAt(0));}
         else {
-          ({bytes:body,mime}=await sharedIconFetch(target.href));
+          // Structured logs (Workers Logs) show which websites fail or slow down a cold start.
+          const started=Date.now();
+          try { ({bytes:body,mime}=await sharedIconFetch(target.href)); }
+          catch(error) { console.warn({event:'icon-fetch-failed',host:target.hostname,path:target.pathname,reason:error.message}); throw error; }
+          const ms=Date.now()-started;
+          if(ms>1000)console.log({event:'icon-fetch-slow',host:target.hostname,path:target.pathname,ms});
           // Cache contention must never turn a successfully fetched image into an error,
           // and the response does not wait for the KV write.
           if(env.HOME_KV) {
-            const write=Promise.resolve().then(()=>env.HOME_KV.put(key,JSON.stringify({mime,body:toBase64(body)}),{expirationTtl:86400})).catch(()=>{});
+            const write=Promise.resolve().then(()=>env.HOME_KV.put(key,JSON.stringify({mime,body:toBase64(body)}),{expirationTtl:ICON_CACHE_SECONDS})).catch(()=>{});
             if(ctx?.waitUntil)ctx.waitUntil(write);else await write;
           }
         }
         // Only validated public image bytes may be reused by this browser.
         // Authentication errors, configuration and discovery responses remain no-store.
-        return new Response(body,{headers:{...BASE_HEADERS,'cache-control':'private, max-age=3600','vary':'Cookie','content-type':mime,'content-security-policy':"default-src 'none'; sandbox",'x-frame-options':'DENY'}});
+        return new Response(body,{headers:{...BASE_HEADERS,'cache-control':`private, max-age=${ICON_BROWSER_SECONDS}`,'vary':'Cookie','content-type':mime,'content-security-policy':"default-src 'none'; sandbox",'x-frame-options':'DENY'}});
       }
       if (['/conf.yml', '/api/config'].includes(u.pathname) && method === 'GET') {
         await authorize(req, env);
