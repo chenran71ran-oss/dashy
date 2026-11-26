@@ -127,6 +127,14 @@ html[data-theme='liquid-glass'] {
     backdrop-filter: var(--glass-blur);
   }
 
+  /* Backdrop blur makes each frosted surface its own layer, painted in page order, so the theme
+     menu of a toolbar would sit under the categories and workspace that follow it.
+     Lift the toolbar only while its menu is open, so other pop-ups (such as context menus) stay above it. */
+  .portal-toolbar:has(.theme-popover),
+  .options-panel:has(.theme-popover) {
+    z-index: 30;
+  }
+
   /* Nested surfaces sit on an already-blurred panel: frost and sheen, no second blur */
   .collapsable .collapsible-content,
   section.settings-outer .options-panel,
